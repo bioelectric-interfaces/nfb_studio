@@ -1,1 +1,1 @@
-"""Main module of the application."""
+"""NFB experiment designer."""
