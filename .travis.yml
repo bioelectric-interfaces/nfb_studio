@@ -1,0 +1,21 @@
+language: python
+python: 3.7
+branches: master
+
+install:
+    - pip install pdoc
+
+script: true
+
+before_deploy:
+    - pdoc --html --force --output-dir docs nvx
+    - mv docs/nvx/* docs
+    - rmdir docs/nvx
+
+deploy: # Deploy documentation to Github in the gh_pages branch
+    provider: pages
+    skip_cleanup: true
+    github_token: $github_token
+    local_dir: site
+    on:
+        branch: master
