@@ -7,7 +7,7 @@ install_requires = [
 ]
 
 extras_require = {
-    "docs":  ["pdoc3"],
+    "docs":  ["pdoc3"]
 }
 
 # Check if a Qt implementation needs to be installed
@@ -24,5 +24,6 @@ setup(
     install_requires=install_requires,
     package_data={
         "nfb_studio": ["*.svg"]
-    }
+    },
+    extras_require=extras_require
 )
