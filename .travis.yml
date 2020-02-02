@@ -8,8 +8,11 @@ script: true
 
 before_deploy:
     - pdoc --html --force --output-dir docs nfb_studio
-    - mv docs/nfb_studio/* docs
-    - rmdir docs/nfb_studio
+    - mkdir temp
+    - cp -R docs/nfb_studio/* temp/
+    - rm -rf docs/nfb_studio
+    - cp -R temp/* docs/
+    - rm -rf temp
 
 deploy: # Deploy documentation to Github in the gh_pages branch
     provider: pages
