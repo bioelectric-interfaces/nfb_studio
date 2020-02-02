@@ -2,7 +2,7 @@ language: python
 branches: master
 
 install:
-    - pip install pdoc3
+    - pip install -e .[docs]
 
 script: true
 
