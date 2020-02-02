@@ -1,4 +1,5 @@
 """A module that implements nfb_studio's custom serialization engine.
+
 This module extends the default JSON encoder and decoder with simpler ways to serialize objects.
 - If a class you want serialized is in your control, you can define these two member functions:
 ```python

@@ -4,6 +4,7 @@ from pathlib import Path
 class FileDict(dict):
     def __init__(self, create_item):
         """A dict of some items, whose keys are absolute filenames.
+
         When an item is requested, a create_item function is called with an path argument. The result of this function
         is written as the value to that key. If the item existed before, it is returned.
         """
@@ -18,6 +19,7 @@ class FileDict(dict):
 
     def __getitem__(self, key):
         """Returns an item with some path.
+
         This item is automatically created using create_item() if it does not exist.
         """
         path = Path(key).resolve()
@@ -39,6 +41,7 @@ class FileDict(dict):
 
     def pop(self, key, default=None):
         """Remove specified key and return the corresponding value.
+
         If key is not found, d is returned if given, otherwise KeyError is raised.
         """
         path = Path(key).resolve()
