@@ -5,6 +5,7 @@ from warnings import warn
 
 def _write_metadata(obj, data: dict) -> dict:
     """Write metadata that is required to reassemble the object, encoded by ObjectEncoder.
+
     An internal function that adds the `__class__` metadata field to the serialized data.
 
     Returns
@@ -30,6 +31,7 @@ def _write_metadata(obj, data: dict) -> dict:
 
 class ObjectEncoder(JSONEncoder):
     """JSON encoder that provides tools to serialize custom objects.
+
     You can add support for serializing your class in two ways:
     - By adding a member function to your class: `def serialize(self) -> dict`;
     - By adding an external function `def serialize(obj) -> dict` and passing it in a dict as the `object_hooks`

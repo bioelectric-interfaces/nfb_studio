@@ -8,6 +8,7 @@ class ObjectDecoder(JSONDecoder):
     def __init__(self, *, object_hooks: dict = None, parse_float=None, parse_int=None, parse_constant=None,
                  strict=True):
         """JSON decoder that provides tools to deserialize custom objects.
+
         You can add support for deserializing your class in two ways:
         - By adding a member function to your class: `def deserialize(self, data: dict)`;
         - By adding an external function `def serialize(obj, data: dict)` and passing it in a dict as the `object_hooks`
@@ -35,6 +36,7 @@ class ObjectDecoder(JSONDecoder):
         # Object hook used to handle custom deserialization
         def object_hook(data: dict):
             """An object hook for the ObjectDecoder.
+
             An internal function. This method is used as an object_hook to initialize ObjectDecoder. It looks for a meta
             field called `__class__` as a marker that the json field should be deserialized as an object. It attempts to
             default-construct an instance of the specified class and call either a method from the object_hooks dict or
