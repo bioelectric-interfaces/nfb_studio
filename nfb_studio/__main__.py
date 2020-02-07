@@ -1,9 +1,10 @@
-from Qt.QtWidgets import QApplication, QGraphicsScene
+from Qt.QtWidgets import QApplication
 
-from nfb_studio.widgets.scheme import Scheme, Node, Edge, Input, Output, InfoMessage, WarningMessage, ErrorMessage
-from nfb_studio.serialize import ObjectEncoder, serialize_qt
+from nfb_studio.widgets.scheme import Scheme, Node, Input, Output, InfoMessage, WarningMessage, ErrorMessage
+from nfb_studio.serialize import ObjectEncoder, ObjectDecoder, serialize_qt, deserialize_qt
 
 encoder = ObjectEncoder(object_hooks=serialize_qt, indent=4)
+decoder = ObjectDecoder(object_hooks=deserialize_qt)
 
 
 class TestNode(Node):
@@ -49,11 +50,11 @@ def main():
     scene.connect_nodes(n.outputs[0], n2.inputs[0])
     scene.connect_nodes(n3.outputs[0], n2.inputs[1])
 
+    data = encoder.encode(scene)
+
     w = scene.getView()
     w.setMinimumSize(800, 600)
     w.show()
-
-    print(encoder.encode(scene))
 
     return app.exec_()
 

@@ -29,12 +29,13 @@ class Node(RealSizeItem):
     description_font_name = "Segoe UI"
     description_font_size = 10.5
 
-    def __init__(self):
-        """Node is the main component of the graph scene.
-        It represents a single vertex of the graph, with its associated information and inputs/outputs.
+    def __init__(self, parent=None):
+        """The main component of the graph scene.
+
+        A node represents a single vertex of the graph, with its associated information and inputs/outputs.
         All sizes and positions are measured in inches.
         """
-        super(Node, self).__init__()
+        super().__init__()
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
 

@@ -54,6 +54,11 @@ class Scheme(QGraphicsScene):
         if isinstance(item, Node):
             self.nodes.remove(item)
 
+            # If a node is removed, all edges incoming and outgoing are removed too
+            for edge in self.edges:
+                if edge.source_node() == item or edge.target_node() == item:
+                    self.removeItem(edge)
+
         if isinstance(item, Edge):
             self.edges.remove(item)
 
@@ -99,8 +104,12 @@ class Scheme(QGraphicsScene):
         data["edges"] = []
 
         for edge in self.edges:
-            source_node = edge.source().parentItem()
-            target_node = edge.target().parentItem()
+            source_node = edge.source_node()
+            target_node = edge.target_node()
+
+            if source_node is None or target_node is None:
+                # Not serializing dangling nodes
+                continue
 
             edge_data = {
                 "source": {
@@ -118,16 +127,21 @@ class Scheme(QGraphicsScene):
         return data
 
     def deserialize(self, data: dict):
+        # Clear --------------------------------------------------------------------------------------------------------
+        for node in self.nodes:
+            self.removeItem(node)
+
         # Deserialize nodes --------------------------------------------------------------------------------------------
-        nodes = data["nodes"]
-        self.nodes = set(nodes)
+        for node in data["nodes"]:
+            self.addItem(node)
+            print(node.outputs)
 
         # Deserialize edges --------------------------------------------------------------------------------------------
         for edge_data in data["edges"]:
-            source_node = nodes[edge_data["source"]["node_index"]]
-            target_node = nodes[edge_data["target"]["node_index"]]
+            source_node = data["nodes"][edge_data["source"]["node_index"]]
+            target_node = data["nodes"][edge_data["target"]["node_index"]]
 
             source = source_node.outputs[edge_data["source"]["connection_index"]]
             target = target_node.inputs[edge_data["target"]["connection_index"]]
 
-            self.connect(source, target)
+            self.connect_nodes(source, target)
