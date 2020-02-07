@@ -7,17 +7,15 @@ from nfb_studio.gui import inches_to_pixels as px
 from .real_size_item import RealSizeItem
 
 
-class ElidedLineItem(QAbstractGraphicsShapeItem, RealSizeItem):
-    metrics_correction = 0.03
-    """Adjustment compensating for QFontMetricsF imprecise boundingRect() calculation."""
-
+class TextLineItem(QAbstractGraphicsShapeItem, RealSizeItem):
     def __init__(self, text=None, parent=None):
-        """A one-line text item that is confined to a certain width, elided as needed to fit.
+        """A one-line text item.
+
         Default origin point is at the left side of the baseline. This can change if setAlignMode is called.
-        ElidedLineItem also supports drawing text background. Its brush can be set using setBackgroundBrush().
+        TextLineItem also supports drawing text background. Its brush can be set using setBackgroundBrush().
         Text must not contain newline characters.
         """
-        super(ElidedLineItem, self).__init__(parent)
+        super().__init__(parent)
 
         self._text = text or ""
         self._elided_text = text or ""
@@ -52,6 +50,7 @@ class ElidedLineItem(QAbstractGraphicsShapeItem, RealSizeItem):
 
     def setAlignMode(self, mode: int) -> None:
         """Align mode specifies text alignment.
+
         Text alignment changes the origin point x position:
         - If mode is Qt.AlignLeft, the origin point is on the left of the baseline.
         - If mode is Qt.AlignHCenter, the origin point is in the center of the baseline.
@@ -120,7 +119,8 @@ class ElidedLineItem(QAbstractGraphicsShapeItem, RealSizeItem):
         self._px_bounding_rect = metrics.boundingRect(self.elidedText())
         # It seems that for small characters like "..." the bounding rect returned is too small. Adjust it by a small
         # value.
-        self._px_bounding_rect.adjust(0, 0, px(self.metrics_correction), 0)
+        metrics_correction = 1/72
+        self._px_bounding_rect.adjust(-px(metrics_correction), 0, px(metrics_correction), 0)
 
         # Move origin point according to the alignment
         if self.alignMode() & Qt.AlignLeft:

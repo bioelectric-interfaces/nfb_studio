@@ -80,3 +80,5 @@ ObjectDecoder : An object-aware JSON decoder.
 """
 from .encoder import ObjectEncoder
 from .decoder import ObjectDecoder
+
+from .qt_hooks import serialize_qt, deserialize_qt

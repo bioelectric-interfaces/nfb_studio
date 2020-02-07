@@ -6,7 +6,7 @@ from Qt.QtWidgets import QGraphicsItem
 from Qt.QtSvg import QGraphicsSvgItem, QSvgRenderer
 
 from nfb_studio.gui import FontF, inches_to_pixels as px, pixels_to_inches as inches
-from nfb_studio.widgets import RealSizeItem, ElidedLineItem
+from nfb_studio.widgets import RealSizeItem, TextLineItem
 from nfb_studio.util import FileDict
 
 icons_dir = os.path.dirname(__file__)
@@ -32,7 +32,7 @@ class Message(RealSizeItem):
         self.setFlag(QGraphicsItem.ItemHasNoContents)
 
         # Message text -------------------------------------------------------------------------------------------------
-        self._text_item = ElidedLineItem(text or "Message", self)
+        self._text_item = TextLineItem(text or "Message", self)
         self._text_item.setFont(FontF(self.text_font_name, self.text_font_size))
         metrics = QFontMetricsF(self._text_item.font())
         self._text_item.setMaximumWidth(self.max_text_length)

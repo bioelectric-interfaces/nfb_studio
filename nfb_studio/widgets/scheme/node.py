@@ -4,7 +4,7 @@ from Qt.QtWidgets import QGraphicsItem, QGraphicsLineItem, QGraphicsPathItem
 from sortedcontainers import SortedList
 
 from nfb_studio.gui import FontF, inches_to_pixels as px, pixels_to_inches as inches
-from nfb_studio.widgets import RealSizeItem, ElidedLineItem, TextRectItem
+from nfb_studio.widgets import RealSizeItem, TextLineItem, TextRectItem
 from nfb_studio.math import clamp
 
 from .connection import Input, Output
@@ -53,7 +53,7 @@ class Node(RealSizeItem):
         #painter.fillPath(path, self.fill_color)
         self._body_item.setPath(path)
 
-        self._title_item = ElidedLineItem("Node", self)
+        self._title_item = TextLineItem("Node", self)
         self._title_item.setFont(FontF(self.title_font_name, self.title_font_size))
         title_font_metrics = QFontMetricsF(self._title_item.font())
         self._title_item.setPosition(self.internal_padding, self.internal_padding)
@@ -229,7 +229,9 @@ class Node(RealSizeItem):
             "description": self.description(),
             "inputs": self.inputs,
             "outputs": self.outputs,
-            "messages": list(self.messages)
+            "messages": list(self.messages),
+            "position": self.position(),
+            "size": self.size()
         }
 
     def deserialize(self, data: dict):
@@ -244,3 +246,6 @@ class Node(RealSizeItem):
 
         for message in data["messages"]:
             self.addMessage(message)
+
+        self.setPosition(data["position"])
+        self.setSize(data["size"])

@@ -6,6 +6,7 @@ from Qt.QtGui import QColor, QPainter, QPainterPath, QPen
 from nfb_studio.gui import inches_to_pixels as px
 from nfb_studio.widgets import RealSizeItem, ShadowSelectableItem
 
+from .node import Node
 from .connection import Input, Output
 
 
@@ -47,6 +48,24 @@ class Edge(RealSizeItem, ShadowSelectableItem):
         """
 
         self._pen = QPen(self.outline_color, px(self.outline_thickness))
+
+    def source_node(self) -> Union[Node, None]:
+        """Return a node from which the edge originates, if it exists.
+
+        If the edge has no source connection, it consequently has no source node.
+        """
+        if self.source():
+            return self.source().parentItem()
+        return None
+
+    def target_node(self) -> Union[Node, None]:
+        """Return a node to which the edge goes, if it exists.
+
+        If the edge has no target connection, it consequently has no target node.
+        """
+        if self.target():
+            return self.target().parentItem()
+        return None
 
     def source(self) -> Union[Output, None]:
         return self._source
@@ -194,10 +213,7 @@ class Edge(RealSizeItem, ShadowSelectableItem):
             self.setShadowSelected(False)
             return
 
-        source_node = self._source.parentItem()
-        target_node = self._target.parentItem()
-
-        if source_node.isSelected() and target_node.isSelected():
+        if self.source_node().isSelected() and self.target_node().isSelected():
             self.setShadowSelected(True)
             # Edge does not know which connection called this update. If source called it, target does not know it has
             # to be selected. So the edge explicitly selects both.
