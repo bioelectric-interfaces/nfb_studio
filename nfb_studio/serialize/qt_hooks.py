@@ -1,3 +1,4 @@
+"""A collection of object_hooks for serializing and deserializing some common Qt objects."""
 from Qt.QtCore import QPointF, QSizeF
 
 
@@ -29,8 +30,10 @@ serialize_qt = {
     QPointF: serialize_QPointF,
     QSizeF: serialize_QSizeF
 }
+"""An `object_hooks` Qt dict for the `nfb_studio.serialize.encoder.ObjectEncoder`."""
 
 deserialize_qt = {
     QPointF: deserialize_QPointF,
     QSizeF: deserialize_QSizeF
 }
+"""An `object_hooks` Qt dict for the `nfb_studio.serialize.decoder.ObjectDecoder`."""

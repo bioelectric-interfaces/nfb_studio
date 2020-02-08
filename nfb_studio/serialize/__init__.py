@@ -1,6 +1,7 @@
 """A module that implements nfb_studio's custom serialization engine.
 
 This module extends the default JSON encoder and decoder with simpler ways to serialize objects.
+
 - If a class you want serialized is in your control, you can define these two member functions:
 ```python
 def serialize(self) -> dict:
@@ -8,6 +9,7 @@ def deserialize(self, data: dict):
 ```
 These functions return/accept a dictionary containing the data that is necessary to save and required to recreate the
 object during deserialization.
+
 - If a class is out of your control, such as a class from another module, both ObjectEncoder and ObjectDecoder accept an
 optional object_hooks parameter. This parameter is a dictionary that maps a class to a method that needs to be used to
 serialize that class. All you need to do is to create these two external methods:
@@ -59,24 +61,22 @@ def qrect_deserialize(obj: QRect, data: dict):
 encoder = ObjectEncoder(object_hooks={QRect: qrect_serialize})
 decoder = ObjectDecoder(object_hooks={QRect: qrect_deserialize})
 ```
-In this example, the encoder and decoder will be able to serialize both MyClass and QRect.
+In this example, the encoder and decoder will be able to serialize both `MyClass` and `QRect`.
 
-Notes
------
-The dictionaries returned by the serialization functions do not need to be primitive data structures containing only
-dicts, strings, lists, and numbers. The keys should be strings, but values can be instances of any class, as long as
-that class is serializeable.
+.. tip::
+    The dictionaries returned by the serialization functions do not need to be primitive data structures containing only
+    dicts, strings, lists, and numbers. The keys should be strings, but values can be instances of any class, as long as
+    that class is serializeable.
 
-Warnings
---------
-In order for the decoder to know which dicts should be deserialized as which class instances, the encoder adds a
-metadata field to the serialized dictionary called `__class__`. Do not write anything to that field - it will be
-overwritten.
+.. warning::
+    In order for the decoder to know which dicts should be deserialized as which class instances, the encoder adds a
+    metadata field to the serialized dictionary called `__class__`. Do not write anything to that field - it will be
+    overwritten.
 
 See Also
 --------
-ObjectEncoder : An object-aware JSON encoder.
-ObjectDecoder : An object-aware JSON decoder.
+encoder.ObjectEncoder : An object-aware JSON encoder.
+decoder.ObjectDecoder : An object-aware JSON decoder.
 """
 from .encoder import ObjectEncoder
 from .decoder import ObjectDecoder

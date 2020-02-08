@@ -5,32 +5,33 @@ from inspect import isclass
 
 
 class ObjectDecoder(JSONDecoder):
-    def __init__(self, *, object_hooks: dict = None, parse_float=None, parse_int=None, parse_constant=None,
-                 strict=True):
-        """JSON decoder that provides tools to deserialize custom objects.
+    """JSON decoder that provides tools to deserialize custom objects.
 
-        You can add support for deserializing your class in two ways:
-        - By adding a member function to your class: `def deserialize(self, data: dict)`;
-        - By adding an external function `def serialize(obj, data: dict)` and passing it in a dict as the `object_hooks`
-        parameter. (`object_hooks` is a dict that matches a class to a deserialization function.)
+    You can add support for deserializing your class in two ways:
 
-        When deserializing an object, this decoder first looks up the metadata field left by the ObjectEncoder. If that
-        field exists, the decoder default-constructs an instance of a class that was encoded. It then checks if the
-        class instance has a function in `object_hooks` or has a callable deserialize() attribute. If that is the case,
-        the dict read from json is passed to that function to allow the class instance to load the contents into itself.
-        Functions in the `object_hooks` parameter take precedence over member functions.
+    - By adding a member function to your class: `def deserialize(self, data: dict)`;
+    - By adding an external function `def serialize(obj, data: dict)` and passing it in a dict as the `object_hooks`
+    parameter. (`object_hooks` is a dict that matches a class to a deserialization function.)
 
-        ObjectDecoder does not accept an object_hook or object_pairs_hook parameter from JSONDecoder.
+    When deserializing an object, this decoder first looks up the metadata field left by the ObjectEncoder. If that
+    field exists, the decoder default-constructs an instance of a class that was encoded. It then checks if the
+    class instance has a function in `object_hooks` or has a callable `deserialize()` attribute. If that is the case,
+    the dict read from json is passed to that function to allow the class instance to load the contents into itself.
+    Functions in the `object_hooks` parameter take precedence over member functions.
 
-        Notes
-        -----
+    ObjectDecoder does not accept an `object_hook` or `object_pairs_hook` parameter from JSONDecoder.
+
+    .. note::
         If the metadata `__class__` field does not exist, the decoder leaves the dictionary as-is. If the field exists
         but was corrupted in some way, an exception will be raised.
 
-        See Also
-        --------
-        ObjectEncoder : An object-aware JSON encoder.
-        """
+    See Also
+    --------
+    nfb_studio.serialize.encoder.ObjectEncoder : An object-aware JSON encoder.
+    """
+    def __init__(self, *, object_hooks: dict = None, parse_float=None, parse_int=None, parse_constant=None,
+                 strict=True):
+        """"""
         self.object_hooks = object_hooks
 
         # Object hook used to handle custom deserialization
@@ -49,8 +50,8 @@ class ObjectDecoder(JSONDecoder):
             TypeError
                 If an attribute specified by the encoder exists in the specified module, but it's not a class;
                 If the specified class exists but is not default-constructible;
-                If the specified class was constructed but its deserialize method accepts something other than a single dict
-                argument.
+                If the specified class was constructed but its deserialize method accepts something other than a single
+                dict argument.
             AttributeError
                 If the specified class was constructed, but it has no callable deserialize method.
             """

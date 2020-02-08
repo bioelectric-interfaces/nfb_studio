@@ -1,16 +1,14 @@
 from Qt.QtWidgets import QApplication
 
 from nfb_studio.widgets.scheme import Scheme, Node, Input, Output, InfoMessage, WarningMessage, ErrorMessage
-from nfb_studio.serialize import ObjectEncoder, ObjectDecoder, serialize_qt, deserialize_qt
-
-encoder = ObjectEncoder(object_hooks=serialize_qt, indent=4)
-decoder = ObjectDecoder(object_hooks=deserialize_qt)
+from nfb_studio import standard_encoder as encoder
 
 
 class TestNode(Node):
     def __init__(self):
         super(TestNode, self).__init__()
 
+    def setup(self):
         self.setTitle("Test node")
         self.setDescription("Stream: Mitsar\nFrequency: 500 Hz\nChannels: 30")
 
@@ -30,6 +28,7 @@ def main():
     scene = Scheme()
 
     n = TestNode()
+    n.setup()
     n.setTitle("LSL Input")
     n.setDescription("Stream: Mitsar\nFrequency: 500 Hz\nChannels: 30")
     n.setPosition(1, 1)
@@ -38,10 +37,12 @@ def main():
     n.addMessage(ErrorMessage("ErrorMessage message"))
 
     n2 = TestNode()
+    n2.setup()
     n2.setTitle("Bandpass Filter")
     n2.setPosition(3, 3)
 
     n3 = TestNode()
+    n3.setup()
     n3.setTitle("Aux Input")
 
     scene.addItem(n)
@@ -50,7 +51,12 @@ def main():
     scene.connect_nodes(n.outputs[0], n2.inputs[0])
     scene.connect_nodes(n3.outputs[0], n2.inputs[1])
 
-    data = encoder.encode(scene)
+    n2.setSelected(True)
+    n3.setSelected(True)
+
+    x = scene.selectedGraph()
+    data = encoder.encode(x)
+    #print(data)
 
     w = scene.getView()
     w.setMinimumSize(800, 600)
