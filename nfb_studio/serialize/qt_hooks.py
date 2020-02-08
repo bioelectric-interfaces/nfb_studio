@@ -1,5 +1,5 @@
 """A collection of object_hooks for serializing and deserializing some common Qt objects."""
-from Qt.QtCore import QPointF, QSizeF
+from PySide2.QtCore import QPointF, QSizeF
 
 
 def serialize_QPointF(obj: QPointF) -> dict:

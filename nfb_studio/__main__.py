@@ -1,4 +1,4 @@
-from Qt.QtWidgets import QApplication
+from PySide2.QtWidgets import QApplication
 
 from nfb_studio.widgets.scheme import Scheme, Node, Input, Output, InfoMessage, WarningMessage, ErrorMessage
 from nfb_studio import standard_encoder as encoder

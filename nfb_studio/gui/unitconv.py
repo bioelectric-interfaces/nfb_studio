@@ -1,7 +1,7 @@
 """Converts units in inches to units in pixels using logical dpi of the application."""
 from typing import Union
-from Qt.QtCore import QPoint, QPointF, QSize, QSizeF, QRect, QRectF
-from Qt.QtWidgets import QApplication, QWidget
+from PySide2.QtCore import QPoint, QPointF, QSize, QSizeF, QRect, QRectF
+from PySide2.QtWidgets import QApplication, QWidget
 
 
 def dpi():

@@ -1,4 +1,4 @@
-from Qt.QtWidgets import QGraphicsItem
+from PySide2.QtWidgets import QGraphicsItem
 
 
 class ShadowSelectableItem(QGraphicsItem):

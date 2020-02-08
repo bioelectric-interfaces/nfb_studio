@@ -1,6 +1,6 @@
-from Qt.QtCore import Qt, QRectF
-from Qt.QtGui import QFont, QFontMetricsF, QBrush, QPainter
-from Qt.QtWidgets import QGraphicsItem, QAbstractGraphicsShapeItem, QGraphicsRectItem
+from PySide2.QtCore import Qt, QRectF
+from PySide2.QtGui import QFont, QFontMetricsF, QBrush, QPainter
+from PySide2.QtWidgets import QGraphicsItem, QAbstractGraphicsShapeItem, QGraphicsRectItem
 
 from nfb_studio.gui import inches_to_pixels as px
 

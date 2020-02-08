@@ -1,4 +1,4 @@
-from Qt.QtGui import QFont
+from PySide2.QtGui import QFont
 
 
 class FontF(QFont):

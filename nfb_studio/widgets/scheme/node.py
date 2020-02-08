@@ -1,6 +1,6 @@
-from Qt.QtCore import Qt, QPointF, QSizeF, QRectF
-from Qt.QtGui import QPainter, QPainterPath, QColor, QPen, QFontMetricsF
-from Qt.QtWidgets import QGraphicsItem, QGraphicsLineItem, QGraphicsPathItem
+from PySide2.QtCore import Qt, QPointF, QSizeF, QRectF
+from PySide2.QtGui import QPainter, QPainterPath, QColor, QPen, QFontMetricsF
+from PySide2.QtWidgets import QGraphicsItem, QGraphicsLineItem, QGraphicsPathItem
 from sortedcontainers import SortedList
 
 from nfb_studio.gui import FontF, inches_to_pixels as px, pixels_to_inches as inches

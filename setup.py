@@ -2,17 +2,13 @@ from setuptools import setup
 from importlib.util import find_spec
 
 install_requires = [
-    "Qt.py",
+    "PySide2",
     "sortedcontainers"
 ]
 
 extras_require = {
     "docs":  ["pdoc3"]
 }
-
-# Check if a Qt implementation needs to be installed
-if find_spec("PyQt5") is None and find_spec("PySide2") is None:
-    install_requires.append("PySide2")
 
 setup(
     name="nfb_studio",

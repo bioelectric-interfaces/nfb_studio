@@ -1,6 +1,6 @@
-from Qt.QtCore import Qt, QPointF, QMimeData
-from Qt.QtGui import QPainter, QKeySequence
-from Qt.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QShortcut, QApplication
+from PySide2.QtCore import Qt, QPointF, QMimeData
+from PySide2.QtGui import QPainter, QKeySequence
+from PySide2.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QShortcut, QApplication
 
 from nfb_studio import bytestr_encoder as encoder, standard_decoder as decoder
 

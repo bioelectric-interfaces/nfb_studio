@@ -1,5 +1,5 @@
-from Qt.QtCore import QPointF
-from Qt.QtWidgets import QGraphicsItem
+from PySide2.QtCore import QPointF
+from PySide2.QtWidgets import QGraphicsItem
 
 from nfb_studio.gui import inches_to_pixels, pixels_to_inches
 
