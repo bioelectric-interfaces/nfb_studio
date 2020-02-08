@@ -1,4 +1,4 @@
-"""A graph scheme as a Qt graphics widget."""
+"""A graph scheme as a Qt object that represents the dataflow diagram of signals in nfb_studio."""
 from .scheme import Scheme
 
 from .node import Node

@@ -10,16 +10,17 @@ from .real_size_item import RealSizeItem
 
 
 class TextRectItem(QGraphicsSimpleTextItem, RealSizeItem):
+    """A block of text.
+    
+    Text can be confined to a certain rectangular frame. Parts of text that do not fit will be cut off.
+    """
     def __init__(self, *args, **kwargs):
-        """A text item that is confined to a certain rectangular frame.
-        Parts of text that do not fit will be cut off.
-        """
-        super(TextRectItem, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._frame: Union[QRectF, None] = None
         self._alignment = Qt.AlignLeft
 
-    def setFrame(self, frame: Union[QRectF, None]) -> None:
+    def setFrame(self, frame: Union[QRectF, None]):
         """Set the frame to which the text must be confined. Frame measurements are in inches.
         If frame is None, text will be displayed with no limitations.
         """
@@ -36,9 +37,9 @@ class TextRectItem(QGraphicsSimpleTextItem, RealSizeItem):
     def alignment(self):
         return self._alignment
 
-    def paint(self, painter: QPainter, option, widget=...) -> None:
+    def paint(self, painter: QPainter, option, widget=...):
         if self.frame() is None:
-            super(TextRectItem, self).paint(painter, option, widget)
+            super().paint(painter, option, widget)
         else:
             painter.setFont(self.font())
             painter.setBrush(self.brush())

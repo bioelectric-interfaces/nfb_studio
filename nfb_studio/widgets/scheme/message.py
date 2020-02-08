@@ -13,6 +13,12 @@ icons_dir = os.path.dirname(__file__)
 
 
 class Message(RealSizeItem):
+    """A message that is displayed to the user.
+    
+    Messages can be of different severity. This base class is inherited by InfoMessage, WarningMessage and
+    ErrorMessage.
+    """
+    
     icon_size = 0.16
     """Size of the icon (width and height). The icon is expected to be square."""
     max_text_length = 2.5
@@ -24,10 +30,6 @@ class Message(RealSizeItem):
     svg_renderers = FileDict(create_item=QSvgRenderer)
 
     def __init__(self, text=None, icon_filename=None, parent=None):
-        """A message that is displayed to the user.
-        Messages can be of different severity. This base class is inherited by InfoMessage, WarningMessage and
-        ErrorMessage.
-        """
         super(Message, self).__init__(parent)
         self.setFlag(QGraphicsItem.ItemHasNoContents)
 

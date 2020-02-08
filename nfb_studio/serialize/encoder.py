@@ -55,7 +55,13 @@ class ObjectEncoder(JSONEncoder):
 
     def __init__(self, *, object_hooks: dict = None, skipkeys=False, ensure_ascii=False, check_circular=True,
                  allow_nan=True, sort_keys=False, indent=None, separators=None):
-        """"""
+        """Constructs the ObjectEncoder object.
+        
+        Constructs the object from the following arguments:  
+        - object_hooks - a dict, mapping types to functions that can be used to serialize them in the format
+          `def foo(obj) -> dict`;
+        - other arguments inherited from JSONEncoder, except for `default`, which is not inherited.
+        """
         super().__init__(skipkeys=skipkeys, ensure_ascii=ensure_ascii, check_circular=check_circular,
                          allow_nan=allow_nan, sort_keys=sort_keys, indent=indent, separators=separators)
         self.object_hooks = object_hooks or {}

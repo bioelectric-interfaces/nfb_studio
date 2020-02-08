@@ -11,39 +11,43 @@ from .connection import Input, Output
 
 
 class Edge(RealSizeItem, ShadowSelectableItem):
+    """An graphics item representing a bezier curve, connecting one node's output to another's input."""
     # Static graphics properties (in inches)
     outline_thickness = 0.02
     outline_color = Qt.black
     outline_selection_color = QColor.fromRgb(0, 0, 200)
 
     bezier_max_point_offset = 0.8
-    """Horizontal offset of control points on a bezier curve compared to its endpoints"""
+    """Horizontal offset of control points on a bezier curve compared to its endpoints."""
     bezier_close_distance = 1.5
-    """Distance that's considered "too close" by the algorithm
+    """Distance that's considered "too close" by the algorithm.
+
     If distance between source and target is less that this variable, move control points closer together.
     """
 
     def __init__(self):
-        """An graphics item representing a bezier curve, connecting one node's output to another's input.
-        """
         super(Edge, self).__init__()
         self.setZValue(-1)  # Draw edges behind nodes
 
         self._source: Union[Output, None] = None
         """An edge is drawn from its source to its target. Node's output is edge's source.
+        
         This variable represents current source as a variable of type Output.
         """
         self._target: Union[Input, None] = None
         """An edge is drawn from its source to its target. Node's input is edge's target.
+
         This variable represents current target as a variable of type Input.
         """
 
         self._source_pos: Union[QPointF, None] = None
         """An edge is drawn from its source to its target. Node's output is edge's source.
+
         This variable represents current source coordinates in scene pixels.
         """
         self._target_pos: Union[QPointF, None] = None
         """An edge is drawn from its source to its target. Node's input is edge's target.
+
         This variable represents current target coordinates in scene pixels.
         """
 
@@ -75,6 +79,7 @@ class Edge(RealSizeItem, ShadowSelectableItem):
 
     def setTarget(self, target: Union[Input, None]):
         """Set (or unset) the target of this edge.
+
         Unsetting the target sets the target position to None, which causes the edge to not be drawn, until another
         target (or target position) is supplied.
         """
@@ -88,7 +93,8 @@ class Edge(RealSizeItem, ShadowSelectableItem):
             self.adjust()
 
     def setSource(self, source: Union[Output, None]):
-        """Set (or unset) the target of this edge.
+        """Set (or unset) the source of this edge.
+
         Unsetting the source sets the source position to None, which causes the edge to not be drawn, until another
         source (or source position) is supplied.
         """
@@ -103,6 +109,7 @@ class Edge(RealSizeItem, ShadowSelectableItem):
 
     def setTargetPos(self, pos: QPointF):
         """Set target position not from a target connection, but to some static coordinates.
+
         Useful when drawing an edge to the tip of the mouse. This function sets edge's target to None.
         pos is in scene pixel coordinates.
         """
@@ -113,6 +120,7 @@ class Edge(RealSizeItem, ShadowSelectableItem):
 
     def setSourcePos(self, pos: QPointF):
         """Set source position not from a source connection, but to some static coordinates.
+
         Useful when drawing an edge to the tip of the mouse. This function sets edge's source to None.
         pos is in scene pixel coordinates.
         """
@@ -129,6 +137,7 @@ class Edge(RealSizeItem, ShadowSelectableItem):
 
     def adjust(self):
         """Adjust the edge's coordinates to match those of the input and output of nodes.
+
         Call this function if the node moved or source/target was changed.
         """
         if self._source is None or self._target is None:
@@ -204,10 +213,10 @@ class Edge(RealSizeItem, ShadowSelectableItem):
 
     def updateSelectedStatus(self):
         """Checks if both connections at the ends are selected. If so, set this edge to "selected".
-        Edges are not selectable - this function only recolors the edge.
-        Opposite also applies - if at least one of the nodes is not selected, deselect this edge.
-        This edge queries nodes - not connections - for selected status. Connections derive their selected status from
-        edges, not the other way around.
+
+        Edges are not selectable - this function only recolors the edge. Opposite also applies - if at least one of the
+        nodes is not selected, deselect this edge. This edge queries nodes - not connections - for selected status.
+        Connections derive their selected status from edges, not the other way around.
         """
         if self._source is None or self._target is None:
             self.setShadowSelected(False)

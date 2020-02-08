@@ -10,14 +10,14 @@ class ObjectDecoder(JSONDecoder):
     You can add support for deserializing your class in two ways:
 
     - By adding a member function to your class: `def deserialize(self, data: dict)`;
-    - By adding an external function `def serialize(obj, data: dict)` and passing it in a dict as the `object_hooks`
-    parameter. (`object_hooks` is a dict that matches a class to a deserialization function.)
+    - By adding an external function `def deserialize(obj, data: dict)` and passing it in a dict as the `object_hooks`
+      parameter. (`object_hooks` is a dict that matches a class to a deserialization function.)
 
     When deserializing an object, this decoder first looks up the metadata field left by the ObjectEncoder. If that
-    field exists, the decoder default-constructs an instance of a class that was encoded. It then checks if the
-    class instance has a function in `object_hooks` or has a callable `deserialize()` attribute. If that is the case,
-    the dict read from json is passed to that function to allow the class instance to load the contents into itself.
-    Functions in the `object_hooks` parameter take precedence over member functions.
+    field exists, the decoder default-constructs an instance of a class that was encoded. It then checks if the class
+    instance has a function in `object_hooks` or has a callable `deserialize()` attribute. If that is the case, the dict
+    read from json is passed to that function to allow the class instance to load the contents into itself. Functions in
+    the `object_hooks` parameter take precedence over member functions.
 
     ObjectDecoder does not accept an `object_hook` or `object_pairs_hook` parameter from JSONDecoder.
 
@@ -31,7 +31,14 @@ class ObjectDecoder(JSONDecoder):
     """
     def __init__(self, *, object_hooks: dict = None, parse_float=None, parse_int=None, parse_constant=None,
                  strict=True):
-        """"""
+        """Constructs the ObjectDecoder object.
+        
+        Constructs the object from the following arguments:  
+        - object_hooks - a dict, mapping types to functions that can be used to deserialize them from a dict in the
+          format `def foo(obj, data: dict)`;
+        - other arguments inherited from JSONDecoder, except for `object_hook` and `object_pairs_hook`, which are not
+          inherited.
+        """
         self.object_hooks = object_hooks
 
         # Object hook used to handle custom deserialization

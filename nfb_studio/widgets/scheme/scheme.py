@@ -11,17 +11,20 @@ from .connection import Input, Output
 
 
 class Scheme(Graph, QGraphicsScene):
+    """A data model for the nfb experiment's system of signals and their components.
+
+    This class is a combination of nfb_studio.widgets.scheme.Graph and a QGraphicsScene, which represents the node graph
+    in a graphical scene that is then displayed by a QGraphicsView. To get a QGraphicsView that is pre-configured to
+    display the contents correcly and has all the necessary shortcuts attached, use the `getView` method.        
+
+    See Also
+    --------
+    nfb_studio.widgets.scheme.Node : Graph node.
+    nfb_studio.widgets.scheme.Edge : Graph edge.
+    nfb_studio.widgets.scheme.Graph : A collection of nodes and edges.
+    """
     def __init__(self, parent=None):
-        """A data model for the nfb experiment's system of signals and their components.
-
-        This graph holds two sets: a set of nodes and a set of edges.
-        Intended to use inside the scheme.
-
-        See Also
-        --------
-        Node
-        Edge
-        """
+        """Constructs a Scheme with an optional `parent` parameter that is passed to the QGraphicsScene."""
         Graph.__init__(self)
         QGraphicsScene.__init__(self, parent)
 
@@ -52,15 +55,25 @@ class Scheme(Graph, QGraphicsScene):
             Graph.removeEdge(self, item)
 
     def connect_nodes(self, source: Output, target: Input):
+        """Connect an Output connection to an Input connection with an edge.
+        
+        Returns the newly created edge.
+        """
         edge = Graph.connect_nodes(self, source, target)
         QGraphicsScene.addItem(self, edge)
 
         return edge
 
     def disconnect_nodes(self, source: Output, target: Input):
+        """Remove a connection between a node output and an input.
+        
+        If output and input are connected more than once, only one edge is removed.
+        Returns the edge that was removed, or None if no such edge was found.
+        """
         edge = Graph.disconnect_nodes(self, source, target)
         if edge is not None:
             QGraphicsScene.removeItem(self, edge)
+        return edge
 
     def selectedGraph(self) -> GraphSnapshot:
         """Return the selected part of the dataflow graph as a GraphSnapshot."""
@@ -131,6 +144,7 @@ class Scheme(Graph, QGraphicsScene):
     # def serialize(self) -> dict: Inherited from Graph
 
     def deserialize(self, data: dict):
+        """Deserialize this object from a dict of data."""
         # Clear --------------------------------------------------------------------------------------------------------
         for node in self.nodes:
             self.removeItem(node)

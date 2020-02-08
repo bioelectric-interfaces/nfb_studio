@@ -12,6 +12,11 @@ from .message import Message
 
 
 class Node(RealSizeItem):
+    """The main component of the graph scene.
+
+    A node represents a single vertex of the graph, with its associated information and inputs/outputs. All sizes and
+    positions are measured in inches.
+    """
     # Static graphics properties (in inches)
     corner_radius = 0.1  # Rounded rectangle corner radius
     internal_padding = 0.1  # Padding for text inside the body
@@ -30,11 +35,6 @@ class Node(RealSizeItem):
     description_font_size = 10.5
 
     def __init__(self, parent=None):
-        """The main component of the graph scene.
-
-        A node represents a single vertex of the graph, with its associated information and inputs/outputs.
-        All sizes and positions are measured in inches.
-        """
         super().__init__()
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)

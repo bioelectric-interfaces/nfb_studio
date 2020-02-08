@@ -8,13 +8,13 @@ from .real_size_item import RealSizeItem
 
 
 class TextLineItem(QAbstractGraphicsShapeItem, RealSizeItem):
-    def __init__(self, text=None, parent=None):
-        """A one-line text item.
+    """A one-line text item.
 
-        Default origin point is at the left side of the baseline. This can change if setAlignMode is called.
-        TextLineItem also supports drawing text background. Its brush can be set using setBackgroundBrush().
-        Text must not contain newline characters.
-        """
+    Default origin point is at the left side of the baseline. This can change if setAlignMode is called. TextLineItem
+    also supports drawing text background. Its brush can be set using setBackgroundBrush(). Text must not contain
+    newline characters.
+    """
+    def __init__(self, text=None, parent=None):
         super().__init__(parent)
 
         self._text = text or ""
@@ -41,8 +41,8 @@ class TextLineItem(QAbstractGraphicsShapeItem, RealSizeItem):
         self.adjust()
 
     def setElideMode(self, mode: int) -> None:
-        """Elide mode specifies where the ellipsis should be located when the text is elided.
-        Default value is Qt.ElideRight.
+        """Elide mode specifies where the ellipsis should be located when the text is elided. Default value is 
+        Qt.ElideRight.
         """
         self.prepareGeometryChange()
         self._elide_mode = mode
@@ -51,20 +51,19 @@ class TextLineItem(QAbstractGraphicsShapeItem, RealSizeItem):
     def setAlignMode(self, mode: int) -> None:
         """Align mode specifies text alignment.
 
-        Text alignment changes the origin point x position:
+        Text alignment changes the origin point x position:  
         - If mode is Qt.AlignLeft, the origin point is on the left of the baseline.
         - If mode is Qt.AlignHCenter, the origin point is in the center of the baseline.
         - If mode is Qt.AlignRight, the origin point is on the right of the baseline.
-        Vertical alignment has no meaning for one line of text and should not be set.
-        Default value is Qt.AlignLeft.
+
+        Vertical alignment has no meaning for one line of text and should not be set. Default value is Qt.AlignLeft.
         """
         self.prepareGeometryChange()
         self._align_mode = mode
         self.adjust()
 
     def setMaximumWidth(self, width):
-        """Set the maximum width the text is allowed to be (in inches). None represents unlimited width.
-        """
+        """Set the maximum width the text is allowed to be (in inches). `None` represents unlimited width."""
         self.prepareGeometryChange()
         self._max_width = width
         self.adjust()
@@ -90,9 +89,7 @@ class TextLineItem(QAbstractGraphicsShapeItem, RealSizeItem):
         return self._align_mode
 
     def maximumWidth(self):
-        """Maximum width the text is allowed to be (in inches).
-        None represents unlimited width.
-        """
+        """Maximum width the text is allowed to be (in inches). `None` represents unlimited width."""
         return self._max_width
 
     def font(self) -> QFont:

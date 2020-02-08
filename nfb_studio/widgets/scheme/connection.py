@@ -9,6 +9,8 @@ from .data_type import DataType, Unknown
 
 
 class Connection(RealSizeItem, ShadowSelectableItem):
+    """Connection is an input or output from a Node."""
+
     stem_length = 0.2  # Length of the line going out of the
     max_text_length = 1.5  # Horizontal length of the box in which the text is drawn
     stem_text_margin = 0.05  # Space between stem and title
@@ -20,8 +22,8 @@ class Connection(RealSizeItem, ShadowSelectableItem):
     text_font_size = 10.5
 
     def __init__(self, text=None, data_type: DataType = None):
-        """Connection is an input or output from a Node."""
-        super(Connection, self).__init__()
+        super().__init__()
+
         self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)  # To enable edge adjusting
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemHasNoContents)  # Drawing occurs using child items
@@ -122,9 +124,10 @@ class Connection(RealSizeItem, ShadowSelectableItem):
 
 
 class Input(Connection):
+    """A data input into a node."""
+
     def __init__(self, text=None, data_type: DataType = None):
-        """A data input into a node."""
-        super(Input, self).__init__(text or "Input", data_type)
+        super().__init__(text or "Input", data_type)
 
         # Connection text ----------------------------------------------------------------------------------------------
         metrics = QFontMetricsF(self._text_item.font())
@@ -144,9 +147,10 @@ class Input(Connection):
 
 
 class Output(Connection):
+    """A data input into a node."""
+    
     def __init__(self, text=None, data_type: DataType = None):
-        """A data input into a node."""
-        super(Output, self).__init__(text or "Output", data_type)
+        super().__init__(text or "Output", data_type)
 
         # Connection text ----------------------------------------------------------------------------------------------
         metrics = QFontMetricsF(self._text_item.font())
