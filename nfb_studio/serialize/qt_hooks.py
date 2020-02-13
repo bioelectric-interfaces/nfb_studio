@@ -30,10 +30,10 @@ serialize_qt = {
     QPointF: serialize_QPointF,
     QSizeF: serialize_QSizeF
 }
-"""An `object_hooks` Qt dict for the `nfb_studio.serialize.encoder.ObjectEncoder`."""
+"""An `object_hooks` Qt dict for the `nfb_studio.serialize.encoder.JSONEncoder`."""
 
 deserialize_qt = {
     QPointF: deserialize_QPointF,
     QSizeF: deserialize_QSizeF
 }
-"""An `object_hooks` Qt dict for the `nfb_studio.serialize.decoder.ObjectDecoder`."""
+"""An `object_hooks` Qt dict for the `nfb_studio.serialize.decoder.JSONDecoder`."""

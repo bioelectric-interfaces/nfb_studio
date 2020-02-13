@@ -1,8 +1,8 @@
-from PySide2.QtCore import Qt, QPointF, QMimeData
+from PySide2.QtCore import Qt, QPointF
 from PySide2.QtGui import QPainter, QKeySequence
 from PySide2.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QShortcut, QApplication
 
-from nfb_studio import bytestr_encoder as encoder, standard_decoder as decoder
+from nfb_studio import StdMimeData
 
 from .graph import Graph, GraphSnapshot
 from .node import Node
@@ -91,33 +91,21 @@ class Scheme(Graph, QGraphicsScene):
         """Copies the selected graph and places it in the clipboard."""
         snapshot = self.selectedGraph()
 
-        package = QMimeData()
-        package.setText(encoder.encode(snapshot))
+        package = StdMimeData()
+        package.setObject(snapshot)
 
         clipboard = QApplication.clipboard()
         clipboard.setMimeData(package)
-
-        '''
-        snapshot = self.selectedGraph()
-        bstr = QByteArray(bytes(encoder.encode(snapshot), "ascii"))
-
-        package = QMimeData()
-        package.setData("application/x-nfb_graph+json", bstr)
-
-        clipboard = QApplication.clipboard()
-        clipboard.setMimeData(package)
-        '''
 
     def paste(self):
         """Retrieves the data from a clipboard and pastes it."""
         clipboard = QApplication.clipboard()
         package = clipboard.mimeData()
 
-        if package.hasText():
+        if package.hasObject(GraphSnapshot):
             self.clearSelection()
 
-            data = package.text()
-            snapshot: GraphSnapshot = decoder.decode(data)
+            snapshot = package.objectData(GraphSnapshot)
 
             for node in snapshot.nodes:
                 node.setPosition(node.position() + QPointF(0.5, 0.5))

@@ -1,6 +1,10 @@
 """NFB experiment designer."""
-from .serialize import ObjectEncoder, ObjectDecoder, serialize_qt, deserialize_qt
+from . import serialize
 
-standard_encoder = ObjectEncoder(object_hooks=serialize_qt, indent='\t')
-bytestr_encoder = ObjectEncoder(object_hooks=serialize_qt, ensure_ascii=True)
-standard_decoder = ObjectDecoder(object_hooks=deserialize_qt)
+std_encoder = serialize.JSONEncoder(object_hooks=serialize.serialize_qt, indent='\t')
+std_decoder = serialize.JSONDecoder(object_hooks=serialize.deserialize_qt)
+
+
+class StdMimeData(serialize.MimeData):
+    def __init__(self):
+        super().__init__(object_hooks=(serialize.serialize_qt, serialize.deserialize_qt))

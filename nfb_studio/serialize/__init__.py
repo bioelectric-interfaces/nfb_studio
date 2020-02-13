@@ -1,6 +1,13 @@
 """A module that implements nfb_studio's custom serialization engine.
 
 This module extends the default JSON encoder and decoder with simpler ways to serialize objects.
+- `encoder.JSONEncoder`: An encoder that inherits
+  [`JSONEncoder`](https://docs.python.org/3/library/json.html#json.JSONEncoder) from python standard library;
+- decoder.JSONDecoder : A decoder that inherits
+  [`JSONDecoder`](https://docs.python.org/3/library/json.html#json.JSONDecoder) from python standard library.
+
+These classes recognise the serialization interface of classes, as well as accept an `object_hooks` dictionary.
+JSONEncoder needs a dictionary with serializing functions, JSONDecoder - with deserializing functions.
 
 - If a class you want serialized is in your control, you can define these two member functions:
 ```python
@@ -10,7 +17,7 @@ def deserialize(self, data: dict):
 These functions return/accept a dictionary containing the data that is necessary to save and required to recreate the
 object during deserialization.
 
-- If a class is out of your control, such as a class from another module, both ObjectEncoder and ObjectDecoder accept an
+- If a class is out of your control, such as a class from another module, both JSONEncoder and JSONDecoder accept an
   optional object_hooks parameter. This parameter is a dictionary that maps a class to a method that needs to be used to
   serialize that class. All you need to do is to create these two external methods:
 ```python
@@ -58,8 +65,8 @@ def qrect_deserialize(obj: QRect, data: dict):
     obj.setWidth(data["width"])
     obj.setHeight(data["height"])
 
-encoder = ObjectEncoder(object_hooks={QRect: qrect_serialize})
-decoder = ObjectDecoder(object_hooks={QRect: qrect_deserialize})
+encoder = JSONEncoder(object_hooks={QRect: qrect_serialize})
+decoder = JSONDecoder(object_hooks={QRect: qrect_deserialize})
 ```
 In this example, the encoder and decoder will be able to serialize both `MyClass` and `QRect`.
 
@@ -75,10 +82,14 @@ In this example, the encoder and decoder will be able to serialize both `MyClass
 
 See Also
 --------
-encoder.ObjectEncoder : An object-aware JSON encoder.
-decoder.ObjectDecoder : An object-aware JSON decoder.
+encoder.JSONEncoder : An object-aware JSON encoder.
+decoder.JSONDecoder : An object-aware JSON decoder.
 """
-from .encoder import ObjectEncoder
-from .decoder import ObjectDecoder
+from json import load, loads, dump, dumps
+
+from .encoder import JSONEncoder
+from .decoder import JSONDecoder
+
+from .mime_data import MimeData
 
 from .qt_hooks import serialize_qt, deserialize_qt
