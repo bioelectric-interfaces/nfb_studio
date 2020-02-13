@@ -1,3 +1,4 @@
+"""A data model for the nfb experiment's system of signals and their components."""
 from PySide2.QtCore import Qt, QPointF
 from PySide2.QtGui import QPainter, QKeySequence
 from PySide2.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QShortcut, QApplication
@@ -28,6 +29,7 @@ class Scheme(Graph, QGraphicsScene):
         Graph.__init__(self)
         QGraphicsScene.__init__(self, parent)
 
+    # Element manipulation ---------------------------------------------------------------------------------------------
     def addItem(self, item: QGraphicsItem):
         """Add an item to the scene.
 
@@ -75,6 +77,22 @@ class Scheme(Graph, QGraphicsScene):
             QGraphicsScene.removeItem(self, edge)
         return edge
 
+    def merge(self, *others):
+        """Update the scheme, adding elements other schemes."""
+        Graph.merge(*others)
+
+        for other in others:
+            for node in other.nodes:
+                QGraphicsScene.addItem(self, node)
+            for edge in other.edges:
+                QGraphicsScene.addItem(self, edge)
+
+    def clear(self):
+        """Clear the scheme."""
+        QGraphicsScene.clear(self)
+        Graph.clear(self)
+
+    # Selection and clipboard ------------------------------------------------------------------------------------------
     def selectedGraph(self) -> GraphSnapshot:
         """Return the selected part of the dataflow graph as a GraphSnapshot."""
         result = GraphSnapshot()
@@ -103,16 +121,16 @@ class Scheme(Graph, QGraphicsScene):
         package = clipboard.mimeData()
 
         if package.hasObject(GraphSnapshot):
-            self.clearSelection()
-
             snapshot = package.objectData(GraphSnapshot)
 
+            self.clearSelection()
             for node in snapshot.nodes:
+                node.setSelected(True)
                 node.setPosition(node.position() + QPointF(0.5, 0.5))
-                self.addItem(node)
-            for edge in snapshot.edges:
-                self.addItem(edge)
+            
+            self.merge(snapshot)
 
+    # Widgets ----------------------------------------------------------------------------------------------------------
     def getView(self) -> QGraphicsView:
         """Generate and return a new QGraphicsView, configured for optimal viewing."""
         v = QGraphicsView(self)
@@ -129,6 +147,7 @@ class Scheme(Graph, QGraphicsScene):
 
         return v
 
+    # Serialization ----------------------------------------------------------------------------------------------------
     # def serialize(self) -> dict: Inherited from Graph
 
     def deserialize(self, data: dict):

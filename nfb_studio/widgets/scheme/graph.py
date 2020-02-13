@@ -1,3 +1,4 @@
+"""Classes representing the graph stucture in the signal scheme."""
 from typing import Union
 
 from .node import Node
@@ -47,6 +48,35 @@ class AbstractGraphBase:
             data["edges"].append(edge_data)
 
         return data
+
+    def __len__(self):
+        """Size of the graph. Equal to len(self.nodes)."""
+        return len(self.nodes)
+    
+    def __contains__(self, obj, /):
+        """Check if the graph contains a node or an edge."""
+        if isinstance(obj, Node):
+            return obj in self.nodes
+        elif isinstance(obj, Edge):
+            return obj in self.edges
+        return False
+    
+    def isdisjoint(self, other):
+        """Return True if the graph has no elements in common with other.
+        
+        Dangling nodes are not considered valid parts of a graph. They can only exist as temporary objects.
+        This means that if no nodes are shared, no edges can be shared. If nodes are shared, the graph is already not
+        disjoint. For this reason edges are not checked.
+        """
+        return self.nodes.isdisjoint(other.nodes)
+
+    def issubset(self, other):
+        """Test whether every element in the set is in other."""
+        return self.nodes.issubset(other.nodes) and self.edges.issubset(other.edges)
+    
+    def issuperset(self, other):
+        """Test whether every element in other is in the set."""
+        return other.issubset(self)
 
 
 class Graph(AbstractGraphBase):
@@ -133,9 +163,7 @@ class Graph(AbstractGraphBase):
         Edges are not serialized as objects. Instead, only their connections are remembered and reconstructed during the
         deserialization.
         """
-        # Clear --------------------------------------------------------------------------------------------------------
-        for node in self.nodes:
-            self.removeNode(node)
+        self.clear()
 
         # Deserialize nodes --------------------------------------------------------------------------------------------
         for node in data["nodes"]:
@@ -150,6 +178,16 @@ class Graph(AbstractGraphBase):
             target = target_node.inputs[edge_data["target"]["connection_index"]]
 
             self.connect_nodes(source, target)
+    
+    def merge(self, *others):
+        """Merge other graphs into this graph."""
+        for other in others:
+            self.nodes.update(other.nodes)
+            self.edges.update(other.edges)
+    
+    def clear(self):
+        for node in self.nodes:
+            self.removeNode(node)
 
 
 class GraphSnapshot(AbstractGraphBase):
