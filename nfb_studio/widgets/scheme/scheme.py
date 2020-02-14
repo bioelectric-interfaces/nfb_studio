@@ -37,8 +37,7 @@ class Scheme(Graph, QGraphicsScene):
         """
         if isinstance(item, Node):
             Graph.addNode(self, item)
-
-        if isinstance(item, Edge):
+        elif isinstance(item, Edge):
             Graph.addEdge(self, item)
 
         QGraphicsScene.addItem(self, item)

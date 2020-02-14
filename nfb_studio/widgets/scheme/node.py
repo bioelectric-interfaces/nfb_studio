@@ -1,92 +1,45 @@
-from PySide2.QtCore import Qt, QPointF, QSizeF, QRectF
-from PySide2.QtGui import QPainter, QPainterPath, QColor, QPen, QFontMetricsF
+from PySide2.QtCore import QPointF, QSizeF, QRectF
+from PySide2.QtGui import QPainter, QPainterPath, QFontMetricsF
 from PySide2.QtWidgets import QGraphicsItem, QGraphicsLineItem, QGraphicsPathItem
 from sortedcontainers import SortedList
 
-from nfb_studio.gui import FontF, inches_to_pixels as px, pixels_to_inches as inches
-from nfb_studio.widgets import RealSizeItem, TextLineItem, TextRectItem
+from nfb_studio.gui import inches_to_pixels as px
 from nfb_studio.math import clamp
 
+from ..text_line_item import TextLineItem
+from ..text_rect_item import TextRectItem
+from .scheme_item import SchemeItem
 from .connection import Input, Output
 from .message import Message
+from .style import Style
 
 
-class Node(RealSizeItem):
+class Node(SchemeItem):
     """The main component of the graph scene.
 
-    A node represents a single vertex of the graph, with its associated information and inputs/outputs. All sizes and
-    positions are measured in inches.
+    A node represents a single vertex of the graph, with its associated information and inputs/outputs.
     """
-    # Static graphics properties (in inches)
-    corner_radius = 0.1  # Rounded rectangle corner radius
-    internal_padding = 0.1  # Padding for text inside the body
-    divider_padding = 0.05  # Padding between text and the title/description divider
-    external_padding = 0.05  # Padding between errors, between error icon and text
-    connection_padding = 0.15  # Padding between connections
-    outline_thickness = 0.02
-    outline_color = Qt.black
-    outline_selection_color = QColor.fromRgb(0, 0, 200)
-    fill_color = QColor.fromRgb(240, 240, 240)
-    fill_selection_color = QColor.fromRgb(247, 247, 255)
-
-    title_font_name = "Segoe UI Semibold"
-    title_font_size = 10.5
-    description_font_name = "Segoe UI"
-    description_font_size = 10.5
-
     def __init__(self, parent=None):
-        super().__init__()
+        super().__init__(parent)
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
 
         # Default size and text
-        self._size = QSizeF(2, 1.2)
+        self._size = QSizeF(0, 115)
 
         self._body_item = QGraphicsPathItem(self)
-        self._body_item.setPen(QPen(self.outline_color, px(self.outline_thickness)))
-        self._body_item.setBrush(self.fill_color)
-        path = QPainterPath()
-        path.addRoundedRect(
-            QRectF(QPointF(), px(self.size())),
-            px(self.corner_radius),
-            px(self.corner_radius)
-        )
-        #painter.fillPath(path, self.fill_color)
-        self._body_item.setPath(path)
-
         self._title_item = TextLineItem("Node", self)
-        self._title_item.setFont(FontF(self.title_font_name, self.title_font_size))
-        title_font_metrics = QFontMetricsF(self._title_item.font())
-        self._title_item.setPosition(self.internal_padding, self.internal_padding)
-        self._title_item.moveBy(0, title_font_metrics.capHeight())
-        self._title_item.setMaximumWidth(self.size().width() - self.internal_padding * 2)
-
-        # Vertical space between body top and the title/description divider
-        divider_offset = \
-            self.internal_padding + \
-            inches(title_font_metrics.capHeight() + title_font_metrics.descent()) + \
-            self.divider_padding
-        self._divider = QGraphicsLineItem(0, px(divider_offset), px(self.size().width()), px(divider_offset), self)
-        self._divider.setPen(QPen(self.outline_color, px(self.outline_thickness)))
-
+        self._divider = QGraphicsLineItem(self)
         self._description_item = TextRectItem("No description", self)
-        self._description_item.setFont(FontF(self.description_font_name, self.description_font_size))
-        self._description_item.setPosition(self.internal_padding, divider_offset + self.divider_padding)
-        self._description_item.setFrame(
-            QRectF(
-                QPointF(),
-                QSizeF(
-                    self.size().width() - self.internal_padding * 2,
-                    (self.size().height() - self.internal_padding) -
-                    (divider_offset + self.divider_padding)
-                )
-            )
-        )
 
         # Inputs and outputs
         self.inputs = []
         self.outputs = []
         self.messages = SortedList(key=lambda item: item.severity())
+
+        # Set proper style and color for the item
+        self.styleChange()
+        self.paletteChange()
 
     # Input/output management ==========================================================================================
     def addInput(self, obj: Input):
@@ -143,9 +96,6 @@ class Node(RealSizeItem):
         return removed
 
     # Member variables =================================================================================================
-    def setSize(self, size):
-        self._size = size
-
     def setTitle(self, title):
         self._title_item.setText(title)
 
@@ -163,46 +113,112 @@ class Node(RealSizeItem):
 
     # Updating functions ===============================================================================================
     def _updateInputPositions(self):
+        padding = self.style().pixelMetric(Style.NodeConnectionPadding)
+
         i = 0
         for item in self.inputs:
-            item.setPosition(0, self.connection_padding * (2 * i + 1))
+            item.setPos(0, padding * (2 * i + 1))
             i += 1
 
     def _updateOutputPositions(self):
+        padding = self.style().pixelMetric(Style.NodeConnectionPadding)
+
         i = 0
         for item in self.outputs:
-            item.setPosition(self.size().width(), self.connection_padding * (2 * i + 1))
+            item.setPos(self.size().width(), padding * (2 * i + 1))
             i += 1
 
     def _updateMessagePositions(self):
+        padding = self.style().pixelMetric(Style.NodeMessagePadding)
+        icon_size = self.style().pixelMetric(Style.MessageIconSize)
+
         i = 0
         for msg in self.messages:
-            msg.setPosition(
+            msg.setPos(
                 0,
                 self.size().height() +
-                self.external_padding * (i + 1) +
-                Message.icon_size * i)
+                padding * (i + 1) +
+                icon_size * i)
             i += 1
 
     # Geometry and drawing =============================================================================================
     def boundingRect(self) -> QRectF:
+        frame_width = self.style().pixelMetric(Style.NodeFrameWidth)
+
         return QRectF(
-            QPointF(-px(self.outline_thickness)/2, -px(self.outline_thickness)/2),
-            px(self.size()) + QSizeF(px(self.outline_thickness), px(self.outline_thickness))
+            QPointF(-frame_width/2, -frame_width/2),
+            self.size() + QSizeF(frame_width, frame_width)
         )
 
     def shape(self):
+        frame_corner_radius = self.style().pixelMetric(Style.NodeFrameCornerRadius)
+
         path = QPainterPath()
-        path.addRoundedRect(
-            QRectF(QPointF(0, 0), px(self.size())),
-            px(self.corner_radius),
-            px(self.corner_radius)
-        )
+        path.addRoundedRect(QRectF(QPointF(0, 0), self.size()), frame_corner_radius, frame_corner_radius)
 
         return path
 
     def paint(self, painter: QPainter, option, widget=...) -> None:
         pass
+    
+    # Event handlers ===================================================================================================
+    def styleChange(self):
+        self.prepareGeometryChange()
+        style = self.style()
+
+        # Size and Frame
+        frame_width = style.pixelMetric(Style.NodeWidth)
+        self._size.setWidth(frame_width)
+        self._body_item.setPen(style.framePen(self.palette()))
+
+        path = QPainterPath()
+        path.addRoundedRect(
+            QRectF(QPointF(), self.size()),
+            style.pixelMetric(Style.NodeFrameCornerRadius),
+            style.pixelMetric(Style.NodeFrameCornerRadius)
+        )
+        self._body_item.setPath(path)
+        
+        # Title item
+        title_font = style.font(Style.NodeTitleFont)
+        title_metrics = QFontMetricsF(title_font)
+
+        padding = style.pixelMetric(Style.NodeFrameTextPadding)
+
+        self._title_item.setFont(title_font)
+        self._title_item.setPos(padding, padding)
+        self._title_item.moveBy(0, title_metrics.capHeight())
+        self._title_item.setMaximumWidth(frame_width - padding * 2)
+
+        # Divider item
+        div_margin = style.pixelMetric(Style.NodeDividerTextMargin)
+        div_voffset = padding + title_metrics.capHeight() + title_metrics.descent() + div_margin
+        
+        self._divider.setLine(0, div_voffset, frame_width, div_voffset)
+        self._divider.setPen(style.framePen(self.palette()))
+
+        # Description item
+        self._description_item.setFont(style.font(Style.NodeDescriptionFont))
+        self._description_item.setPos(padding, div_voffset + div_margin)
+        self._description_item.setFrame(
+            QRectF(
+                QPointF(0, 0),
+                QSizeF(
+                    px(frame_width) - padding * 2,
+                    (px(self.size().height()) - padding) -
+                    (div_voffset + padding)
+                )
+            )
+        )
+        
+    def paletteChange(self):
+        self._body_item.setPen(self.style().framePen(self.palette()))
+        self._body_item.setBrush(self.palette().base())
+        self._title_item.setBrush(self.palette().text())
+        self._description_item.setBrush(self.palette().text())
+        self._divider.setPen(self.style().framePen(self.palette()))
+
+        self.update(self.boundingRect())
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value):
         if change == QGraphicsItem.ItemSelectedHasChanged:
@@ -213,17 +229,9 @@ class Node(RealSizeItem):
             for output in self.outputs:
                 output.updateSelectedStatus()
 
-            # Change color
-            if value == True:
-                self._body_item.setPen(QPen(self.outline_selection_color, px(self.outline_thickness)))
-                self._body_item.setBrush(self.fill_selection_color)
-            else:
-                self._body_item.setPen(QPen(self.outline_color, px(self.outline_thickness)))
-                self._body_item.setBrush(self.fill_color)
-            self.update()
-
         return super().itemChange(change, value)
 
+    # Serialization ====================================================================================================
     def serialize(self) -> dict:
         return {
             "title": self.title(),

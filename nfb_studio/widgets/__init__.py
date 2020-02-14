@@ -5,5 +5,4 @@ Conversion functions to and from inches are available in `nfb_widgets.gui` modul
 """
 from .text_line_item import TextLineItem
 from .text_rect_item import TextRectItem
-from .real_size_item import RealSizeItem
 from .shadow_selectable_item import ShadowSelectableItem

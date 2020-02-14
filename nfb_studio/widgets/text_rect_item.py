@@ -4,12 +4,8 @@ from PySide2.QtCore import Qt, QRectF
 from PySide2.QtGui import QPainter
 from PySide2.QtWidgets import QGraphicsSimpleTextItem
 
-from nfb_studio.gui import inches_to_pixels as px
 
-from .real_size_item import RealSizeItem
-
-
-class TextRectItem(QGraphicsSimpleTextItem, RealSizeItem):
+class TextRectItem(QGraphicsSimpleTextItem):
     """A block of text.
     
     Text can be confined to a certain rectangular frame. Parts of text that do not fit will be cut off.
@@ -21,7 +17,7 @@ class TextRectItem(QGraphicsSimpleTextItem, RealSizeItem):
         self._alignment = Qt.AlignLeft
 
     def setFrame(self, frame: Union[QRectF, None]):
-        """Set the frame to which the text must be confined. Frame measurements are in inches.
+        """Set the frame to which the text must be confined.
         If frame is None, text will be displayed with no limitations.
         """
         self._frame = frame
@@ -31,7 +27,7 @@ class TextRectItem(QGraphicsSimpleTextItem, RealSizeItem):
         self._alignment = flag
 
     def frame(self) -> Union[QRectF, None]:
-        """Frame to which the text must be confined. Frame measurements are in inches."""
+        """Frame to which the text must be confined."""
         return self._frame
 
     def alignment(self):
@@ -43,4 +39,4 @@ class TextRectItem(QGraphicsSimpleTextItem, RealSizeItem):
         else:
             painter.setFont(self.font())
             painter.setBrush(self.brush())
-            painter.drawText(px(self.frame()), self.alignment(), self.text())
+            painter.drawText(self.frame(), self.alignment(), self.text())

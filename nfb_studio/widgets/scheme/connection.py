@@ -1,28 +1,20 @@
 from PySide2.QtCore import Qt, QPointF, QRectF, QLineF
-from PySide2.QtGui import QPainter, QFontMetricsF, QPen, QBrush, QColor
+from PySide2.QtGui import QPainter, QFontMetricsF
 from PySide2.QtWidgets import QGraphicsItem, QGraphicsLineItem
 
-from nfb_studio.gui import FontF, inches_to_pixels as px
-from nfb_studio.widgets import RealSizeItem, ShadowSelectableItem, TextLineItem
+from nfb_studio.widgets import ShadowSelectableItem, TextLineItem
 
+from .style import Style
+from .palette import Palette
+from .scheme_item import SchemeItem
 from .data_type import DataType, Unknown
 
 
-class Connection(RealSizeItem, ShadowSelectableItem):
+class Connection(SchemeItem, ShadowSelectableItem):
     """Connection is an input or output from a Node."""
 
-    stem_length = 0.2  # Length of the line going out of the
-    max_text_length = 1.5  # Horizontal length of the box in which the text is drawn
-    stem_text_margin = 0.05  # Space between stem and title
-    outline_thickness = 0.02
-    outline_color = Qt.black
-    outline_selection_color = QColor.fromRgb(0, 0, 200)
-
-    text_font_name = "Segoe UI"
-    text_font_size = 10.5
-
-    def __init__(self, text=None, data_type: DataType = None):
-        super().__init__()
+    def __init__(self, text=None, data_type: DataType = None, parent: QGraphicsItem = None):
+        super().__init__(parent)
 
         self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)  # To enable edge adjusting
         self.setFlag(QGraphicsItem.ItemIsSelectable)
@@ -30,25 +22,13 @@ class Connection(RealSizeItem, ShadowSelectableItem):
 
         self.edges = set()  # Edges related to this connection
 
-        # Connection text ----------------------------------------------------------------------------------------------
         self._text_item = TextLineItem(text or "Connection", self)
-        self._text_item.setFont(FontF(self.text_font_name, self.text_font_size))
-        self._text_item.setMaximumWidth(self.max_text_length)
-
-        # Position is controlled by subclasses Input and Output
-
-        # Background color
-        self._text_item.setBackgroundBrush(QBrush(QColor(255, 255, 255, 196)))
-
-        # Connection stem ----------------------------------------------------------------------------------------------
         self._stem_item = QGraphicsLineItem(self)
-        self._stem_item.setPen(QPen(self.outline_color, px(self.outline_thickness)))
-
-        # Position is controlled by subclasses Input and Output
-
-        # --------------------------------------------------------------------------------------------------------------
 
         self._data_type = data_type or Unknown
+
+        self.styleChange()
+        self.paletteChange()
 
     def text(self):
         return self._text_item.text()
@@ -73,6 +53,25 @@ class Connection(RealSizeItem, ShadowSelectableItem):
     def stemTip(self):
         """Return position of stem's root (where the stem connects to the edge) in local inches."""
         raise NotImplementedError()
+    
+    def styleChange(self):
+        super().styleChange()
+        style = self.style()
+
+        self._text_item.setFont(style.font(Style.ConnectionTextFont))
+        self._text_item.setMaximumWidth(style.pixelMetric(Style.ConnectionTextLength))
+
+        self._stem_item.setPen(style.edgePen(self.palette()))
+
+    def paletteChange(self):
+        super().paletteChange()
+        text_bg = self.palette().background().color()
+        text_bg.setAlpha(196)
+
+        self._text_item.setBackgroundBrush(text_bg)
+        self._text_item.setBrush(self.palette().text())
+
+        self._stem_item.setPen(self.style().edgePen(self.palette()))
 
     def itemChange(self, change, value):
         """A function that runs every time some change happens to the connection.
@@ -84,12 +83,15 @@ class Connection(RealSizeItem, ShadowSelectableItem):
 
         return super().itemChange(change, value)
 
-    def itemShadowSelectedHasChangedEvent(self, value: bool):
+    def itemShadowSelectedHasChangedEvent(self, value):
+        pal = self.palette()
+
         if value == True:
-            self._stem_item.setPen(QPen(self.outline_selection_color, px(self.outline_thickness)))
+            pal.setCurrentColorGroup(Palette.Selected)
         else:
-            self._stem_item.setPen(QPen(self.outline_color, px(self.outline_thickness)))
-        self.update()
+            pal.setCurrentColorGroup(Palette.Active)
+        
+        self.paletteChange()
 
     def boundingRect(self):
         return QRectF()
@@ -112,6 +114,7 @@ class Connection(RealSizeItem, ShadowSelectableItem):
         else:
             self.setShadowSelected(False)
 
+    # Serialization ====================================================================================================
     def serialize(self) -> dict:
         return {
             "text": self.text(),
@@ -129,41 +132,59 @@ class Input(Connection):
     def __init__(self, text=None, data_type: DataType = None):
         super().__init__(text or "Input", data_type)
 
-        # Connection text ----------------------------------------------------------------------------------------------
-        metrics = QFontMetricsF(self._text_item.font())
         self._text_item.setAlignMode(Qt.AlignRight)
-        self._text_item.setPos(px(self.stemTip().x() - self.stem_text_margin), metrics.capHeight() / 2)
 
-        # Connection stem ----------------------------------------------------------------------------------------------
-        self._stem_item.setLine(QLineF(px(self.stemRoot()), px(self.stemTip())))
+        self.styleChange()
+
+    def styleChange(self):
+        super().styleChange()
+        self.prepareGeometryChange()
+        style = self.style()
+
+        margin = style.pixelMetric(Style.ConnectionStemTextMargin)
+        metrics = QFontMetricsF(self._text_item.font())
+
+        self._stem_item.setLine(QLineF(self.stemRoot(), self.stemTip()))
+        self._text_item.setPos(self.stemTip().x() - margin, metrics.capHeight() / 2)
 
     def stemRoot(self):
-        """Return position of stem's root (where the stem connects to the node) in local inches."""
-        return QPointF(0, 0)
+        """Return position of stem's root (where the stem connects to the node) in local coordinates."""
+        return QPointF(0, 0)  # Stem root is located exactly at the origin
 
     def stemTip(self):
-        """Return position of stem's root (where the stem connects to the edge) in local inches."""
-        return self.stemRoot() - QPointF(self.stem_length, 0)
+        """Return position of stem's root (where the stem connects to the edge) in local coordinates."""
+        stem_length = self.style().pixelMetric(Style.ConnectionStemLength)
+
+        return self.stemRoot() - QPointF(stem_length, 0)
 
 
 class Output(Connection):
-    """A data input into a node."""
+    """A data output from a node."""
     
     def __init__(self, text=None, data_type: DataType = None):
         super().__init__(text or "Output", data_type)
 
-        # Connection text ----------------------------------------------------------------------------------------------
-        metrics = QFontMetricsF(self._text_item.font())
         self._text_item.setAlignMode(Qt.AlignLeft)
-        self._text_item.setPos(px(self.stemTip().x() + self.stem_text_margin), metrics.capHeight() / 2)
+        
+        self.styleChange()
 
-        # Connection stem ----------------------------------------------------------------------------------------------
-        self._stem_item.setLine(QLineF(px(self.stemRoot()), px(self.stemTip())))
+    def styleChange(self):
+        super().styleChange()
+        self.prepareGeometryChange()
+        style = self.style()
+
+        margin = style.pixelMetric(Style.ConnectionStemTextMargin)
+        metrics = QFontMetricsF(self._text_item.font())
+
+        self._stem_item.setLine(QLineF(self.stemRoot(), self.stemTip()))
+        self._text_item.setPos(self.stemTip().x() + margin, metrics.capHeight() / 2)
 
     def stemRoot(self):
-        """Return position of stem's root (where the stem connects to the node) in local inches."""
+        """Return position of stem's root (where the stem connects to the node) in local coordinates."""
         return QPointF(0, 0)  # Stem root is located exactly at the origin
 
     def stemTip(self):
-        """Return position of stem's root (where the stem connects to the edge) in local inches."""
-        return self.stemRoot() + QPointF(self.stem_length, 0)
+        """Return position of stem's root (where the stem connects to the edge) in local coordinates."""
+        stem_length = self.style().pixelMetric(Style.ConnectionStemLength)
+
+        return self.stemRoot() + QPointF(stem_length, 0)

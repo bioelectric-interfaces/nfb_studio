@@ -1,32 +1,25 @@
 import os
 
 from PySide2.QtCore import QRectF
-from PySide2.QtGui import QPainter, QFontMetricsF, QBrush, QColor
+from PySide2.QtGui import QPainter, QFontMetricsF
 from PySide2.QtWidgets import QGraphicsItem
 from PySide2.QtSvg import QGraphicsSvgItem, QSvgRenderer
 
-from nfb_studio.gui import FontF, inches_to_pixels as px, pixels_to_inches as inches
-from nfb_studio.widgets import RealSizeItem, TextLineItem
+from nfb_studio.widgets import TextLineItem
 from nfb_studio.util import FileDict
+
+from .style import Style
+from .scheme_item import SchemeItem
 
 icons_dir = os.path.dirname(__file__)
 
 
-class Message(RealSizeItem):
+class Message(SchemeItem):
     """A message that is displayed to the user.
     
     Messages can be of different severity. This base class is inherited by InfoMessage, WarningMessage and
     ErrorMessage.
     """
-    
-    icon_size = 0.16
-    """Size of the icon (width and height). The icon is expected to be square."""
-    max_text_length = 2.5
-    icon_text_margin = 0.05
-
-    text_font_name = "Segoe UI"
-    text_font_size = 10.5
-
     svg_renderers = FileDict(create_item=QSvgRenderer)
 
     def __init__(self, text=None, icon_filename=None, parent=None):
@@ -35,22 +28,14 @@ class Message(RealSizeItem):
 
         # Message text -------------------------------------------------------------------------------------------------
         self._text_item = TextLineItem(text or "Message", self)
-        self._text_item.setFont(FontF(self.text_font_name, self.text_font_size))
-        metrics = QFontMetricsF(self._text_item.font())
-        self._text_item.setMaximumWidth(self.max_text_length)
-
-        # Position
-        self._text_item.setPos(px(self.icon_size + self.icon_text_margin), 0)
-        self._text_item.moveBy(0, metrics.capHeight() / 2)
-        self._text_item.moveBy(0, px(self.icon_size) / 2)
-
-        # Background color
-        self._text_item.setBackgroundBrush(QBrush(QColor(255, 255, 255, 196)))
 
         # Message icon -------------------------------------------------------------------------------------------------
         self._icon_item = QGraphicsSvgItem(self)
         if icon_filename is not None:
             self.setIcon(icon_filename)
+
+        self.styleChange()
+        self.paletteChange()
 
     @classmethod
     def severity(cls):
@@ -65,18 +50,55 @@ class Message(RealSizeItem):
         renderer: QSvgRenderer = self.svg_renderers[icon_filename]
         self._icon_item.setSharedRenderer(renderer)
 
-        scale = px(self.icon_size) / renderer.defaultSize().width()
+        icon_size = self.style().pixelMetric(Style.MessageIconSize)
+
+        scale = icon_size / renderer.defaultSize().width()
         self._icon_item.setScale(scale)
 
     def text(self):
         return self._text_item.text()
+
+    def styleChange(self):
+        super().styleChange()
+        style = self.style()
+
+        # Text item ----------------------------------------------------------------------------------------------------
+        self._text_item.setFont(style.font(Style.MessageTextFont))
+        self._text_item.setMaximumWidth(style.pixelMetric(Style.MessageTextLength))
+
+        # Position
+        text_metrics = QFontMetricsF(self._text_item.font())
+        icon_size = style.pixelMetric(Style.MessageIconSize)
+        margin = style.pixelMetric(Style.MessageIconTextMargin)
+
+        self._text_item.setPos(icon_size + margin, 0)
+        self._text_item.moveBy(0, text_metrics.capHeight() / 2)
+        self._text_item.moveBy(0, icon_size / 2)
+
+        # Icon item ----------------------------------------------------------------------------------------------------
+        icon_renderer = self._icon_item.renderer()
+        if icon_renderer is None:  # No icon set
+            scale = 1
+        else:
+            scale = icon_size / icon_renderer.defaultSize().width()
+
+        self._icon_item.setScale(scale)
+    
+    def paletteChange(self):
+        super().paletteChange()
+        text_bg = self.palette().background().color()
+        text_bg.setAlpha(196)
+
+        self._text_item.setBrush(self.palette().text())
+        self._text_item.setBackgroundBrush(text_bg)
 
     def boundingRect(self) -> QRectF:
         return QRectF()
 
     def paint(self, painter: QPainter, option, widget=...) -> None:
         pass
-
+    
+    # Serialization ====================================================================================================
     def serialize(self) -> dict:
         return {
             "text": self.text()
