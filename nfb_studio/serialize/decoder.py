@@ -67,7 +67,7 @@ class JSONDecoder(json.JSONDecoder):
             # This looks like json notation of a python object. Create it and deserialize json into it.
             # The following code is adapted from django.utils.module_loading module.
             module_path = data["__class__"]["__module__"]
-            class_name = data["__class__"]["__name__"]
+            class_name = data["__class__"]["__qualname__"]
 
             module = import_module(module_path)
 

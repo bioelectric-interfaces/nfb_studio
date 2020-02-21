@@ -23,7 +23,7 @@ def _write_metadata(obj, data: dict) -> dict:
     # Add meta information necessary to decode the object later
     data["__class__"] = {
         "__module__": obj.__class__.__module__,
-        "__name__": obj.__class__.__name__
+        "__qualname__": obj.__class__.__qualname__
     }
 
     return data
