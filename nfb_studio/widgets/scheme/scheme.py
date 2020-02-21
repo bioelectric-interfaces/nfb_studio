@@ -9,6 +9,8 @@ from .graph import AbstractGraph, Graph, GraphSnapshot
 from .node import Node
 from .edge import Edge
 from .connection import Input, Output
+from .style import Style
+from .palette import Palette
 
 
 class Scheme(QGraphicsScene):
@@ -28,6 +30,12 @@ class Scheme(QGraphicsScene):
         """Constructs a Scheme with an optional `parent` parameter that is passed to the super()."""
         super().__init__(parent)
         self._graph = Graph()
+
+        self._style = Style()
+        self._palette = Palette()
+
+        self.schemeStyleChange()
+        self.schemePaletteChange()
 
     # Element manipulation =============================================================================================
     def addItem(self, item: QGraphicsItem):
@@ -148,15 +156,41 @@ class Scheme(QGraphicsScene):
         if package.hasObject(GraphSnapshot):
             snapshot = package.objectData(GraphSnapshot)
 
-            self.clearSelection()
-            snapshot.selectAll()
-            snapshot.moveBy(50, 50) 
+            self.clearSelection()  # Clear old selection
+
+            snapshot.selectAll()  # Create new selection (pasted items)
+
+            offset = self.schemeStyle().pixelMetric(Style.PasteOffset)
+            snapshot.moveBy(offset, offset)  # Move all items by some offset 
+            
             self.merge(snapshot)
-            self.copyEvent()
+
+            self.copyEvent()  # Copy the selection again (nothing changes except for the item offset)
 
     def deleteEvent(self):
         """Delete the selection."""
         self.extract(self.selection())
+
+    # Style and palette ================================================================================================
+    def schemeStyleChange(self):
+        pass
+
+    def schemePaletteChange(self):
+        self.setBackgroundBrush(self.schemePalette().background())
+
+    def schemeStyle(self):
+        return self._style
+
+    def setSchemeStyle(self, style):
+        self._style = style
+        self.schemeStyleChange()
+
+    def schemePalette(self):
+        return self._palette
+    
+    def setSchemePalette(self, palette):
+        self._palette = palette
+        self.schemePaletteChange()
 
     # Widgets ==========================================================================================================
     def getView(self) -> QGraphicsView:

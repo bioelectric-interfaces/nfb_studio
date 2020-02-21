@@ -59,6 +59,9 @@ class Style:
         MessageIconTextMargin = auto()
         """Margin between the icon and the message's text."""
 
+        PasteOffset = 80
+        """Amount by which the selection should be shifted when pasted from clipboard."""
+
     class Font(Enum):
         """Various fonts used in the scheme items.
         
@@ -101,7 +104,9 @@ class Style:
 
             SM.MessageIconSize: 0.16,
             SM.MessageTextLength: 2.5,
-            SM.MessageIconTextMargin: 0.05
+            SM.MessageIconTextMargin: 0.05,
+
+            SM.PasteOffset: 0.5
         }
 
         default_font = QFont("Segoe UI")
