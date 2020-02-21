@@ -54,10 +54,6 @@ def main():
     n2.setSelected(True)
     n3.setSelected(True)
 
-    x = scene.selectedGraph()
-    data = encoder.encode(x)
-    #print(data)
-
     w = scene.getView()
     w.setMinimumSize(800, 600)
     w.show()

@@ -5,13 +5,13 @@ from PySide2.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QSho
 
 from nfb_studio import StdMimeData
 
-from .graph import Graph, GraphSnapshot
+from .graph import AbstractGraph, Graph, GraphSnapshot
 from .node import Node
 from .edge import Edge
 from .connection import Input, Output
 
 
-class Scheme(Graph, QGraphicsScene):
+class Scheme(QGraphicsScene):
     """A data model for the nfb experiment's system of signals and their components.
 
     This class is a combination of nfb_studio.widgets.scheme.Graph and a QGraphicsScene, which represents the node graph
@@ -25,43 +25,59 @@ class Scheme(Graph, QGraphicsScene):
     nfb_studio.widgets.scheme.Graph : A collection of nodes and edges.
     """
     def __init__(self, parent=None):
-        """Constructs a Scheme with an optional `parent` parameter that is passed to the QGraphicsScene."""
-        Graph.__init__(self)
-        QGraphicsScene.__init__(self, parent)
+        """Constructs a Scheme with an optional `parent` parameter that is passed to the super()."""
+        super().__init__(parent)
+        self._graph = Graph()
 
-    # Element manipulation ---------------------------------------------------------------------------------------------
+    # Element manipulation =============================================================================================
     def addItem(self, item: QGraphicsItem):
         """Add an item to the scene.
 
-        An override of QGraphicsScene.addItem method that detects when a node or edge was added.
+        An override of super().addItem method that detects when a node or edge was added.
         """
         if isinstance(item, Node):
-            Graph.addNode(self, item)
+            self._graph.addNode(item)
         elif isinstance(item, Edge):
-            Graph.addEdge(self, item)
+            self._graph.addEdge(item)
+        else:
+            raise TypeError("unrecognised graphics item of type " + type(item).__name__)
 
-        QGraphicsScene.addItem(self, item)
+        super().addItem(item)
 
     def removeItem(self, item):
         """Add an item to the scene.
 
-        An override of QGraphicsScene.removeItem method that detects when a node or edge was removed.
+        An override of super().removeItem method that detects when a node or edge was removed.
         """
-        QGraphicsScene.removeItem(self, item)
-
+        # Remove a Node ------------------------------------------------------------------------------------------------
         if isinstance(item, Node):
-            Graph.removeNode(self, item)
+            # Remove connected edges first
+            to_remove = []
+            for edge in self._graph.edges:
+                if edge.source_node() == item or edge.target_node() == item:
+                    to_remove.append(edge)
+            
+            for edge in to_remove:
+                self.removeItem(edge)
 
-        if isinstance(item, Edge):
-            Graph.removeEdge(self, item)
+            # Remove the node
+            self._graph.removeNode(item)
+        # Remove an Edge -----------------------------------------------------------------------------------------------
+        elif isinstance(item, Edge):
+            self._graph.removeEdge(item)
+        # Unknown item -------------------------------------------------------------------------------------------------
+        else:
+            raise TypeError("unrecognised graphics item of type " + type(item).__name__)
+
+        super().removeItem(item)
 
     def connect_nodes(self, source: Output, target: Input):
         """Connect an Output connection to an Input connection with an edge.
         
         Returns the newly created edge.
         """
-        edge = Graph.connect_nodes(self, source, target)
-        QGraphicsScene.addItem(self, edge)
+        edge = self._graph.connect_nodes(source, target)
+        super().addItem(edge)
 
         return edge
 
@@ -71,42 +87,52 @@ class Scheme(Graph, QGraphicsScene):
         If output and input are connected more than once, only one edge is removed.
         Returns the edge that was removed, or None if no such edge was found.
         """
-        edge = Graph.disconnect_nodes(self, source, target)
+        edge = self._graph.disconnect_nodes(source, target)
         if edge is not None:
-            QGraphicsScene.removeItem(self, edge)
+            super().removeItem(edge)
         return edge
 
-    def merge(self, *others):
-        """Update the scheme, adding elements other schemes."""
-        Graph.merge(*others)
+    def extract(self, other: AbstractGraph):
+        """Update the scheme, removing elements from a graph.
+        
+        `other` represents a subgraph of the scheme graph that is to be extracted.
+        """
+        for node in other.nodes:
+            self.removeItem(node)
 
-        for other in others:
-            for node in other.nodes:
-                QGraphicsScene.addItem(self, node)
-            for edge in other.edges:
-                QGraphicsScene.addItem(self, edge)
+    def merge(self, other: AbstractGraph):
+        """Update the scheme, adding elements from a graph."""
+        self._graph.merge(other)
+
+        for node in other.nodes:
+            super().addItem(node)
+        for edge in other.edges:
+            super().addItem(edge)
 
     def clear(self):
         """Clear the scheme."""
-        QGraphicsScene.clear(self)
-        Graph.clear(self)
+        super().clear()
+        self._graph.clear()
 
-    # Selection and clipboard ------------------------------------------------------------------------------------------
-    def selectedGraph(self) -> GraphSnapshot:
-        """Return the selected part of the dataflow graph as a GraphSnapshot."""
-        result = GraphSnapshot()
+    # Selection ========================================================================================================
+    def selectAll(self):
+        self._graph.selectAll()
 
-        selected_nodes = [node for node in self.nodes if node.isSelected()]
-        selected_edges = [edge for edge in self.edges if edge.isShadowSelected()]
+    def selection(self) -> GraphSnapshot:
+        return self._graph.selection()
+    
+    def wideSelection(self) -> GraphSnapshot:
+        return self._graph.wideSelection()
 
-        result.nodes = frozenset(selected_nodes)
-        result.edges = frozenset(selected_edges)
+    # User actions =====================================================================================================
+    def cutEvent(self):
+        """Cut the selected graph and place it in the clipboard."""
+        self.copyEvent()
+        self.deleteEvent()
 
-        return result
-
-    def copySelectedGraph(self):
-        """Copies the selected graph and places it in the clipboard."""
-        snapshot = self.selectedGraph()
+    def copyEvent(self):
+        """Copy the selected graph and place it in the clipboard."""
+        snapshot = self.selection()
 
         package = StdMimeData()
         package.setObject(snapshot)
@@ -114,8 +140,8 @@ class Scheme(Graph, QGraphicsScene):
         clipboard = QApplication.clipboard()
         clipboard.setMimeData(package)
 
-    def paste(self):
-        """Retrieves the data from a clipboard and pastes it."""
+    def pasteEvent(self):
+        """Retrieve the data from a clipboard and paste it."""
         clipboard = QApplication.clipboard()
         package = clipboard.mimeData()
 
@@ -123,13 +149,16 @@ class Scheme(Graph, QGraphicsScene):
             snapshot = package.objectData(GraphSnapshot)
 
             self.clearSelection()
-            for node in snapshot.nodes:
-                node.setSelected(True)
-                node.setPosition(node.position() + QPointF(0.5, 0.5))
-            
+            snapshot.selectAll()
+            snapshot.moveBy(50, 50) 
             self.merge(snapshot)
+            self.copyEvent()
 
-    # Widgets ----------------------------------------------------------------------------------------------------------
+    def deleteEvent(self):
+        """Delete the selection."""
+        self.extract(self.selection())
+
+    # Widgets ==========================================================================================================
     def getView(self) -> QGraphicsView:
         """Generate and return a new QGraphicsView, configured for optimal viewing."""
         v = QGraphicsView(self)
@@ -138,15 +167,21 @@ class Scheme(Graph, QGraphicsScene):
         v.setRenderHint(QPainter.Antialiasing)
         v.setRenderHint(QPainter.SmoothPixmapTransform)
 
+        cut_shortcut = QShortcut(QKeySequence.Cut, v)
+        cut_shortcut.activated.connect(self.cutEvent)
+
         copy_shortcut = QShortcut(QKeySequence.Copy, v)
-        copy_shortcut.activated.connect(self.copySelectedGraph)
+        copy_shortcut.activated.connect(self.copyEvent)
 
         paste_shortcut = QShortcut(QKeySequence.Paste, v)
-        paste_shortcut.activated.connect(self.paste)
+        paste_shortcut.activated.connect(self.pasteEvent)
+
+        delete_shortcut = QShortcut(QKeySequence.Delete, v)
+        delete_shortcut.activated.connect(self.deleteEvent)
 
         return v
 
-    # Serialization ----------------------------------------------------------------------------------------------------
+    # Serialization ====================================================================================================
     # def serialize(self) -> dict: Inherited from Graph
 
     def deserialize(self, data: dict):
@@ -156,11 +191,11 @@ class Scheme(Graph, QGraphicsScene):
             self.removeItem(node)
 
         # Deserialize as graph -----------------------------------------------------------------------------------------
-        Graph.deserialize(self, data)
+        self._graph.deserialize(data)
 
         # Bring the scene up to speed ----------------------------------------------------------------------------------
         for node in self.nodes:
-            QGraphicsScene.addItem(self, node)
+            super().addItem(node)
 
         for edge in self.edges:
-            QGraphicsScene.addItem(self, edge)
+            super().addItem(edge)

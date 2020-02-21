@@ -77,6 +77,8 @@ class Edge(SchemeItem, ShadowSelectableItem):
         Unsetting the target sets the target position to None, which causes the edge to not be drawn, until another
         target (or target position) is supplied.
         """
+        assert(target is None or isinstance(target.parentItem(), Node))
+
         self._target = target
         self._target_pos = None
 
@@ -89,6 +91,8 @@ class Edge(SchemeItem, ShadowSelectableItem):
         Unsetting the source sets the source position to None, which causes the edge to not be drawn, until another
         source (or source position) is supplied.
         """
+        assert(source is None or isinstance(source.parentItem(), Node))
+
         self._source = source
         self._source_pos = None  # Is set to None in case source is None. If needed, will be changed by adjust()
 

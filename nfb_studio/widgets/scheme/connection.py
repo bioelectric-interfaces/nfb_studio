@@ -75,9 +75,10 @@ class Connection(SchemeItem, ShadowSelectableItem):
 
     def itemChange(self, change, value):
         """A function that runs every time some change happens to the connection.
+        
         This processes position changes by adjusting all the edges and forwards the arguments to the superclass.
         """
-        if change == QGraphicsItem.ItemScenePositionHasChanged:
+        if change == QGraphicsItem.ItemScenePositionHasChanged or change == QGraphicsItem.ItemVisibleHasChanged:
             for edge in self.edges:
                 edge.adjust()
 

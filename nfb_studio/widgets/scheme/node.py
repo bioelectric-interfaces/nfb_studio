@@ -239,8 +239,7 @@ class Node(SchemeItem):
             "inputs": self.inputs,
             "outputs": self.outputs,
             "messages": list(self.messages),
-            "position": self.position(),
-            "size": self.size()
+            "position": self.position()
         }
 
     def deserialize(self, data: dict):
@@ -257,4 +256,3 @@ class Node(SchemeItem):
             self.addMessage(message)
 
         self.setPosition(data["position"])
-        self.setSize(data["size"])
