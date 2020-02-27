@@ -6,5 +6,5 @@ std_decoder = serialize.JSONDecoder(object_hooks=serialize.deserialize_qt)
 
 
 class StdMimeData(serialize.MimeData):
-    def __init__(self):
-        super().__init__(object_hooks=(serialize.serialize_qt, serialize.deserialize_qt))
+    def __init__(self, data=None):
+        super().__init__(data, object_hooks=(serialize.serialize_qt, serialize.deserialize_qt))

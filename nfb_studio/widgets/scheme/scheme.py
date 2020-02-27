@@ -146,12 +146,12 @@ class Scheme(QGraphicsScene):
         package.setObject(snapshot)
 
         clipboard = QApplication.clipboard()
-        clipboard.setMimeData(package)
+        clipboard.setMimeData(package.qmimedata)
 
     def pasteEvent(self):
         """Retrieve the data from a clipboard and paste it."""
         clipboard = QApplication.clipboard()
-        package = clipboard.mimeData()
+        package = StdMimeData(clipboard.mimeData())
 
         if package.hasObject(GraphSnapshot):
             snapshot = package.objectData(GraphSnapshot)
