@@ -44,6 +44,9 @@ class Style:
         """Distance that's considered "too close" by the bezier curve calculation algorithm. If distance between source 
         and target is less that this variable, control points are moved closer together.
         """
+        EdgeDragPrecisionRadius = auto()
+        """When starting drawing an edge, mouse pointer should be inside a circle, centered on the tip of a connection,
+        and this radius."""
 
         ConnectionStemLength = 40
         """Length of the line going out of the node body."""
@@ -97,6 +100,7 @@ class Style:
             SM.EdgeWidth: 0.02,
             SM.EdgeBezierPointOffset: 0.8,
             SM.EdgeBezierCloseDistance: 1.5,
+            SM.EdgeDragPrecisionRadius: 0.1,
 
             SM.ConnectionStemLength: 0.2,
             SM.ConnectionTextLength: 1.5,

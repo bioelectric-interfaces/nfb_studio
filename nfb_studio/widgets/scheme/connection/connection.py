@@ -4,11 +4,12 @@ from PySide2.QtWidgets import QGraphicsItem, QGraphicsLineItem
 
 from nfb_studio.widgets import ShadowSelectableItem, TextLineItem
 
-from .style import Style
-from .palette import Palette
-from .scheme_item import SchemeItem
-from .data_type import DataType, Unknown
-
+from ..style import Style
+from ..palette import Palette
+from ..scheme_item import SchemeItem
+from ..data_type import DataType, Unknown
+from .edge_drag import EdgeDrag
+from .trigger import Trigger
 
 class Connection(SchemeItem, ShadowSelectableItem):
     """Connection is an input or output from a Node."""
@@ -24,6 +25,8 @@ class Connection(SchemeItem, ShadowSelectableItem):
 
         self._text_item = TextLineItem(text or "Connection", self)
         self._stem_item = QGraphicsLineItem(self)
+
+        self._trigger_item = Trigger(self)
 
         self._data_type = data_type or Unknown
 
@@ -48,11 +51,11 @@ class Connection(SchemeItem, ShadowSelectableItem):
 
     def stemRoot(self):
         """Return position of stem's root (where the stem connects to the node) in local inches."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def stemTip(self):
         """Return position of stem's root (where the stem connects to the edge) in local inches."""
-        raise NotImplementedError()
+        raise NotImplementedError
     
     def styleChange(self):
         super().styleChange()
@@ -125,67 +128,28 @@ class Connection(SchemeItem, ShadowSelectableItem):
     def deserialize(self, data: dict):
         self.setText(data["text"])
         self.setDataType(data["data_type"])
-
-
-class Input(Connection):
-    """A data input into a node."""
-
-    def __init__(self, text=None, data_type: DataType = None):
-        super().__init__(text or "Input", data_type)
-
-        self._text_item.setAlignMode(Qt.AlignRight)
-
-        self.styleChange()
-
-    def styleChange(self):
-        super().styleChange()
-        self.prepareGeometryChange()
-        style = self.style()
-
-        margin = style.pixelMetric(Style.ConnectionStemTextMargin)
-        metrics = QFontMetricsF(self._text_item.font())
-
-        self._stem_item.setLine(QLineF(self.stemRoot(), self.stemTip()))
-        self._text_item.setPos(self.stemTip().x() - margin, metrics.capHeight() / 2)
-
-    def stemRoot(self):
-        """Return position of stem's root (where the stem connects to the node) in local coordinates."""
-        return QPointF(0, 0)  # Stem root is located exactly at the origin
-
-    def stemTip(self):
-        """Return position of stem's root (where the stem connects to the edge) in local coordinates."""
-        stem_length = self.style().pixelMetric(Style.ConnectionStemLength)
-
-        return self.stemRoot() - QPointF(stem_length, 0)
-
-
-class Output(Connection):
-    """A data output from a node."""
     
-    def __init__(self, text=None, data_type: DataType = None):
-        super().__init__(text or "Output", data_type)
-
-        self._text_item.setAlignMode(Qt.AlignLeft)
+    # Drawing edges ====================================================================================================
+    # The heavy lifting such as detecting when the edge started being drawn, mouse moving and data transfers are handled
+    # by a member item called self._trigger_item. Connection handles the logic.
+    def edgeDragStart(self):
+        """Called when user tries to drag an edge from this connection.
         
-        self.styleChange()
+        This operation starts the edge drawing process. It returns an EdgeDrag object that will be given to the
+        reciever.
+        """
+        raise NotImplementedError
 
-    def styleChange(self):
-        super().styleChange()
-        self.prepareGeometryChange()
-        style = self.style()
+    def edgeDragAccept(self, edgedrag: EdgeDrag):
+        """Called when a new edge is being dragged into the drop zone.
+        
+        Returns True or False depending on whether the dragged edge should be accepted or not.
+        """
+        raise NotImplementedError
 
-        margin = style.pixelMetric(Style.ConnectionStemTextMargin)
-        metrics = QFontMetricsF(self._text_item.font())
-
-        self._stem_item.setLine(QLineF(self.stemRoot(), self.stemTip()))
-        self._text_item.setPos(self.stemTip().x() + margin, metrics.capHeight() / 2)
-
-    def stemRoot(self):
-        """Return position of stem's root (where the stem connects to the node) in local coordinates."""
-        return QPointF(0, 0)  # Stem root is located exactly at the origin
-
-    def stemTip(self):
-        """Return position of stem's root (where the stem connects to the edge) in local coordinates."""
-        stem_length = self.style().pixelMetric(Style.ConnectionStemLength)
-
-        return self.stemRoot() + QPointF(stem_length, 0)
+    def edgeDragDrop(self, edgedrag: EdgeDrag):
+        """Called when a new edge has been dragged and was dropped.
+        
+        This operation concludes the edge drawing process.
+        """
+        raise NotImplementedError

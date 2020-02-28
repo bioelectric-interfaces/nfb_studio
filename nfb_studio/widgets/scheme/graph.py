@@ -61,6 +61,17 @@ class AbstractGraph:
 
         return result
 
+    # Observer functions ===============================================================================================
+    def findNode(self, node_id: int) -> Union[Node, None]:
+        """Find and return a node that has the corresponding id.
+        
+        If no such node could be found, return None.
+        """
+        for node in self.nodes:
+            if node_id == id(node):
+                return node
+        return None
+
     # Transformations ==================================================================================================
     def boundingRect(self) -> QRectF:
         """Return the combined bounding box of all the items in the graph."""

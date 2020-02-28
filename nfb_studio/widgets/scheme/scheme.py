@@ -1,4 +1,6 @@
 """A data model for the nfb experiment's system of signals and their components."""
+from typing import Union
+
 from PySide2.QtCore import Qt, QPointF
 from PySide2.QtGui import QPainter, QKeySequence
 from PySide2.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QShortcut, QApplication
@@ -121,6 +123,10 @@ class Scheme(QGraphicsScene):
         """Clear the scheme."""
         super().clear()
         self._graph.clear()
+
+    # Observer methods =================================================================================================
+    def findNode(self, node_id: int) -> Union[Node, None]:
+        return self._graph.findNode(node_id)
 
     # Selection ========================================================================================================
     def selectAll(self):
