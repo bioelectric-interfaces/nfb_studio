@@ -27,8 +27,8 @@ class AbstractGraph:
     def selection(self):
         """Return a GraphSnapshot containing all selected nodes and edges.
         
-        Edges count as selected if nodes on both ends are selected. This snapshot is equivalent to the data that ends up
-        in the clipboard when a selection is copied.
+        This selection is equivalent to the highlighted items the user sees on screen. This means that it is possible
+        that the resulting GraphSnapshot will contain only edges and no nodes.
         """
         result = GraphSnapshot()
 
@@ -40,10 +40,31 @@ class AbstractGraph:
 
         return result
     
+    def clipboardSelection(self):
+        """Return a GraphSnapshot containing all selected nodes and edges, suitable for copying to clipboard.
+        
+        This selection is similar to `self.selection()` in that it only contains nodes and edges highlighted to the
+        user. The difference is that if the user selected only edges, this is considered unsuitable for copying and an
+        empty GraphSnapshot is returned instead.
+        """
+        result = GraphSnapshot()
+
+        selected_nodes = [node for node in self.nodes if node.isSelected()]
+        if len(selected_nodes) == 0:
+            return result
+
+        selected_edges = [edge for edge in self.edges if edge.isSelected()]
+
+        result.nodes = frozenset(selected_nodes)
+        result.edges = frozenset(selected_edges)
+
+        return result
+
+
     def wideSelection(self):
         """Return a graph snapshot containing all selected nodes and all connected edges.
         
-        Unlike `selection()`, this method also gets all edges where at least one end is a selected node.
+        Unlike `self.selection()`, this method also gets all edges where at least one end is a selected node.  
         This snapshot is equivalent to the items that are deleted when a selection is removed or cut.
         """
         result = GraphSnapshot()
@@ -257,6 +278,9 @@ class Graph(AbstractGraph):
         After calling this function, self.isdisjoint(other) will return True. All edges that become dangling from node
         removal are also removed.
         """
+        for edge in other.edges:
+            self.removeItem(edge)
+
         for node in other.nodes:
             self.removeNode(node)
 

@@ -42,6 +42,21 @@ class Node(SchemeItem):
         self.styleChange()
         self.paletteChange()
 
+    # Operations =======================================================================================================
+    def showConnectionText(self):
+        for input in self.inputs:
+            input.showText()
+
+        for output in self.outputs:
+            output.showText() 
+
+    def hideConnectionText(self):
+        for input in self.inputs:
+            input.hideText()
+
+        for output in self.outputs:
+            output.hideText() 
+
     # Input/output management ==========================================================================================
     def addInput(self, obj: Input):
         self.insertInput(len(self.inputs), obj)

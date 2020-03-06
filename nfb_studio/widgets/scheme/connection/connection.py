@@ -36,6 +36,7 @@ class Connection(SchemeItem):
         """Connection is not selectable from outside sources. This flag is set by some internal methods to indicate that
         a selection is legitimate."""
 
+        self.hideText()
         self.styleChange()
         self.paletteChange()
 
@@ -53,6 +54,13 @@ class Connection(SchemeItem):
     def detachAll(self):
         """Detach all edges."""
         raise NotImplementedError
+    
+    # Operations =======================================================================================================
+    def showText(self):
+        self._text_item.setVisible(True)
+
+    def hideText(self):
+        self._text_item.setVisible(False)
 
     # Member access ====================================================================================================
     def text(self):

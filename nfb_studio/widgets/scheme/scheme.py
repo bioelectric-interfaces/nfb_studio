@@ -40,6 +40,9 @@ class Scheme(QGraphicsScene):
             self.setRenderHint(QPainter.Antialiasing)
             self.setRenderHint(QPainter.SmoothPixmapTransform)
 
+            self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
         def setScene(self, scene):
             if not isinstance(scene, Scheme):
                 raise TypeError("Scheme.View only connects to a Scheme as its data source")
@@ -97,6 +100,8 @@ class Scheme(QGraphicsScene):
 
         An override of super().removeItem method that detects when a node or edge was removed.
         """
+        super().removeItem(item)
+
         # Remove a Node ------------------------------------------------------------------------------------------------
         if isinstance(item, Node):
             # Remove connected edges first
@@ -116,8 +121,6 @@ class Scheme(QGraphicsScene):
         # Unknown item -------------------------------------------------------------------------------------------------
         else:
             raise TypeError("unrecognised graphics item of type " + type(item).__name__)
-
-        super().removeItem(item)
 
     def connect_nodes(self, source: Output, target: Input):
         """Connect an Output connection to an Input connection with an edge.
@@ -145,6 +148,9 @@ class Scheme(QGraphicsScene):
         
         `other` represents a subgraph of the scheme graph that is to be extracted.
         """
+        for edge in other.edges:
+            self.removeItem(edge)
+
         for node in other.nodes:
             self.removeItem(node)
 
@@ -173,6 +179,9 @@ class Scheme(QGraphicsScene):
     def selection(self) -> GraphSnapshot:
         return self.graph.selection()
     
+    def clipboardSelection(self) -> GraphSnapshot:
+        return self.graph.clipboardSelection()
+    
     def wideSelection(self) -> GraphSnapshot:
         return self.graph.wideSelection()
 
@@ -184,7 +193,9 @@ class Scheme(QGraphicsScene):
 
     def copyEvent(self):
         """Copy the selected graph and place it in the clipboard."""
-        snapshot = self.selection()
+        snapshot = self.clipboardSelection()
+        if len(snapshot.nodes) == 0:  # Nothing to copy
+            return
 
         package = StdMimeData()
         package.setObject(snapshot)
@@ -267,6 +278,25 @@ class Scheme(QGraphicsScene):
                 self._dragging_edge.setSourcePos(event.scenePos())
             else:
                 self._dragging_edge.setTargetPos(event.scenePos())
+
+    # Key presses ======================================================================================================
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Alt:
+            event.accept()
+            for node in self.graph.nodes:
+                node.showConnectionText()
+            return
+        
+        super().keyPressEvent(event)
+    
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Alt:
+            event.accept()
+            for node in self.graph.nodes:
+                node.hideConnectionText()
+            return
+
+        super().keyReleaseEvent(event)
 
     # Serialization ====================================================================================================
     def serialize(self) -> dict:
