@@ -26,6 +26,7 @@ class TestNode(Node):
 def main():
     app = QApplication([])
     scene = Scheme()
+    scene.setParent(app)
 
     n = TestNode()
     n.setup()

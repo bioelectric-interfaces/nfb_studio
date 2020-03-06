@@ -19,6 +19,8 @@ class Input(Connection):
         self._text_item.setAlignMode(Qt.AlignRight)
         self._trigger_item.setPos(self.stemTip())
 
+        self.setMultiple(False)
+
         self.styleChange()
 
     # Working with edges ===============================================================================================
@@ -67,11 +69,6 @@ class Input(Connection):
     # Drawing edges ====================================================================================================
     # The heavy lifting such as detecting when the edge started being drawn, mouse moving and data transfers are handled
     # by a member item called self._trigger_item. Connection handles the logic.
-    def edgeDragStart(self):
-        """Called when user tries to drag an edge from this connection."""
-        self.detachAll()  # Detach all old edges
-        super().edgeDragStart()
-
     def edgeDragAccept(self):
         """Called when a new edge is being dragged into the drop zone.  
         Returns True or False depending on whether the dragged edge should be accepted or not.
@@ -84,6 +81,8 @@ class Input(Connection):
         """Called when a new edge has been dragged and was dropped.  
         This operation concludes the edge drawing process. It creates a real edge between source and self.
         """
+        super().edgeDragDrop()
+
         scene = self.scene()
         fake_edge = scene._dragging_edge
 

@@ -31,6 +31,10 @@ class Connection(SchemeItem):
         self._trigger_item = Trigger(self)
 
         self._data_type = data_type or Unknown
+        self._is_multiple = False
+        """Determines if the connection can have multiple edges coming out of it.  
+        By default, it is True for Input and False for Output.
+        """
 
         self._approved_selection = True
         """Connection is not selectable from outside sources. This flag is set by some internal methods to indicate that
@@ -69,6 +73,9 @@ class Connection(SchemeItem):
     def dataType(self):
         return self._data_type
 
+    def isMultiple(self):
+        return self._is_multiple
+
     def setText(self, text):
         self._text_item.setText(text)
 
@@ -78,6 +85,9 @@ class Connection(SchemeItem):
         for edge in self.edges:
             # Verify that all edges are fine with changing the data type.
             edge.checkDataType()
+    
+    def setMultiple(self, multiple: bool):
+        self._is_multiple = multiple
 
     # Geometry and drawing =============================================================================================
     def stemRoot(self):
@@ -172,6 +182,8 @@ class Connection(SchemeItem):
     # by a member item called self._trigger_item. Connection handles the logic.
     def edgeDragStart(self):
         """Called when user tries to drag an edge from this connection."""
+        if not self.isMultiple():
+            self.detachAll()
         self.scene().edgeDragStart(self)
 
     def edgeDragAccept(self) -> bool:
@@ -184,4 +196,5 @@ class Connection(SchemeItem):
         """Called when a new edge has been dragged and was dropped.  
         This operation concludes the edge drawing process.
         """
-        raise NotImplementedError
+        if not self.isMultiple():
+            self.detachAll()

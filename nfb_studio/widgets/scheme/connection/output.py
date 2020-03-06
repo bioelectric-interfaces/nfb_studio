@@ -20,6 +20,8 @@ class Output(Connection):
         self._text_item.setAlignMode(Qt.AlignLeft)
         self._trigger_item.setPos(self.stemTip())
         
+        self.setMultiple(True)
+
         self.styleChange()
 
     # Working with edges ===============================================================================================
@@ -80,6 +82,8 @@ class Output(Connection):
         """Called when a new edge has been dragged and was dropped.  
         This operation concludes the edge drawing process. It creates a real edge between source and self.
         """
+        super().edgeDragDrop()
+
         scene = self.scene()
         fake_edge = scene._dragging_edge
 
