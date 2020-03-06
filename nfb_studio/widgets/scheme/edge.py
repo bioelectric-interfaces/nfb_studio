@@ -3,8 +3,6 @@ from typing import Union
 from PySide2.QtCore import QPointF, QRectF, QLineF
 from PySide2.QtGui import QPainter, QPainterPath, QPen
 
-from nfb_studio.widgets import ShadowSelectableItem
-
 from .style import Style
 from .palette import Palette
 from .scheme_item import SchemeItem
@@ -13,12 +11,13 @@ from .connection import Input, Output, Connection
 from .data_type import DataType
 
 
-class Edge(SchemeItem, ShadowSelectableItem):
+class Edge(SchemeItem):
     """An graphics item representing a bezier curve, connecting one node's output to another's input."""
 
     def __init__(self):
         super(Edge, self).__init__()
         self.setZValue(-1)  # Draw edges behind nodes
+        self.setFlag(self.ItemIsSelectable)
 
         self._source: Union[Output, None] = None
         """An edge is drawn from its source to its target. Node's output is edge's source.  
@@ -127,8 +126,6 @@ class Edge(SchemeItem, ShadowSelectableItem):
         Unsetting the target sets the target position to None, which causes the edge to not be drawn, until another
         target (or target position) is supplied.
         """
-        assert(target is None or isinstance(target.parentItem(), Node))
-
         if (self._target is not None) and (self._target is not target):
             # Remove self direcly from self._target.edges instead of calling self._target.detach
             # to prevent infinite recursion.
@@ -149,8 +146,6 @@ class Edge(SchemeItem, ShadowSelectableItem):
         Unsetting the source sets the source position to None, which causes the edge to not be drawn, until another
         source (or source position) is supplied.
         """
-        assert(source is None or isinstance(source.parentItem(), Node))
-
         if (self._source is not None) and (self._source is not source):
             # Remove self direcly from self._target.edges instead of calling self._target.detach
             # to prevent infinite recursion.
@@ -238,6 +233,9 @@ class Edge(SchemeItem, ShadowSelectableItem):
 
         return self._path.boundingRect().adjusted(0, -edge_width/2, 0, edge_width/2)
 
+    def shape(self) -> QPainterPath:
+        return self._path
+
     def paint(self, painter: QPainter, option, widget=...) -> None:
         if self._source_pos is None or self._target_pos is None:
             return
@@ -275,44 +273,42 @@ class Edge(SchemeItem, ShadowSelectableItem):
                 "\") are not compatible"
             )
 
-    def updateSelectedStatus(self):
-        """Checks if both connections at the ends are selected. If so, set this edge to "selected".
-
-        Edges are not selectable - this function only recolors the edge. Opposite also applies - if at least one of the
-        nodes is not selected, deselect this edge. This edge queries nodes - not connections - for selected status.
-        Connections derive their selected status from edges, not the other way around.
-        """
-        if self._source is None or self._target is None:
-            self.setShadowSelected(False)
-            return
-
-        if self.sourceNode().isSelected() and self.targetNode().isSelected():
-            self.setShadowSelected(True)
-            # Edge does not know which connection called this update. If source called it, target does not know it has
-            # to be selected. So the edge explicitly selects both.
-            self._source.setShadowSelected(True)
-            self._target.setShadowSelected(True)
-        else:
-            # When deselecting, the connections might still be selected because of other edges - so instead of
-            # explicitly deselecting both connections, edge calls updateSelectedStatus() on them.
-            # This happens only when the edge was "toggled", not "set", to prevent infinite recursion.
-            is_toggled = self.isShadowSelected()
-            self.setShadowSelected(False)
-
-            if is_toggled:
-                self._source.updateSelectedStatus()
-                self._target.updateSelectedStatus()
-
     # Events ===========================================================================================================
-    def itemShadowSelectedHasChangedEvent(self, value):
-        pal = self.palette()
+    def itemChange(self, change, value):
+        # ItemSelectedChange -------------------------------------------------------------------------------------------
+        # When a selection change is requested, ensure that an edge can be selected on it's own. Otherwise, follow
+        # autoSelect policy.
+        if change == self.ItemSelectedChange:
+            scheme = self.scene()
 
-        if value == True:
-            pal.setCurrentColorGroup(Palette.Selected)
-        else:
-            pal.setCurrentColorGroup(Palette.Active)
-        
-        self.paletteChange()
+            if len(scheme.selection().nodes) != 0:
+                # If nodes are selected, edges are allowed to be selected only between two nodes. 
+                value = self._autoSelectValue()
+        # ItemSelectedHasChanged ---------------------------------------------------------------------------------------
+        # When a selection status has changed, propagate it to connections on both sides.
+        elif change == self.ItemSelectedHasChanged:
+            if self.source() is not None and self.source().isSelected() != value:
+                self.source().autoSelectFromEdge()
+
+            if self.target() is not None and self.target().isSelected() != value:
+                self.target().autoSelectFromEdge()
+
+        return super().itemChange(change, value)
+    
+    def autoSelect(self):
+        """Automatically determine if the edge needs to be selected or not.  
+        This function considers edge selected if nodes on both ends are selected.
+        """
+        self.setSelected(self._autoSelectValue())
+
+    def _autoSelectValue(self) -> bool:
+        """Value of selection when autoselecting."""
+        return (
+            self.sourceNode() is not None and
+            self.targetNode() is not None and
+            self.sourceNode().isSelected() and
+            self.targetNode().isSelected()
+        )
 
     # Style and palette ================================================================================================
     def styleChange(self):

@@ -2,7 +2,7 @@ from PySide2.QtCore import Qt, QPointF, QRectF, QLineF
 from PySide2.QtGui import QPainter, QFontMetricsF
 from PySide2.QtWidgets import QGraphicsItem, QGraphicsLineItem
 
-from nfb_studio.widgets import ShadowSelectableItem, TextLineItem
+from nfb_studio.widgets import TextLineItem, scheme
 
 from ..style import Style
 from ..palette import Palette
@@ -11,15 +11,15 @@ from ..data_type import DataType, Unknown
 from .edge_drag import EdgeDrag
 from .trigger import Trigger
 
-class Connection(SchemeItem, ShadowSelectableItem):
+class Connection(SchemeItem):
     """Connection is an input or output from a Node."""
 
     def __init__(self, text=None, data_type: DataType = None, parent: QGraphicsItem = None):
         super().__init__(parent)
 
-        self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)  # To enable edge adjusting
-        self.setFlag(QGraphicsItem.ItemIsSelectable)
-        self.setFlag(QGraphicsItem.ItemHasNoContents)  # Drawing occurs using child items
+        self.setFlag(self.ItemSendsScenePositionChanges)  # To enable edge adjusting
+        self.setFlag(self.ItemIsSelectable)
+        self.setFlag(self.ItemHasNoContents)  # Drawing occurs using child items
 
         self.edges = set()
         """Edges attached to this connection. To change this set use `Connection`'s methods: attach, detach, detachAll.
@@ -31,6 +31,10 @@ class Connection(SchemeItem, ShadowSelectableItem):
         self._trigger_item = Trigger(self)
 
         self._data_type = data_type or Unknown
+
+        self._approved_selection = True
+        """Connection is not selectable from outside sources. This flag is set by some internal methods to indicate that
+        a selection is legitimate."""
 
         self.styleChange()
         self.paletteChange()
@@ -108,37 +112,42 @@ class Connection(SchemeItem, ShadowSelectableItem):
         
         This processes position changes by adjusting all the edges and forwards the arguments to the superclass.
         """
-        if change == QGraphicsItem.ItemScenePositionHasChanged or change == QGraphicsItem.ItemVisibleHasChanged:
+        # ItemScenePositionHasChanged ----------------------------------------------------------------------------------
+        if change == self.ItemScenePositionHasChanged or change == self.ItemVisibleHasChanged:
             for edge in self.edges:
                 edge.adjust()
+        # ItemSelectedChange -------------------------------------------------------------------------------------------
+        if change == self.ItemSelectedChange:
+            # Connection is not selectable from outside sources. Selection is approved only if the corresponding flag is
+            # set (it is set by internal methods).
+            if not self._approved_selection:
+                value = self.isSelected()
+            self._approved_selection = False
 
         return super().itemChange(change, value)
-
-    def itemShadowSelectedHasChangedEvent(self, value):
-        pal = self.palette()
-
-        if value == True:
-            pal.setCurrentColorGroup(Palette.Selected)
-        else:
-            pal.setCurrentColorGroup(Palette.Active)
-        
-        self.paletteChange()
-
-    def updateSelectedStatus(self):
-        """Checks if at least one edge is selected. If so, set this connection to selected.
-        Opposite also applies - if no edges are selected, deselect this edge.
-        The connection is responsible to propagate this call to edges.
+    
+    def autoSelect(self):
+        """This function updates connection selection.
+        The connection asks the edges to autoSelect themselves, and they in turn call self.autoSelectFromEdge.
         """
         for edge in self.edges:
-            edge.updateSelectedStatus()
+            edge.autoSelect()
 
-        for edge in self.edges:
-            if edge.isShadowSelected():
-                self.setShadowSelected(True)
-                break
-        else:
-            self.setShadowSelected(False)
+    def autoSelectFromEdge(self):
+        """This function updates connection selection status when an edge changes selection."""
+        value = False
 
+        if self.parentItem().isSelected():
+            for edge in self.edges:
+                if edge.isSelected():
+                    value = True
+                    break
+        
+        if value != self.isSelected():
+            self._approved_selection = True
+            self.setSelected(value)
+
+                
     # Serialization ====================================================================================================
     def serialize(self) -> dict:
         return {

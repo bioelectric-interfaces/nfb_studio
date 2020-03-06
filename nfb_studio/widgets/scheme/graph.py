@@ -33,7 +33,7 @@ class AbstractGraph:
         result = GraphSnapshot()
 
         selected_nodes = [node for node in self.nodes if node.isSelected()]
-        selected_edges = [edge for edge in self.edges if edge.isShadowSelected()]
+        selected_edges = [edge for edge in self.edges if edge.isSelected()]
 
         result.nodes = frozenset(selected_nodes)
         result.edges = frozenset(selected_edges)

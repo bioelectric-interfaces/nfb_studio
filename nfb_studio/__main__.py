@@ -51,9 +51,6 @@ def main():
     scene.connect_nodes(n.outputs[0], n2.inputs[0])
     scene.connect_nodes(n3.outputs[0], n2.inputs[1])
 
-    n2.setSelected(True)
-    n3.setSelected(True)
-
     w = scene.view
     w.setMinimumSize(800, 600)
     w.show()

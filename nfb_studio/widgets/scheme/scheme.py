@@ -199,15 +199,13 @@ class Scheme(QGraphicsScene):
 
         if package.hasObject(GraphSnapshot):
             snapshot = package.objectData(GraphSnapshot)
+            self.merge(snapshot)
 
             self.clearSelection()  # Clear old selection
-
             snapshot.selectAll()  # Create new selection (pasted items)
 
             offset = self.schemeStyle().pixelMetric(Style.PasteOffset)
             snapshot.moveBy(offset, offset)  # Move all items by some offset 
-            
-            self.merge(snapshot)
 
             self.copyEvent()  # Copy the selection again (nothing changes except for the item offset)
 
