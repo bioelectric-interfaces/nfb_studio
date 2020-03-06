@@ -52,8 +52,8 @@ class AbstractGraph:
         
         selected_edges = []
         for edge in self.edges:
-            if ((edge.source_node() is not None and self.source_node().isSelected()) or 
-                (edge.target_node() is not None and self.target_node().isSelected())):
+            if ((edge.sourceNode() is not None and self.sourceNode().isSelected()) or 
+                (edge.targetNode() is not None and self.targetNode().isSelected())):
                 selected_edges.append(edge)  
 
         result.nodes = frozenset(selected_nodes)
@@ -131,8 +131,8 @@ class AbstractGraph:
         data["edges"] = []
 
         for edge in self.edges:
-            source_node = edge.source_node()
-            target_node = edge.target_node()
+            source_node = edge.sourceNode()
+            target_node = edge.targetNode()
 
             if source_node is None or target_node is None:
                 # Not serializing dangling nodes
@@ -174,11 +174,8 @@ class Graph(AbstractGraph):
         raised.
         """
         # Check that this edge is valid, that is both its source and target are in the scene (if they exist)
-        if (edge.source_node() is None or edge.source_node() in self.nodes) and \
-           (edge.target_node() is None or edge.target_node() in self.nodes):
-            # Ensure that the connections know about this edge
-            edge.source().edges.add(edge)
-            edge.target().edges.add(edge)
+        if (edge.sourceNode() is None or edge.sourceNode() in self.nodes) and \
+           (edge.targetNode() is None or edge.targetNode() in self.nodes):
 
             self.edges.add(edge)
         else:
@@ -192,7 +189,7 @@ class Graph(AbstractGraph):
         # Remove connected edges
         to_remove = []
         for edge in self.edges:
-            if edge.source_node() == node or edge.target_node() == node:
+            if edge.sourceNode() == node or edge.targetNode() == node:
                 to_remove.append(edge)
         
         for edge in to_remove:
@@ -204,9 +201,7 @@ class Graph(AbstractGraph):
     def removeEdge(self, edge: Edge):
         """Remove an edge from this graph."""
         self.edges.remove(edge)
-
-        edge.source().edges.remove(edge)
-        edge.target().edges.remove(edge)
+        edge.detachAll()  # Disconnect from nodes that are still in this graph
 
     def connect_nodes(self, source: Output, target: Input) -> Edge:
         """Connect an Output connection to an Input connection with an edge.
@@ -214,12 +209,8 @@ class Graph(AbstractGraph):
         Returns the newly created edge.
         """
         edge = Edge()
-
         edge.setSource(source)
         edge.setTarget(target)
-
-        source.edges.add(edge)
-        target.edges.add(edge)
 
         self.addEdge(edge)
         return edge

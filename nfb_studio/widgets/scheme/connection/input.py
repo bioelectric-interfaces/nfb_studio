@@ -9,7 +9,6 @@ from ..palette import Palette
 from ..scheme_item import SchemeItem
 from ..data_type import DataType, Unknown
 from .connection import Connection
-from .edge_drag import EdgeDrag
 
 class Input(Connection):
     """A data input into a node."""
@@ -22,6 +21,27 @@ class Input(Connection):
 
         self.styleChange()
 
+    # Working with edges ===============================================================================================
+    def attach(self, edge):
+        """Attach an edge to this connection."""
+        edge.setTarget(self)
+
+    def detach(self, edge):
+        """Detach an edge from this connection.  
+        Other connection of this edge is unaffected.
+        """
+        assert(edge in self.edges)
+        assert(edge.target() is self)
+
+        edge.setTarget(None)
+
+    def detachAll(self):
+        """Detach all edges."""
+        edges_ = list(self.edges)  # self.edges will shrink during iteration
+        for edge in edges_:
+            edge.setTarget(None)
+
+    # Style and palette ================================================================================================
     def styleChange(self):
         super().styleChange()
         self.prepareGeometryChange()
@@ -33,6 +53,7 @@ class Input(Connection):
         self._stem_item.setLine(QLineF(self.stemRoot(), self.stemTip()))
         self._text_item.setPos(self.stemTip().x() - margin, metrics.capHeight() / 2)
 
+    # Geometry and drawing =============================================================================================
     def stemRoot(self):
         """Return position of stem's root (where the stem connects to the node) in local coordinates."""
         return QPointF(0, 0)  # Stem root is located exactly at the origin
@@ -46,44 +67,24 @@ class Input(Connection):
     # Drawing edges ====================================================================================================
     # The heavy lifting such as detecting when the edge started being drawn, mouse moving and data transfers are handled
     # by a member item called self._trigger_item. Connection handles the logic.
-    def edgeDragStart(self) -> EdgeDrag:
-        """Called when user tries to drag an edge from this connection.
-        
-        This operation starts the edge drawing process. It returns an EdgeDrag object that will be given to the
-        reciever.
-        """
-        scene = self.scene()
-        to_remove = list(self.edges)
-        for edge in to_remove:
-            scene.removeItem(edge)
+    def edgeDragStart(self):
+        """Called when user tries to drag an edge from this connection."""
+        self.detachAll()  # Detach all old edges
+        super().edgeDragStart()
 
-        result = EdgeDrag()
-        node = self.parentItem()
-
-        result.node_id = id(node)
-        result.connection_type = "Input"
-        result.connection_index = node.inputs.index(self)
-        result.data_type = self.dataType()
-        
-        return result
-
-    def edgeDragAccept(self, edge_drag: EdgeDrag):
-        """Called when a new edge is being dragged into the drop zone.
-        
+    def edgeDragAccept(self):
+        """Called when a new edge is being dragged into the drop zone.  
         Returns True or False depending on whether the dragged edge should be accepted or not.
         """
-        return (edge_drag.connection_type != "Input" and edge_drag.data_type == self.dataType())
+        fake_edge = self.scene()._dragging_edge  # The edge being dragged as the mouse moves
 
-    def edgeDragDrop(self, edge_drag: EdgeDrag):
-        """Called when a new edge has been dragged and was dropped.
-        
-        This operation concludes the edge drawing process.
+        return fake_edge.target() is None and fake_edge.dataType() == self.dataType()
+
+    def edgeDragDrop(self):
+        """Called when a new edge has been dragged and was dropped.  
+        This operation concludes the edge drawing process. It creates a real edge between source and self.
         """
         scene = self.scene()
+        fake_edge = scene._dragging_edge
 
-        target = self
-
-        source_node = scene.findNode(edge_drag.node_id)
-        source = source_node.outputs[edge_drag.connection_index]
-
-        scene.connect_nodes(source, target)
+        scene.connect_nodes(fake_edge.source(), self)

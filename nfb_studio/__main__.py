@@ -54,7 +54,7 @@ def main():
     n2.setSelected(True)
     n3.setSelected(True)
 
-    w = scene.getView()
+    w = scene.view
     w.setMinimumSize(800, 600)
     w.show()
 

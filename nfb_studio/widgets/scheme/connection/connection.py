@@ -21,7 +21,9 @@ class Connection(SchemeItem, ShadowSelectableItem):
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemHasNoContents)  # Drawing occurs using child items
 
-        self.edges = set()  # Edges related to this connection
+        self.edges = set()
+        """Edges attached to this connection. To change this set use `Connection`'s methods: attach, detach, detachAll.
+        """
 
         self._text_item = TextLineItem(text or "Connection", self)
         self._stem_item = QGraphicsLineItem(self)
@@ -33,6 +35,22 @@ class Connection(SchemeItem, ShadowSelectableItem):
         self.styleChange()
         self.paletteChange()
 
+    # Working with edges ===============================================================================================
+    def attach(self, edge):
+        """Attach an edge to this connection."""
+        raise NotImplementedError
+
+    def detach(self, edge):
+        """Detach an edge from this connection.  
+        Other connection of this edge is unaffected.
+        """
+        raise NotImplementedError
+
+    def detachAll(self):
+        """Detach all edges."""
+        raise NotImplementedError
+
+    # Member access ====================================================================================================
     def text(self):
         return self._text_item.text()
 
@@ -49,6 +67,7 @@ class Connection(SchemeItem, ShadowSelectableItem):
             # Verify that all edges are fine with changing the data type.
             edge.checkDataType()
 
+    # Geometry and drawing =============================================================================================
     def stemRoot(self):
         """Return position of stem's root (where the stem connects to the node) in local inches."""
         raise NotImplementedError
@@ -57,6 +76,13 @@ class Connection(SchemeItem, ShadowSelectableItem):
         """Return position of stem's root (where the stem connects to the edge) in local inches."""
         raise NotImplementedError
     
+    def boundingRect(self):
+        return QRectF()
+
+    def paint(self, painter: QPainter, option, widget=...) -> None:
+        pass
+
+    # Style and palette ================================================================================================
     def styleChange(self):
         super().styleChange()
         style = self.style()
@@ -65,7 +91,7 @@ class Connection(SchemeItem, ShadowSelectableItem):
         self._text_item.setMaximumWidth(style.pixelMetric(Style.ConnectionTextLength))
 
         self._stem_item.setPen(style.edgePen(self.palette()))
-
+    
     def paletteChange(self):
         super().paletteChange()
         text_bg = self.palette().background().color()
@@ -76,6 +102,7 @@ class Connection(SchemeItem, ShadowSelectableItem):
 
         self._stem_item.setPen(self.style().edgePen(self.palette()))
 
+    # Events ===========================================================================================================
     def itemChange(self, change, value):
         """A function that runs every time some change happens to the connection.
         
@@ -96,12 +123,6 @@ class Connection(SchemeItem, ShadowSelectableItem):
             pal.setCurrentColorGroup(Palette.Active)
         
         self.paletteChange()
-
-    def boundingRect(self):
-        return QRectF()
-
-    def paint(self, painter: QPainter, option, widget=...) -> None:
-        pass
 
     def updateSelectedStatus(self):
         """Checks if at least one edge is selected. If so, set this connection to selected.
@@ -133,23 +154,17 @@ class Connection(SchemeItem, ShadowSelectableItem):
     # The heavy lifting such as detecting when the edge started being drawn, mouse moving and data transfers are handled
     # by a member item called self._trigger_item. Connection handles the logic.
     def edgeDragStart(self):
-        """Called when user tries to drag an edge from this connection.
-        
-        This operation starts the edge drawing process. It returns an EdgeDrag object that will be given to the
-        reciever.
-        """
-        raise NotImplementedError
+        """Called when user tries to drag an edge from this connection."""
+        self.scene().edgeDragStart(self)
 
-    def edgeDragAccept(self, edgedrag: EdgeDrag):
-        """Called when a new edge is being dragged into the drop zone.
-        
+    def edgeDragAccept(self) -> bool:
+        """Called when a new edge is being dragged into the drop zone.  
         Returns True or False depending on whether the dragged edge should be accepted or not.
         """
         raise NotImplementedError
 
-    def edgeDragDrop(self, edgedrag: EdgeDrag):
-        """Called when a new edge has been dragged and was dropped.
-        
+    def edgeDragDrop(self):
+        """Called when a new edge has been dragged and was dropped.  
         This operation concludes the edge drawing process.
         """
         raise NotImplementedError
