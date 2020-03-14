@@ -1,6 +1,9 @@
 """An object-aware JSON encoder."""
 import json
 from warnings import warn
+from typing import Union
+
+from ..hooks import Hooks
 
 
 def _write_metadata(obj, data: dict) -> dict:
@@ -34,13 +37,14 @@ class JSONEncoder(json.JSONEncoder):
 
     You can add support for serializing your class in two ways:  
     - By adding a member function to your class: `def serialize(self) -> dict`;
-    - By adding an external function `def serialize(obj) -> dict` and passing it in a dict as the `object_hooks`
-      parameter. (`object_hooks` is a dict that matches a class to a serialization function.)
+    - By adding an external function `def serialize(obj) -> dict` and passing it in a dict as the `hooks`
+      parameter. (`hooks` is a dict that matches a class to a serialization function.). This parameter also can accept a
+      Hooks object or a tuple of two dicts: a serialization dict and a deserialization dict (the latter is ignored).
 
-    When serializing an object, this encoder checks if that object's class has a function in `object_hooks` or has a
+    When serializing an object, this encoder checks if that object's class has a function in `hooks` or has a
     callable serialize() attribute. If that is the case, the resulting dict from calling the function will be used in
     that object's place in json.
-    Functions in the `object_hooks` parameter take precedence over member functions.
+    Functions in the `hooks` parameter take precedence over member functions.
 
     .. warning::
         JSONEncoder adds a field to the dict, produced from the object, called `__class__`. This field is used in the
@@ -52,24 +56,29 @@ class JSONEncoder(json.JSONEncoder):
     nfb_studio.serialize.decoder.JSONDecoder : An object-aware JSON decoder.
     """
 
-    def __init__(self, *, object_hooks: dict = None, skipkeys=False, ensure_ascii=False, check_circular=True,
-                 allow_nan=True, sort_keys=False, indent=None, separators=None, **kw):
+    def __init__(self, *, hooks: Union[dict, tuple, Hooks] = None, skipkeys=False, ensure_ascii=False, 
+                 check_circular=True, allow_nan=True, sort_keys=False, indent=None, separators=None, **kw):
         """Constructs the JSONEncoder object.
         
         Constructs the object from the following arguments:  
-        - object_hooks - a dict, mapping types to functions that can be used to serialize them in the format
-          `def foo(obj) -> dict`;
-        - other arguments inherited from JSONEncoder, except for `default, which is not inherited and is ignored.
+        - hooks - a dict, mapping types to functions that can be used to serialize them in the format
+          `def foo(obj) -> dict`, a tuple containing such dict as it's element 0, or a `hooks.Hooks` object;
+        - other arguments inherited from JSONEncoder, except for `default`, which is not inherited and is ignored.
         """
         super().__init__(skipkeys=skipkeys, ensure_ascii=ensure_ascii, check_circular=check_circular,
                          allow_nan=allow_nan, sort_keys=sort_keys, indent=indent, separators=separators)
         
-        self.object_hooks = object_hooks or {}
+        if isinstance(hooks, dict):
+            self.hooks = hooks
+        elif isinstance(hooks, tuple):  # hooks.Hooks is also a tuple
+            self.hooks = hooks[0]  # Only serialization functions
+        else:
+            self.hooks = {}
 
     def default(self, obj):
         """Implementation of `JSONEncoder`'s `default` method that enables the serialization logic."""
-        if type(obj) in self.object_hooks:
-            data = self.object_hooks[type(obj)](obj)
+        if type(obj) in self.hooks:
+            data = self.hooks[type(obj)](obj)
             _write_metadata(obj, data)
             return data
 

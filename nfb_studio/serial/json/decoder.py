@@ -2,6 +2,9 @@
 import json
 from importlib import import_module
 from inspect import isclass
+from typing import Union
+
+from ..hooks import Hooks
 
 
 class JSONDecoder(json.JSONDecoder):
@@ -9,14 +12,15 @@ class JSONDecoder(json.JSONDecoder):
 
     You can add support for deserializing your class in two ways:  
     - By adding a member function to your class: `def deserialize(self, data: dict)`;
-    - By adding an external function `def deserialize(obj, data: dict)` and passing it in a dict as the `object_hooks`
-      parameter. (`object_hooks` is a dict that matches a class to a deserialization function.)
+    - By adding an external function `def deserialize(obj, data: dict)` and passing it in a dict as the `hooks`
+      parameter. (`hooks` is a dict that matches a class to a deserialization function.) This parameter also can accept
+      a Hooks object or a tuple of two dicts: a serialization dict and a deserialization dict (the latter is ignored).
 
     When deserializing an object, this decoder first looks up the metadata field left by the JSONEncoder. If that
     field exists, the decoder default-constructs an instance of a class that was encoded. It then checks if the class
-    instance has a function in `object_hooks` or has a callable `deserialize()` attribute. If that is the case, the dict
+    instance has a function in `hooks` or has a callable `deserialize()` attribute. If that is the case, the dict
     read from json is passed to that function to allow the class instance to load the contents into itself. Functions in
-    the `object_hooks` parameter take precedence over member functions.
+    the `hooks` parameter take precedence over member functions.
 
     JSONDecoder does not accept an `object_hook` or `object_pairs_hook` parameter from JSONDecoder.
 
@@ -28,17 +32,22 @@ class JSONDecoder(json.JSONDecoder):
     --------
     nfb_studio.serialize.encoder.JSONEncoder : An object-aware JSON encoder.
     """
-    def __init__(self, *, object_hooks: dict = None, parse_float=None, parse_int=None, parse_constant=None,
-                 strict=True, **kw):
+    def __init__(self, *, hooks: Union[dict, tuple, Hooks] = None, parse_float=None, parse_int=None,
+                 parse_constant=None, strict=True, **kw):
         """Constructs the JSONDecoder object.
         
         Constructs the object from the following arguments:  
-        - object_hooks - a dict, mapping types to functions that can be used to deserialize them from a dict in the
-          format `def foo(obj, data: dict)`;
+        - hooks - a dict, mapping types to functions that can be used to deserialize them from a dict in the
+          format `def foo(obj, data: dict)`, a tuple containing such dict as it's element 0, or a `hooks.Hooks` object;
         - other arguments inherited from JSONDecoder, except for `object_hook` and `object_pairs_hook`, which are not
-          inherited.
+          inherited and are ignored.
         """
-        self.object_hooks = object_hooks
+        if isinstance(hooks, dict):
+            self.hooks = hooks
+        elif isinstance(hooks, tuple):  # hooks.Hooks is also a tuple
+            self.hooks = hooks[1]  # Only deserialization functions
+        else:
+            self.hooks = {}
 
         # Object hook used to handle custom deserialization
         def object_hook(data: dict):
@@ -46,7 +55,7 @@ class JSONDecoder(json.JSONDecoder):
 
             An internal function. This method is used as an object_hook to initialize JSONDecoder. It looks for a meta
             field called `__class__` as a marker that the json field should be deserialized as an object. It attempts to
-            default-construct an instance of the specified class and call either a method from the object_hooks dict or
+            default-construct an instance of the specified class and call either a method from the hooks dict or
             instance's own `deserialize(data: dict)` method to load the json contents into it.
 
             Raises
@@ -86,8 +95,8 @@ class JSONDecoder(json.JSONDecoder):
             obj = cls()
 
             # Load the json data into the object -----------------------------------------------------------------------
-            if cls in self.object_hooks:
-                self.object_hooks[cls](obj, data)
+            if cls in self.hooks:
+                self.hooks[cls](obj, data)
                 return obj
             elif hasattr(obj, "deserialize") and callable(obj.deserialize):
                 obj.deserialize(data)

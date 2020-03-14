@@ -1,6 +1,8 @@
-from PySide2.QtWidgets import QApplication
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QApplication, QMainWindow, QListView, QWidget, QHBoxLayout
 
 from nfb_studio.widgets.scheme import Scheme, Node, Input, Output, InfoMessage, WarningMessage, ErrorMessage
+from nfb_studio.widgets import NodeToolboxModel
 from nfb_studio import std_encoder as encoder
 
 
@@ -22,11 +24,35 @@ class TestNode(Node):
 
         self.removeInput(0)
 
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.ntmodel = NodeToolboxModel(self)
+        self.ntview = QListView(self)
+        self.ntview.setModel(self.ntmodel)
+        self.ntview.setSelectionMode(self.ntview.SingleSelection)
+        self.ntview.setDragEnabled(True)
+        self.ntview.setDragDropMode(self.ntview.DragOnly)
+
+        self.scheme = Scheme(self)
+        self.scheme_view = self.scheme.view
+
+        w = QWidget()
+        layout = QHBoxLayout()
+        self.setCentralWidget(w)
+        w.setLayout(layout)
+
+        layout.addWidget(self.ntview)
+        layout.addWidget(self.scheme_view)
+
 
 def main():
     app = QApplication([])
-    scene = Scheme()
-    scene.setParent(app)
+    main_window = MainWindow()
+    main_window.show()
+
+    '''scene = Scheme(app)
 
     n = TestNode()
     n.setup()
@@ -54,7 +80,7 @@ def main():
 
     w = scene.view
     w.setMinimumSize(800, 600)
-    w.show()
+    w.show()'''
 
     return app.exec_()
 

@@ -2,8 +2,6 @@ from PySide2.QtCore import Qt, QPointF, QRectF, QLineF
 from PySide2.QtGui import QDrag, QPainterPath
 from PySide2.QtWidgets import QGraphicsSceneMouseEvent, QGraphicsSceneDragDropEvent, QApplication
 
-from nfb_studio import StdMimeData
-
 from ..scheme_item import SchemeItem
 from ..style import Style
 from .edge_drag import EdgeDrag

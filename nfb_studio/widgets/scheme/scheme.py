@@ -1,11 +1,11 @@
 """A data model for the nfb experiment's system of signals and their components."""
 from typing import Union
 
-from PySide2.QtCore import Qt, QPointF
+from PySide2.QtCore import Qt, QPointF, QMimeData
 from PySide2.QtGui import QPainter, QKeySequence
-from PySide2.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QShortcut, QApplication
+from PySide2.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QGraphicsRectItem, QShortcut, QApplication
 
-from nfb_studio import StdMimeData
+from nfb_studio.serial import mime, hooks
 
 from .graph import AbstractGraph, Graph, GraphSnapshot
 from .node import Node
@@ -40,8 +40,11 @@ class Scheme(QGraphicsScene):
             self.setRenderHint(QPainter.Antialiasing)
             self.setRenderHint(QPainter.SmoothPixmapTransform)
 
+            # Remove the scrollbars
             self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
             self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+            self.setSceneRect(0, 0, self.size().width(), self.size().height())
 
         def setScene(self, scene):
             if not isinstance(scene, Scheme):
@@ -59,11 +62,13 @@ class Scheme(QGraphicsScene):
 
             delete_shortcut = QShortcut(QKeySequence.Delete, self)
             delete_shortcut.activated.connect(scene.deleteEvent)
+        
 
 
-    def __init__(self):
+
+    def __init__(self, parent=None):
         """Constructs a Scheme with an optional `parent` parameter that is passed to the super()."""
-        super().__init__()
+        super().__init__(parent)
         self.graph = Graph()
 
         self.view = self.View()
@@ -197,19 +202,19 @@ class Scheme(QGraphicsScene):
         if len(snapshot.nodes) == 0:  # Nothing to copy
             return
 
-        package = StdMimeData()
-        package.setObject(snapshot)
+        package = QMimeData()
+        mime.dump(snapshot, package, "application/x-nfb_studio-graph", hooks=hooks.qt)
 
         clipboard = QApplication.clipboard()
-        clipboard.setMimeData(package.qmimedata)
+        clipboard.setMimeData(package)
 
     def pasteEvent(self):
         """Retrieve the data from a clipboard and paste it."""
         clipboard = QApplication.clipboard()
-        package = StdMimeData(clipboard.mimeData())
+        package = clipboard.mimeData()
 
-        if package.hasObject(GraphSnapshot):
-            snapshot = package.objectData(GraphSnapshot)
+        if package.hasFormat("application/x-nfb_studio-graph"):
+            snapshot = mime.load(package, "application/x-nfb_studio-graph", hooks=hooks.qt)
             self.merge(snapshot)
 
             self.clearSelection()  # Clear old selection
@@ -269,6 +274,18 @@ class Scheme(QGraphicsScene):
 
         self._dragging_edge.detachAll()
         self._dragging_edge = None
+
+    def dragEnterEvent(self, event):
+        package = event.mimeData()
+        event.setAccepted(package.hasFormat("application/x-toolbox-node"))
+        print("ok tho")
+    
+    def dropEvent(self, event):
+        package = event.mimeData()
+        node = mime.load(package, "application/x-toolbox-node", hooks=hooks.qt)
+
+        node.setPos(event.scenePos())
+        self.addItem(node)
 
     def dragMoveEvent(self, event):
         if event.mimeData().hasFormat(EdgeDrag.format) and self.hasEdgeDrag():

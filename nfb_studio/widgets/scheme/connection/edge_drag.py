@@ -2,7 +2,7 @@ from PySide2.QtCore import QMimeData
 from PySide2.QtGui import QDrag
 
 class EdgeDrag(QDrag):
-    format = "application/x-edgedrag"
+    format = "application/x-nfb_studio-edge_drag"
     """Format that is used as the tag mime type. Actual information is stored in the scene."""
 
     def __init__(self, scheme, dragSource):
