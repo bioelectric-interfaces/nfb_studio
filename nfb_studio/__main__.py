@@ -1,8 +1,9 @@
+import sys
+
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QApplication, QMainWindow, QListView, QWidget, QHBoxLayout
 
-from nfb_studio.widgets.scheme import Scheme, Node, Input, Output, InfoMessage, WarningMessage, ErrorMessage
-from nfb_studio.widgets import NodeToolboxModel
+from nfb_studio.widgets.scheme import Scheme, Node, Input, Output, InfoMessage, WarningMessage, ErrorMessage, Toolbox
 from nfb_studio import std_encoder as encoder
 
 
@@ -10,7 +11,6 @@ class TestNode(Node):
     def __init__(self):
         super(TestNode, self).__init__()
 
-    def setup(self):
         self.setTitle("Test node")
         self.setDescription("Stream: Mitsar\nFrequency: 500 Hz\nChannels: 30")
 
@@ -28,12 +28,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.ntmodel = NodeToolboxModel(self)
-        self.ntview = QListView(self)
-        self.ntview.setModel(self.ntmodel)
-        self.ntview.setSelectionMode(self.ntview.SingleSelection)
-        self.ntview.setDragEnabled(True)
-        self.ntview.setDragDropMode(self.ntview.DragOnly)
+        self.toolbox = Toolbox(self)
+        self.tbview = self.toolbox.getView()
 
         self.scheme = Scheme(self)
         self.scheme_view = self.scheme.view
@@ -43,19 +39,35 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(w)
         w.setLayout(layout)
 
-        layout.addWidget(self.ntview)
+        layout.addWidget(self.tbview)
         layout.addWidget(self.scheme_view)
 
 
 def main():
-    app = QApplication([])
+    app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
+
+    tb = main_window.toolbox
+    lsl_input = TestNode()
+    lsl_input.removeInput(-1)
+    lsl_input.removeInput(-1)
+    lsl_input.removeOutput(-1)
+    lsl_input.removeOutput(-1)
+    lsl_input.setTitle("LSL Input")
+
+    bpf = Node()
+    bpf.addInput(Input("Raw data"))
+    bpf.addOutput(Output("Filtered data"))
+    bpf.setTitle("Bandpass Filter")
+    bpf.setDescription("Filter range:\n    50 Hz ~ 200 Hz")
+
+    tb.addItem("LSL Input", lsl_input)
+    tb.addItem("Bandpass Filter", bpf)
 
     '''scene = Scheme(app)
 
     n = TestNode()
-    n.setup()
     n.setTitle("LSL Input")
     n.setDescription("Stream: Mitsar\nFrequency: 500 Hz\nChannels: 30")
     n.setPosition(1, 1)
@@ -64,12 +76,10 @@ def main():
     n.addMessage(ErrorMessage("ErrorMessage message"))
 
     n2 = TestNode()
-    n2.setup()
     n2.setTitle("Bandpass Filter")
     n2.setPosition(3, 3)
 
     n3 = TestNode()
-    n3.setup()
     n3.setTitle("Aux Input")
 
     scene.addItem(n)

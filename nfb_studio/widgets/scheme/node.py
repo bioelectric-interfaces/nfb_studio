@@ -267,6 +267,15 @@ class Node(SchemeItem):
         self.setTitle(data["title"])
         self.setDescription(data["description"])
 
+        for i in range(len(self.inputs)):
+            self.removeInput(0)
+
+        for i in range(len(self.outputs)):
+            self.removeOutput(0)
+
+        for i in range(len(self.messages)):
+            self.removeMessage(0)
+
         for input in data["inputs"]:
             self.addInput(input)
 

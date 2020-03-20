@@ -8,11 +8,11 @@ from ..style import Style
 from ..palette import Palette
 from ..scheme_item import SchemeItem
 from ..data_type import DataType, Unknown
-from .edge_drag import EdgeDrag
 from .trigger import Trigger
 
 class Connection(SchemeItem):
     """Connection is an input or output from a Node."""
+    EdgeDragMimeType = Trigger.DragMimeType
 
     def __init__(self, text=None, data_type: DataType = None, parent: QGraphicsItem = None):
         super().__init__(parent)
@@ -193,8 +193,16 @@ class Connection(SchemeItem):
         raise NotImplementedError
 
     def edgeDragDrop(self):
-        """Called when a new edge has been dragged and was dropped.  
-        This operation concludes the edge drawing process.
+        """Called when a new edge has been dragged and dropped into this connection's trigger zone.  
+        This function is responsible for actually connecting the two nodes with a real edge.
         """
         if not self.isMultiple():
             self.detachAll()
+    
+    def edgeDragStop(self):
+        """Conclude the edge drawing process.
+        This function is called when a drag process from this connection has stopped, regardless of the outcome. (For 
+        example, when the edge drawing has failed). Default implementation calls the scene-wide version of this
+        function.
+        """
+        self.scene().edgeDragStop()

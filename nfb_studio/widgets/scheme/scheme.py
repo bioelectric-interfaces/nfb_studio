@@ -3,7 +3,9 @@ from typing import Union
 
 from PySide2.QtCore import Qt, QPointF, QMimeData
 from PySide2.QtGui import QPainter, QKeySequence
-from PySide2.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QGraphicsRectItem, QShortcut, QApplication
+from PySide2.QtWidgets import (
+    QGraphicsScene, QGraphicsView, QGraphicsItem, QGraphicsRectItem, QShortcut, QApplication, QSizePolicy
+)
 
 from nfb_studio.serial import mime, hooks
 
@@ -11,9 +13,9 @@ from .graph import AbstractGraph, Graph, GraphSnapshot
 from .node import Node
 from .edge import Edge
 from .connection import Input, Output, Connection
-from .connection.edge_drag import EdgeDrag
 from .style import Style
 from .palette import Palette
+from .toolbox import Toolbox
 
 class Scheme(QGraphicsScene):
     """A data model for the nfb experiment's system of signals and their components.
@@ -45,6 +47,7 @@ class Scheme(QGraphicsScene):
             self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
             self.setSceneRect(0, 0, self.size().width(), self.size().height())
+            self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
 
         def setScene(self, scene):
             if not isinstance(scene, Scheme):
@@ -62,9 +65,9 @@ class Scheme(QGraphicsScene):
 
             delete_shortcut = QShortcut(QKeySequence.Delete, self)
             delete_shortcut.activated.connect(scene.deleteEvent)
-        
 
 
+    ClipboardMimeType = "application/x-nfb_studio-graph"
 
     def __init__(self, parent=None):
         """Constructs a Scheme with an optional `parent` parameter that is passed to the super()."""
@@ -77,6 +80,10 @@ class Scheme(QGraphicsScene):
         # Drag-drawing edges support -----------------------------------------------------------------------------------
         self._dragging_edge = None
         """A temporary edge that is being displayed when an edge is drawn by the user with drag and drop."""
+
+        # Clipboard support --------------------------------------------------------------------------------------------
+        self.paste_pos = QPointF()
+        """Position where the center of the pasted object will be located."""
 
         # Style and palette --------------------------------------------------------------------------------------------
         self._style = Style()
@@ -203,7 +210,7 @@ class Scheme(QGraphicsScene):
             return
 
         package = QMimeData()
-        mime.dump(snapshot, package, "application/x-nfb_studio-graph", hooks=hooks.qt)
+        mime.dump(snapshot, package, self.ClipboardMimeType, hooks=hooks.qt)
 
         clipboard = QApplication.clipboard()
         clipboard.setMimeData(package)
@@ -213,8 +220,8 @@ class Scheme(QGraphicsScene):
         clipboard = QApplication.clipboard()
         package = clipboard.mimeData()
 
-        if package.hasFormat("application/x-nfb_studio-graph"):
-            snapshot = mime.load(package, "application/x-nfb_studio-graph", hooks=hooks.qt)
+        if package.hasFormat(self.ClipboardMimeType):
+            snapshot = mime.load(package, self.ClipboardMimeType, hooks=hooks.qt)
             self.merge(snapshot)
 
             self.clearSelection()  # Clear old selection
@@ -268,7 +275,8 @@ class Scheme(QGraphicsScene):
 
     def edgeDragStop(self):
         """Triggers an end of an edge drawing mode.  
-        Cleans up by removing the fake edge. This function is called from the QDrag-like object, EdgeDrag.
+        Cleans up by removing the fake edge. This function is called regardless of whether edge drag resulted in a
+        successful connection.
         """
         super().removeItem(self._dragging_edge)
 
@@ -277,18 +285,28 @@ class Scheme(QGraphicsScene):
 
     def dragEnterEvent(self, event):
         package = event.mimeData()
-        event.setAccepted(package.hasFormat("application/x-toolbox-node"))
-        print("ok tho")
+        event.setAccepted(
+            package.hasFormat(Toolbox.DragMimeType) or
+            package.hasFormat(Connection.EdgeDragMimeType)
+        )
     
     def dropEvent(self, event):
         package = event.mimeData()
-        node = mime.load(package, "application/x-toolbox-node", hooks=hooks.qt)
 
-        node.setPos(event.scenePos())
-        self.addItem(node)
+        if package.hasFormat(Toolbox.DragMimeType):
+            node = mime.load(package, Toolbox.DragMimeType, hooks=hooks.qt)
+
+            pos = event.scenePos() - QPointF(
+                node.boundingRect().size().width()/2,
+                node.boundingRect().size().height()/2
+            )
+            node.setPos(pos)
+            self.addItem(node)
+        else:
+            super().dropEvent(event)
 
     def dragMoveEvent(self, event):
-        if event.mimeData().hasFormat(EdgeDrag.format) and self.hasEdgeDrag():
+        if event.mimeData().hasFormat(Connection.EdgeDragMimeType) and self.hasEdgeDrag():
             # Update edge position, but otherwise do the default thing.
             super().dragMoveEvent(event)  
             if self._dragging_edge.source() is None:
