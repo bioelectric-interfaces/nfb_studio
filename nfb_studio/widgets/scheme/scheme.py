@@ -1,7 +1,7 @@
 """A data model for the nfb experiment's system of signals and their components."""
 from typing import Union
 
-from PySide2.QtCore import Qt, QPointF, QMimeData
+from PySide2.QtCore import Qt, QPointF, QMimeData, Signal
 from PySide2.QtGui import QPainter, QKeySequence
 from PySide2.QtWidgets import (
     QGraphicsScene, QGraphicsView, QGraphicsItem, QGraphicsRectItem, QShortcut, QApplication, QSizePolicy
@@ -9,7 +9,7 @@ from PySide2.QtWidgets import (
 
 from nfb_studio.serial import mime, hooks
 
-from .graph import AbstractGraph, Graph, GraphSnapshot
+from .graph import Graph
 from .node import Node
 from .edge import Edge
 from .connection import Input, Output, Connection
@@ -35,6 +35,9 @@ class Scheme(QGraphicsScene):
     nfb_studio.widgets.scheme.Graph : A collection of nodes and edges.
     """
     class View(QGraphicsView):
+        configRequested = Signal(object)
+        """Emitted when a config of a node was requested. Sends the node."""
+
         def __init__(self, parent=None):
             super().__init__(parent=parent)
             self.setDragMode(QGraphicsView.RubberBandDrag)
@@ -47,7 +50,7 @@ class Scheme(QGraphicsScene):
             self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
             self.setSceneRect(0, 0, self.size().width(), self.size().height())
-            self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+            #self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
 
         def setScene(self, scene):
             if not isinstance(scene, Scheme):
@@ -98,13 +101,7 @@ class Scheme(QGraphicsScene):
 
         An override of super().addItem method that detects when a node or edge was added.
         """
-        if isinstance(item, Node):
-            self.graph.addNode(item)
-        elif isinstance(item, Edge):
-            self.graph.addEdge(item)
-        else:
-            raise TypeError("unrecognised graphics item of type " + type(item).__name__)
-
+        self.graph.add(item)
         super().addItem(item)
 
     def removeItem(self, item: QGraphicsItem):
@@ -124,15 +121,8 @@ class Scheme(QGraphicsScene):
             
             for edge in to_remove:
                 self.removeItem(edge)
-
-            # Remove the node
-            self.graph.removeNode(item)
-        # Remove an Edge -----------------------------------------------------------------------------------------------
-        elif isinstance(item, Edge):
-            self.graph.removeEdge(item)
-        # Unknown item -------------------------------------------------------------------------------------------------
-        else:
-            raise TypeError("unrecognised graphics item of type " + type(item).__name__)
+        
+        self.graph.remove(item)
 
     def connect_nodes(self, source: Output, target: Input):
         """Connect an Output connection to an Input connection with an edge.
@@ -155,7 +145,7 @@ class Scheme(QGraphicsScene):
             super().removeItem(edge)
         return edge
 
-    def extract(self, other: AbstractGraph):
+    def extract(self, other: Graph):
         """Update the scheme, removing elements from a graph.
         
         `other` represents a subgraph of the scheme graph that is to be extracted.
@@ -166,7 +156,7 @@ class Scheme(QGraphicsScene):
         for node in other.nodes:
             self.removeItem(node)
 
-    def merge(self, other: AbstractGraph):
+    def merge(self, other: Graph):
         """Update the scheme, adding elements from a graph."""
         self.graph.merge(other)
 
@@ -188,13 +178,13 @@ class Scheme(QGraphicsScene):
     def selectAll(self):
         self.graph.selectAll()
 
-    def selection(self) -> GraphSnapshot:
+    def selection(self) -> Graph:
         return self.graph.selection()
     
-    def clipboardSelection(self) -> GraphSnapshot:
+    def clipboardSelection(self) -> Graph:
         return self.graph.clipboardSelection()
     
-    def wideSelection(self) -> GraphSnapshot:
+    def wideSelection(self) -> Graph:
         return self.graph.wideSelection()
 
     # User actions =====================================================================================================
@@ -205,12 +195,15 @@ class Scheme(QGraphicsScene):
 
     def copyEvent(self):
         """Copy the selected graph and place it in the clipboard."""
-        snapshot = self.clipboardSelection()
-        if len(snapshot.nodes) == 0:  # Nothing to copy
+        graph = self.clipboardSelection()
+        if len(graph.nodes) == 0:  # Nothing to copy
             return
 
+        self.paste_pos = graph.boundingRect().center()
+        self.advancePastePos()
+
         package = QMimeData()
-        mime.dump(snapshot, package, self.ClipboardMimeType, hooks=hooks.qt)
+        mime.dump(graph, package, self.ClipboardMimeType, hooks=hooks.qt)
 
         clipboard = QApplication.clipboard()
         clipboard.setMimeData(package)
@@ -221,20 +214,25 @@ class Scheme(QGraphicsScene):
         package = clipboard.mimeData()
 
         if package.hasFormat(self.ClipboardMimeType):
-            snapshot = mime.load(package, self.ClipboardMimeType, hooks=hooks.qt)
-            self.merge(snapshot)
+            graph = mime.load(package, self.ClipboardMimeType, hooks=hooks.qt)
+            self.merge(graph)
 
             self.clearSelection()  # Clear old selection
-            snapshot.selectAll()  # Create new selection (pasted items)
+            graph.selectAll()  # Create new selection (pasted items)
 
-            offset = self.schemeStyle().pixelMetric(Style.PasteOffset)
-            snapshot.moveBy(offset, offset)  # Move all items by some offset 
-
-            self.copyEvent()  # Copy the selection again (nothing changes except for the item offset)
+            graph.moveCenter(self.paste_pos)
+            self.advancePastePos()
 
     def deleteEvent(self):
         """Delete the selection."""
         self.extract(self.selection())
+
+    def advancePastePos(self):
+        """Move the paste position (usually down and to the right).  
+        This function is usually called when an object has been pasted.
+        """
+        offset = self.schemeStyle().pixelMetric(Style.PasteOffset)
+        self.paste_pos += QPointF(offset, offset)
 
     # Style and palette ================================================================================================
     def styleChange(self):

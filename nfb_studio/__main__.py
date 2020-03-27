@@ -1,9 +1,10 @@
 import sys
 
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QApplication, QMainWindow, QListView, QWidget, QHBoxLayout
+from PySide2.QtWidgets import QApplication, QMainWindow, QListView, QWidget, QHBoxLayout, QFormLayout, QLineEdit, QSpinBox
 
 from nfb_studio.widgets.scheme import Scheme, Node, Input, Output, InfoMessage, WarningMessage, ErrorMessage, Toolbox
+from nfb_studio.widgets.design_area import DesignArea
 from nfb_studio import std_encoder as encoder
 
 
@@ -23,6 +24,17 @@ class TestNode(Node):
         self.insertOutput(1, Output("Output 2 long long long long long long"))
 
         self.removeInput(0)
+    
+    def configWidget(self):
+        result = QWidget()
+        layout = QFormLayout()
+        result.setLayout(layout)
+
+        layout.addRow("Input", QLineEdit())
+        layout.addRow("Channel count", QSpinBox())
+        layout.addRow("Frequency", QSpinBox())
+
+        return result
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -45,7 +57,7 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    main_window = MainWindow()
+    main_window = DesignArea()
     main_window.show()
 
     tb = main_window.toolbox

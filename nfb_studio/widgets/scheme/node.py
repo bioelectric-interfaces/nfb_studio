@@ -57,6 +57,10 @@ class Node(SchemeItem):
         for output in self.outputs:
             output.hideText() 
 
+    def configWidget(self):
+        """Return a widget for configuring this node, or None if it does not exist."""
+        return None
+
     # Input/output management ==========================================================================================
     def addInput(self, obj: Input):
         self.insertInput(len(self.inputs), obj)
@@ -251,6 +255,11 @@ class Node(SchemeItem):
                 output.autoSelect()
 
         return super().itemChange(change, value)
+    
+    def mouseDoubleClickEvent(self, event):
+        if self.configWidget() is not None:
+            view = event.widget().parent()
+            view.configRequested.emit(self)
 
     # Serialization ====================================================================================================
     def serialize(self) -> dict:

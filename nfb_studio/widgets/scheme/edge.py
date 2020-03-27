@@ -245,10 +245,10 @@ class Edge(SchemeItem):
 
     # Utility functions ================================================================================================
     def adjust(self):
-        """Adjust the edge's coordinates to match those of the input and output of nodes.
-
+        """Adjust the edge's coordinates to match those of the input and output of nodes.  
         Call this function if the node moved or source/target was changed.
         """
+        self.setPos(0, 0)  # Edge is always at position 0
         self.prepareGeometryChange()
         
         if self._source is not None:
