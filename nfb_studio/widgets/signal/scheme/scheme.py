@@ -15,7 +15,7 @@ from .edge import Edge
 from .connection import Input, Output, Connection
 from .style import Style
 from .palette import Palette
-from .toolbox import Toolbox
+from nfb_studio.widgets import signal
 
 class Scheme(QGraphicsScene):
     """A data model for the nfb experiment's system of signals and their components.
@@ -54,7 +54,7 @@ class Scheme(QGraphicsScene):
 
         def setScene(self, scene):
             if not isinstance(scene, Scheme):
-                raise TypeError("Scheme.View only connects to a Scheme as its data source")
+                raise TypeError("Scheme.View can only have Scheme as it's scene, not " + type(scene).__name__)
 
             super().setScene(scene)
             cut_shortcut = QShortcut(QKeySequence.Cut, self)
@@ -284,15 +284,15 @@ class Scheme(QGraphicsScene):
     def dragEnterEvent(self, event):
         package = event.mimeData()
         event.setAccepted(
-            package.hasFormat(Toolbox.DragMimeType) or
+            package.hasFormat(signal.Toolbox.DragMimeType) or
             package.hasFormat(Connection.EdgeDragMimeType)
         )
     
     def dropEvent(self, event):
         package = event.mimeData()
 
-        if package.hasFormat(Toolbox.DragMimeType):
-            node = mime.load(package, Toolbox.DragMimeType, hooks=hooks.qt)
+        if package.hasFormat(signal.Toolbox.DragMimeType):
+            node = mime.load(package, signal.Toolbox.DragMimeType, hooks=hooks.qt)
 
             pos = event.scenePos() - QPointF(
                 node.boundingRect().size().width()/2,

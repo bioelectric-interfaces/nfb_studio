@@ -1,18 +1,24 @@
 import os
+from functools import lru_cache
 
 from PySide2.QtCore import QRectF
 from PySide2.QtGui import QPainter, QFontMetricsF
 from PySide2.QtWidgets import QGraphicsItem
 from PySide2.QtSvg import QGraphicsSvgItem, QSvgRenderer
 
-from nfb_studio.widgets import TextLineItem
-from nfb_studio.util import FileDict
+from nfb_studio.util import TextLineItem
 
 from .style import Style
 from .scheme_item import SchemeItem
 
 this_dir = os.path.dirname(__file__)
 
+@lru_cache(maxsize=16)
+def _svgRenderer(filename) -> QSvgRenderer:
+    """Get an QSvgRenderer from an `.svg` filename.  
+    This function is for internal use within this file.
+    """
+    return QSvgRenderer(filename)
 
 class Message(SchemeItem):
     """A message that is displayed to the user.
@@ -20,8 +26,6 @@ class Message(SchemeItem):
     Messages can be of different severity. This base class is inherited by InfoMessage, WarningMessage and
     ErrorMessage.
     """
-    svg_renderers = FileDict(create_item=QSvgRenderer)
-
     def __init__(self, text=None, icon_filename=None, parent=None):
         super(Message, self).__init__(parent)
         self.setFlag(QGraphicsItem.ItemHasNoContents)
@@ -47,7 +51,7 @@ class Message(SchemeItem):
 
     def setIcon(self, icon_filename):
         """Set the icon from an SVG file."""
-        renderer: QSvgRenderer = self.svg_renderers[icon_filename]
+        renderer = _svgRenderer(icon_filename)
         self._icon_item.setSharedRenderer(renderer)
 
         icon_size = self.style().pixelMetric(Style.MessageIconSize)

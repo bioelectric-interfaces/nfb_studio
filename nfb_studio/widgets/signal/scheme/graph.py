@@ -5,10 +5,11 @@ from collections import MutableSet
 
 from PySide2.QtCore import QRectF
 
+from nfb_studio.util import GraphicsItemGroup
+
 from .node import Node
 from .edge import Edge
 from .connection import Input, Output
-from ..graphics_item_group import GraphicsItemGroup
 
 
 class Graph(GraphicsItemGroup):

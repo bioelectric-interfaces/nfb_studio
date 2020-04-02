@@ -2,7 +2,7 @@ from PySide2.QtCore import Qt, QPointF, QRectF, QLineF
 from PySide2.QtGui import QPainter, QFontMetricsF
 from PySide2.QtWidgets import QGraphicsItem, QGraphicsLineItem
 
-from nfb_studio.widgets import TextLineItem
+from nfb_studio.util import TextLineItem
 
 from ..style import Style
 from ..palette import Palette

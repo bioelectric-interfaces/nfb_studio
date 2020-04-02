@@ -5,10 +5,8 @@ from sortedcontainers import SortedList
 
 from nfb_studio.gui import inches_to_pixels as px
 from nfb_studio.math import clamp
-from nfb_studio.widgets import scheme
+from nfb_studio.util import TextLineItem, TextRectItem
 
-from ..text_line_item import TextLineItem
-from ..text_rect_item import TextRectItem
 from .scheme_item import SchemeItem
 from .connection import Input, Output
 from .message import Message

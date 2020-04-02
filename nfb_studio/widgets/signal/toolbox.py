@@ -3,9 +3,12 @@ from PySide2.QtWidgets import QListView
 from sortedcontainers import SortedDict
 
 from nfb_studio.serial import mime, hooks
-from .node import Node
+from .scheme import Node
 
 class Toolbox(QAbstractListModel):
+    """A list of signal nodes that can be dragged to the scheme.
+    """
+
     DragMimeType = "application/x-toolbox-drag"
 
     def __init__(self, parent):
