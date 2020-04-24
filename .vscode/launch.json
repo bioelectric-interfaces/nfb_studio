@@ -17,6 +17,13 @@
 			"request": "launch",
 			"module": "nfb_studio",
 			"console": "integratedTerminal"
+		},
+		{
+			"name": "tests",
+			"type": "python",
+			"request": "launch",
+			"module": "tests",
+			"console": "integratedTerminal"
 		}
 	]
 }

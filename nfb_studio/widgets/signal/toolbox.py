@@ -30,14 +30,14 @@ class Toolbox(QAbstractListModel):
     def rowCount(self, parent=QModelIndex()):
         return len(self._items)
 
-    def data(self, index: QModelIndex, role = Qt.DisplayRole):
+    def data(self, index: QModelIndex, role=Qt.DisplayRole):
         i = index.row()
 
         if role == Qt.DisplayRole:
             return self._items.peekitem(i)[0]
         return None
 
-    def headerData(self, section, orientation: Qt.Orientation, role = Qt.DisplayRole):
+    def headerData(self, section, orientation: Qt.Orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
             if orientation == Qt.Vertical:
                 return section

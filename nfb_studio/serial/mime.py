@@ -10,8 +10,8 @@ mime types.
 """
 from typing import Union
 
-from nfb_studio.serial.json import JSONEncoder, JSONDecoder
-from nfb_studio.serial.hooks import Hooks
+from .json import JSONEncoder, JSONDecoder
+from .hooks import Hooks
 
 _cached_encoder = JSONEncoder(separators=(",", ":"), ensure_ascii=False)
 _cached_decoder = JSONDecoder()

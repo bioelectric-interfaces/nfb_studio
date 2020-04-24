@@ -56,17 +56,67 @@ class JSONEncoder(json.JSONEncoder):
     nfb_studio.serialize.decoder.JSONDecoder : An object-aware JSON decoder.
     """
 
-    def __init__(self, *, hooks: Union[dict, tuple, Hooks] = None, skipkeys=False, ensure_ascii=False, 
-                 check_circular=True, allow_nan=True, sort_keys=False, indent=None, separators=None, **kw):
+    def __init__(self, *,
+                 hooks: Union[dict, tuple, Hooks] = None,
+                 metadata=True,
+                 skipkeys=False,
+                 ensure_ascii=False,
+                 check_circular=True,
+                 allow_nan=True,
+                 sort_keys=False,
+                 indent=None,
+                 separators=None,
+                 **kw):
         """Constructs the JSONEncoder object.
         
-        Constructs the object from the following arguments:  
-        - hooks - a dict, mapping types to functions that can be used to serialize them in the format
-          `def foo(obj) -> dict`, a tuple containing such dict as it's element 0, or a `hooks.Hooks` object;
-        - other arguments inherited from JSONEncoder, except for `default`, which is not inherited and is ignored.
+        Mostly inherits JSONEncoder parameters from the standard json module, except for `default`, which is not
+        inherited and is ignored.
+
+        Parameters
+        ----------
+        hooks : dict, tuple, or Hooks object (default: None)
+            A dict, mapping types to functions that can be used to serialize them in the format `def foo(obj) -> dict`,
+            a tuple containing such dict as it's element 0, or a `hooks.Hooks` object;
+        metadata : bool (default: True)
+            If True, each custom object is serialized with an additional metadata field called `__class__`. This field
+            is used in the JSONDecoder to create an instance of the class, where json data is then deserialized. If
+            False, this field is skipped, but the decoder will not be able to deserialize custom objects.
+        skipkeys : bool (default: False)
+            If False, then it is a TypeError to attempt encoding of keys that are not str, int, float or None. If
+            skipkeys is True, such items are simply skipped.
+        ensure_ascii : bool (default: False)
+            If True, the output is guaranteed to have all incoming non-ASCII characters escaped. If ensure_ascii is
+            False, these characters will be output as-is.
+        check_circular : bool (default: True)
+            If check_circular is True, then lists, dicts, and custom encoded objects will be checked for circular
+            references during encoding to prevent an infinite recursion (which would cause an OverflowError). Otherwise,
+            no such check takes place.
+        allow_nan : bool (default: True)
+            If True, then NaN, Infinity, and -Infinity will be encoded as such. This behavior is not JSON specification
+            compliant, but is consistent with most JavaScript based encoders and decoders. Otherwise, it will be a
+            ValueError to encode such floats.
+        sort_keys : bool (default: False)
+            If True, then the output of dictionaries will be sorted by key; this is useful for regression tests to
+            ensure that JSON serializations can be compared on a day-to-day basis.
+        indent : int, str, or None (default: None)
+            If indent is a non-negative integer or string, then JSON array elements and object members will be
+            pretty-printed with that indent level. An indent level of 0, negative, or "" will only insert newlines. None
+            (the default) selects the most compact representation. Using a positive integer indent indents that many
+            spaces per level. If indent is a string (such as `"\t"`), that string is used to indent each level.
+        separators : tuple (default: None)
+            If specified, separators should be an (item_separator, key_separator) tuple. The default is (', ', ': ') if
+            indent is None and (',', ': ') otherwise. To get the most compact JSON representation, you should specify
+            (',', ':') to eliminate whitespace.
         """
-        super().__init__(skipkeys=skipkeys, ensure_ascii=ensure_ascii, check_circular=check_circular,
-                         allow_nan=allow_nan, sort_keys=sort_keys, indent=indent, separators=separators)
+        super().__init__(
+            skipkeys=skipkeys,
+            ensure_ascii=ensure_ascii,
+            check_circular=check_circular,
+            allow_nan=allow_nan,
+            sort_keys=sort_keys,
+            indent=indent,
+            separators=separators
+        )
         
         if isinstance(hooks, dict):
             self.hooks = hooks
@@ -74,18 +124,21 @@ class JSONEncoder(json.JSONEncoder):
             self.hooks = hooks[0]  # Only serialization functions
         else:
             self.hooks = {}
+        
+        self.metadata = metadata
 
-    def default(self, obj):
+    def default(self, o):
         """Implementation of `JSONEncoder`'s `default` method that enables the serialization logic."""
-        if type(obj) in self.hooks:
-            data = self.hooks[type(obj)](obj)
-            _write_metadata(obj, data)
+        if type(o) in self.hooks:
+            data = self.hooks[type(o)](o)
+            if self.metadata:
+                _write_metadata(o, data)
             return data
 
-        elif hasattr(obj, "serialize") and callable(obj.serialize):
-            data = obj.serialize()
-            _write_metadata(obj, data)
+        if hasattr(o, "serialize") and callable(o.serialize):
+            data = o.serialize()
+            if self.metadata:
+                _write_metadata(o, data)
             return data
 
-        else:
-            return super().default(obj)
+        return super().default(o)

@@ -36,11 +36,27 @@ class JSONDecoder(json.JSONDecoder):
                  parse_constant=None, strict=True, **kw):
         """Constructs the JSONDecoder object.
         
-        Constructs the object from the following arguments:  
-        - hooks - a dict, mapping types to functions that can be used to deserialize them from a dict in the
-          format `def foo(obj, data: dict)`, a tuple containing such dict as it's element 0, or a `hooks.Hooks` object;
-        - other arguments inherited from JSONDecoder, except for `object_hook` and `object_pairs_hook`, which are not
-          inherited and are ignored.
+        Mostly inherits JSONDecoder parameters from the standard json module, except for `object_hook` and
+        `object_pairs_hook`, which are not inherited and are ignored.
+
+        Parameters
+        ----------
+        hooks : dict, tuple, or Hooks object (default: None)
+            A dict, mapping types to functions that can be used to deserialize them in the format
+            `def foo(obj, data: dict)`, a tuple containing such dict as its element 1, or a `hooks.Hooks` object;
+        parse_float : callable (default: None)
+            If specified, will be called with the string of every JSON float to be decoded. By default, this is
+            equivalent to float(num_str). This can be used to use another datatype or parser for JSON floats
+            (e.g. decimal.Decimal).
+        parse_int : callable (default: None)
+            If specified, will be called with the string of every JSON int to be decoded. By default, this is equivalent
+            to int(num_str). This can be used to use another datatype or parser for JSON integers (e.g. float).
+        parse_constant : callable (default: None)
+            If specified, will be called with one of the following strings: '-Infinity', 'Infinity', 'NaN'. This can be
+            used to raise an exception if invalid JSON numbers are encountered.
+        strict : bool (default: True)
+            If False, then control characters will be allowed inside strings. Control characters in this context are
+            those with character codes in the 0–31 range, including '\t' (tab), '\n', '\r' and '\0'.
         """
         if isinstance(hooks, dict):
             self.hooks = hooks
@@ -106,5 +122,10 @@ class JSONDecoder(json.JSONDecoder):
                     .format(module_path, class_name)
                 raise AttributeError(message)
 
-        super().__init__(object_hook=object_hook, parse_float=parse_float, parse_int=parse_int,
-                         parse_constant=parse_constant, strict=strict)
+        super().__init__(
+            object_hook=object_hook,
+            parse_float=parse_float,
+            parse_int=parse_int,
+            parse_constant=parse_constant,
+            strict=strict
+        )

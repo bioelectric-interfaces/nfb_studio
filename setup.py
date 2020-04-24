@@ -3,7 +3,8 @@ from importlib.util import find_spec
 
 install_requires = [
     "PySide2",
-    "sortedcontainers"
+    "sortedcontainers",
+	"xmltodict"
 ]
 
 extras_require = {

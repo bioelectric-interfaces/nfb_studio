@@ -5,7 +5,8 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QListView, QWidget, QHB
 
 from nfb_studio.widgets.signal import SignalEditor, Scheme, Node, Input, Output, InfoMessage, WarningMessage, ErrorMessage, Toolbox
 from nfb_studio import std_encoder as encoder
-
+from nfb_studio.serial import xml
+'''from .main_window import MainWindow
 
 class TestNode(Node):
     def __init__(self):
@@ -35,7 +36,7 @@ class TestNode(Node):
 
         return result
 
-class MainWindow(QMainWindow):
+class TestMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
@@ -51,12 +52,24 @@ class MainWindow(QMainWindow):
         w.setLayout(layout)
 
         layout.addWidget(self.tbview)
-        layout.addWidget(self.scheme_view)
+        layout.addWidget(self.scheme_view)'''
 
 
 def main():
-    app = QApplication(sys.argv)
-    main_window = SignalEditor()
+    data = {
+        "x": {
+            "#text": "data"
+        }
+    }
+
+    print(xml.dumps(data))
+
+    '''app = QApplication(sys.argv)
+
+    main_window = MainWindow()
+    main_window.show()'''
+
+    '''main_window = SignalEditor()
     main_window.show()
 
     tb = main_window.toolbox
@@ -74,7 +87,7 @@ def main():
     bpf.setDescription("Filter range:\n    50 Hz ~ 200 Hz")
 
     tb.addItem("LSL Input", lsl_input)
-    tb.addItem("Bandpass Filter", bpf)
+    tb.addItem("Bandpass Filter", bpf)'''
 
     '''scene = Scheme(app)
 
@@ -103,7 +116,8 @@ def main():
     w.setMinimumSize(800, 600)
     w.show()'''
 
-    return app.exec_()
+    #return app.exec_()
+    return 0
 
 
 if __name__ == "__main__":

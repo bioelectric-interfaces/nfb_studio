@@ -19,16 +19,19 @@ class SignalEditor(QMainWindow):
 
         self.setCentralWidget(self.scheme.view)
 
-        dock = QDockWidget("Node toolbox", self)
-        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        dock.setWidget(self.toolbox.getView())
-        self.addDockWidget(Qt.LeftDockWidgetArea, dock)
+        self.toolbox_dock = QDockWidget("Node toolbox", self)
+        self.toolbox_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.toolbox_dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        self.toolbox_dock.setWidget(self.toolbox.getView())
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.toolbox_dock)
+
+        self.config_widget_dock = QDockWidget("Configuration", self)
+        self.config_widget_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.config_widget_dock)
+        self.config_widget_dock.hide()
 
         self.scheme.view.configRequested.connect(self.showConfigWidget)
     
     def showConfigWidget(self, node):
-        dock = QDockWidget("Configuration", self)
-        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        dock.setWidget(node.configWidget())
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
+        self.config_widget_dock.setWidget(node.configWidget())
+        self.config_widget_dock.show()
