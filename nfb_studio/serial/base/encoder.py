@@ -85,6 +85,24 @@ class BaseEncoder:
         
             return result
         
+        if isinstance(obj, list) or isinstance(obj, tuple):
+            if self.in_place:
+                result = obj  # In-place encoder replaces custom objects with their encodings
+            else:
+                result = [None] * len(obj)  # Non-in-place encoder creates a new list
+            
+            for i in range(len(obj)):
+                # For each item, encode it
+                value = obj[i]
+                encoded = self.encode(value)
+                if encoded is value and not self.in_place:
+                    # If item could not be encoded and not in place, deepcopy it
+                    result[i] = deepcopy(value)
+                else:
+                    result[i] = encoded
+            
+            return result
+
         return obj
 
     @property

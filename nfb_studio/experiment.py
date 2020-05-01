@@ -1,98 +1,14 @@
-from enum import Enum, auto
-from collections import MutableSequence
-
+"""NFB Experiment."""
 from PySide2.QtCore import Qt, Signal, QObject, QAbstractItemModel, QModelIndex
 from PySide2.QtWidgets import QTreeView
 from sortedcontainers import SortedDict
 
+from nfb_studio.serial import xml, hooks
+
 from .property_tree import PropertyTree
-
 from .widgets.signal import SignalEditor
-
-
-class Block(QObject):
-    """A single step of an experiment.
-    Experiment consists of a sequence of blocks and block groups that are executed in some order.
-    """
-
-    FeedbackSourceAll = object()
-    """A sentinel object marking that self.feedback_source is all sources."""
-
-    class FeedbackType(Enum):
-        """Possible values for self.feedback_type."""
-        Baseline = 0
-        Feedback = auto()
-    
-    class RandomBound(Enum):
-        """Possible values for self.random_bound."""
-        SimCircle = 0
-        RandomCircle = auto()
-        Bar = auto()
-
-    attrchanged = Signal(str)
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        
-        # General ------------------------------------------------------------------------------------------------------
-        self.name = "Block"
-        self.duration = 10.0
-        self.feedback_source = self.FeedbackSourceAll
-        self.feedback_type = self.FeedbackType.Baseline
-        self.random_bound = self.RandomBound.SimCircle
-        self.video_path = ""
-
-        # Mock signal --------------------------------------------------------------------------------------------------
-        self.mock_signal_path = ""
-        self.mock_signal_dataset = ""
-        self.mock_previous = 0
-        self.mock_previous_reverse = False
-        self.mock_previous_random = False
-
-        # After block actions ------------------------------------------------------------------------------------------
-        self.start_data_driven_filter_designer = False
-        self.pause = False
-        self.beep = False
-        self.update_statistics = False
-
-
-class Group(QObject, MutableSequence):
-    """A group of experiment blocks.
-    Experiment consists of a sequence of blocks and block groups that are executed in some order. A group consists of
-    a sequence of blocks. Each block can be repeated one or more times, and can be set to execute in random order.
-    """
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        
-        self.name = "Group"
-        self.blocks = []
-        self.repeats = []
-
-        self.random_order = False
-
-    # MutableSequence method implementations ---------------------------------------------------------------------------
-    def __getitem__(self, index):
-        return (self.blocks[index], self.repeats[index])
-    
-    def __setitem__(self, index, value):
-        del self[index]
-        self.insert(index, value)
-    
-    def __delitem__(self, index):
-        del self.blocks[index]
-        del self.repeats[index]
-    
-    def __len__(self):
-        assert len(self.blocks) == len(self.repeats)
-        return len(self.blocks)
-    
-    def insert(self, index, value):
-        if isinstance(value, Block):
-            value = (value, 1)
-        
-        self.blocks.insert(index, value[0])
-        self.repeats.insert(index, value[1])
+from .block import Block
+from .group import Group
 
 
 class Experiment(QObject):
@@ -100,7 +16,9 @@ class Experiment(QObject):
         super().__init__(parent)
 
         self.name = "Experiment"
-        self.inlet = "nvx"
+        self.inlet = "lsl"
+        self.raw_data_path = ""
+        self.hostname_port = ""
         self.dc = False
         self.prefilter_band = (None, None)
         self.plot_raw = False
@@ -114,3 +32,47 @@ class Experiment(QObject):
         self.blocks = set()
         self.groups = set()
         self.sequence = []
+    
+    def nfb_export_data(self) -> dict:
+        data = {}
+
+        data["sExperimentName"] = self.name
+        data["sPrefilterBand"] = str(self.prefilter_band[0]) + " " + str(self.prefilter_band[1])
+        data["bDC"] = self.dc
+        data["sInletType"] = self.inlet
+        data["sRawDataFilePath"] = self.raw_data_path
+        data["sFTHostnamePort"] = self.hostname_port
+        data["bPlotRaw"] = self.plot_raw
+        data["bPlotSignals"] = self.plot_signals
+        data["bPlotSourceSpace"] = 0
+        data["bShowSubjectWindow"] = self.show_subject_window
+        data["fRewardPeriodS"] = 0.25
+        data["sReference"] = self.discard_channels
+        data["sReferenceSub"] = self.reference_sub
+        data["bUseExpyriment"] = 0
+        data["bShowPhotoRectangle"] = self.show_proto_rectangle
+        data["sVizNotchFilters"] = self.show_notch_filters
+
+        data["vProtocols"] = {
+            "FeedbackProtocol": list(self.blocks)
+        }
+
+        data["vPGroups"] = {
+            "PGroup": list(self.groups)
+        }
+
+        return data
+
+    def export(self) -> str:
+        data = {"NeurofeedbackSignalSpecs": self}
+
+        enc_hooks = {
+            Experiment: Experiment.nfb_export_data,
+            Block: Block.nfb_export_data,
+            Group: Group.nfb_export_data,
+            bool: lambda x: {"#text": int(x)}
+        }
+
+        encoder = xml.XMLEncoder(separator="\n", indent="\t", metadata=False, hooks=enc_hooks)
+
+        return encoder.encode(data)

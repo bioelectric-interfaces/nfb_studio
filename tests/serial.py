@@ -30,6 +30,7 @@ class ExampleClass2:
     def serialize(self):
         return {
             "cls1": self.cls1,
+            "arr": [self.cls1],
             "x": self.x,
             "y": self.y
         }
@@ -56,8 +57,21 @@ class SerialBaseTest(TestCase):
             "a": 1,
             "b": 2,
             "c": 3
-        }
+        },
+        "arr": [
+            {
+                "__class__": {
+                    "__module__": "tests.serial",
+                    "__qualname__": "ExampleClass1"
+                },
+                "a": 1,
+                "b": 2,
+                "c": 3
+            },
+        ]
     }
+
+    maxDiff = None
 
     def test_encoder(self):
         encoder = base.BaseEncoder()
@@ -72,6 +86,7 @@ class SerialBaseTest(TestCase):
         expected_result = deepcopy(self.expected_result)
         expected_result.pop("__class__")
         expected_result["cls1"].pop("__class__")
+        expected_result["arr"][0].pop("__class__")
 
         obj = ExampleClass2()
         self.assertEqual(encoder.encode(obj), expected_result)
@@ -87,13 +102,16 @@ class SerialBaseTest(TestCase):
         # Add the "extra" field to expected result
         expected_result = deepcopy(self.expected_result)
         expected_result["cls1"]["extra"] = None
+        expected_result["arr"][0]["extra"] = None
 
         obj = ExampleClass2()
         self.assertEqual(encoder.encode(obj), expected_result)
 
 
 class SerialXMLTest(TestCase):
-    expected_result = '<?xml version="1.0" encoding="utf-8"?>\n<root __class__.__qualname__="ExampleClass2" __class__.__module__="tests.serial"><cls1 __class__.__qualname__="ExampleClass1" __class__.__module__="tests.serial"><a>1</a><b>2</b><c>3</c></cls1><x>foo</x><y>0.69</y></root>'
+    expected_result = '<?xml version="1.0" encoding="utf-8"?>\n<root __class__.__qualname__="ExampleClass2" __class__.__module__="tests.serial"><cls1 __class__.__qualname__="ExampleClass1" __class__.__module__="tests.serial"><a>1</a><b>2</b><c>3</c></cls1><arr><a>1</a><b>2</b><c>3</c><__class__><__module__>tests.serial</__module__><__qualname__>ExampleClass1</__qualname__></__class__></arr><x>foo</x><y>0.69</y></root>'
+
+    maxDiff = None
 
     def test_encoder(self):
         encoder = xml.XMLEncoder()
