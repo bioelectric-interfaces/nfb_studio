@@ -1,3 +1,4 @@
+"""NFB main source signal."""
 from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout
 
 from ..signal import Node, Output, DataType
@@ -11,6 +12,7 @@ class LSLDataSource:
 
 
 class LSLInput(Node):
+    """NFB main source signal."""
     LSLData = DataType("LSL data")
 
     data_sources = [
@@ -19,6 +21,7 @@ class LSLInput(Node):
     ]
 
     class Config(QWidget):
+        """Config widget displayed for LSLInput."""
         def __init__(self, parent=None):
             super().__init__(parent)
 
@@ -57,4 +60,3 @@ class LSLInput(Node):
 
         out = Output("LSL data stream", self.LSLData)
         self.addOutput(out)
-
