@@ -36,6 +36,8 @@ class Node(SchemeItem):
         self.outputs = []
         self.messages = SortedList(key=lambda item: item.severity())
 
+        self._config_widget = None
+
         # Set proper style and color for the item
         self.styleChange()
         self.paletteChange()
@@ -54,10 +56,6 @@ class Node(SchemeItem):
 
         for output in self.outputs:
             output.hideText() 
-
-    def configWidget(self):
-        """Return a widget for configuring this node, or None if it does not exist."""
-        return None
 
     # Input/output management ==========================================================================================
     def addInput(self, obj: Input):
@@ -120,6 +118,9 @@ class Node(SchemeItem):
     def setDescription(self, description):
         self._description_item.setText(description)
 
+    def setConfigWidget(self, w):
+        self._config_widget = w
+
     def size(self):
         return self._size
 
@@ -128,6 +129,10 @@ class Node(SchemeItem):
 
     def description(self):
         return self._description_item.text()
+
+    def configWidget(self):
+        """Return a widget for configuring this node, or None if it does not exist."""
+        return self._config_widget
 
     # Updating functions ===============================================================================================
     def _updateInputPositions(self):

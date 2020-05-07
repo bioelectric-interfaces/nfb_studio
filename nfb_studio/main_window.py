@@ -1,11 +1,12 @@
 from PySide2.QtCore import Qt, QModelIndex
-from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget
+from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QAction
 from .experiment import Experiment
 from .widgets.signal import SignalEditor
 from .property_tree import PropertyTree
 from .widgets.config import BlockConfig, GroupConfig, ExperimentConfig
 from .block import Block
 from .group import Group
+from .widgets.signal_nodes import *
 from nfb_studio.util.qt.tree_model import TreeModelItem
 
 class MainWindow(QMainWindow):
@@ -27,7 +28,14 @@ class MainWindow(QMainWindow):
 
         # Editing widgets ----------------------------------------------------------------------------------------------
         self.experiment_config = ExperimentConfig(self.experiment)
+        
         self.signal_editor = SignalEditor()
+        self.signal_editor.toolbox.addItem("LSL Input", LSLInput())
+        self.signal_editor.toolbox.addItem("Spatial Filter", SpatialFilter())
+        self.signal_editor.toolbox.addItem("Bandpass Filter", BandpassFilter())
+        self.signal_editor.toolbox.addItem("Envelope Detector", EnvelopeDetector())
+        self.signal_editor.toolbox.addItem("Standardise", Standardise())
+        self.signal_editor.toolbox.addItem("Signal Export", DerivedSignalExport())
 
         self.block_stack = QStackedWidget()
         self.group_stack = QStackedWidget()
@@ -43,6 +51,13 @@ class MainWindow(QMainWindow):
         # Signals ------------------------------------------------------------------------------------------------------
         self.property_tree_view.blocktree_menu_add_action.triggered.connect(self.addBlock)
         self.property_tree_view.grouptree_menu_add_action.triggered.connect(self.addGroup)
+
+        # Menu bar -----------------------------------------------------------------------------------------------------
+        menubar = self.menuBar()
+        filemenu = menubar.addMenu("File")
+        export = filemenu.addAction("Export")
+        export.triggered.connect(self.export)
+
 
     def setCurrentIndex(self, index: QModelIndex):
         """Set central widget in the main window to display config info for item at `index` in the property tree."""
@@ -84,3 +99,61 @@ class MainWindow(QMainWindow):
         self.property_tree.groups_item.addItem(tree_item)
 
         self.group_stack.addWidget(group_config)
+
+    def export(self):
+        for i in range(self.block_stack.count()):
+            block_config: BlockConfig = self.block_stack.widget(i)
+            block: Block = block_config.data
+
+            block.duration = block_config.duration.value()
+            block.feedback_source = block_config.feedback_source.text()
+            block.feedback_type = block_config.feedback_type.text()
+            block.random_bound = block_config.random_bound.currentText()
+            block.video_path = block_config.video_path.text()
+            block.mock_signal_path = block_config.mock_signal_path.text()
+            block.mock_signal_dataset = block_config.mock_signal_dataset.text()
+            block.mock_previous = block_config.mock_previous.value()
+            block.mock_previous_reverse = block_config.mock_previous_reverse.isChecked()
+            block.mock_previous_random = block_config.mock_previous_random.isChecked()
+            block.start_data_driven_filter_designer = block_config.start_data_driven_filter_designer.isChecked()
+            block.pause = block_config.pause.isChecked()
+            block.beep = block_config.beep.isChecked()
+            block.update_statistics = block_config.update_statistics.isChecked()
+        
+        for i in range(self.group_stack.count()):
+            group_config: GroupConfig = self.group_stack.widget(i)
+            group: Group = group_config.data
+
+            group.name = group_config.name.text()
+            group.random_order = group_config.random_order.isChecked()
+            group.blocks = group_config.blocks.split(" ")
+            group.repeats = [int(number) for number in group_config.repeats.split(" ")]
+
+        self.experiment.name = self.experiment_config.name.text()
+        self.experiment.inlet = self.experiment_config.inlet_type_export_values[self.experiment_config.inlet_type_selector.currentText()]
+        self.experiment.raw_data_path = self.experiment_config.lsl_filename.text()
+        self.experiment.hostname_port = self.experiment_config.hostname_port.text()
+        self.experiment.dc = self.experiment_config.dc.isChecked()
+        
+        if self.experiment_config.prefilterBandLow_enable.isChecked():
+            prefilterBandLow = self.experiment_config.prefilterBandLow_input.value()
+        else:
+            prefilterBandLow = None
+        
+        if self.experiment_config.prefilterBandHigh_enable.isChecked():
+            prefilterBandHigh = self.experiment_config.prefilterBandHigh_input.value()
+        else:
+            prefilterBandHigh = None
+        
+        self.experiment.prefilter_band = (prefilterBandLow, prefilterBandHigh)
+        self.experiment.plot_raw = self.experiment_config.plot_raw.isChecked()
+        self.experiment.plot_signals = self.experiment_config.plot_signals.isChecked()
+        self.experiment.show_subject_window = self.experiment_config.show_subject_window.isChecked()
+        self.experiment.discard_channels = self.experiment_config.discard_channels.text()
+        self.experiment.reference_sub = self.experiment_config.reference_sub.text()
+        self.experiment.show_proto_rectangle = self.experiment_config.show_proto_rectangle.isChecked()
+        self.experiment.show_notch_filters = self.experiment_config.show_notch_filters.isChecked()
+
+        self.experiment.sequence = self.experiment_config.sequence.text().split(" ")
+
+        print(self.experiment.export())

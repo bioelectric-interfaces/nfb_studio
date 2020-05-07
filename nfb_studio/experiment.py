@@ -12,6 +12,14 @@ from .group import Group
 
 
 class Experiment(QObject):
+    inlet_type_export_values = {
+        "LSL stream": "lsl",
+        "LSL file stream": "lsl_from_file",
+        "LSL generator": "lsl_generator",
+        "Field trip buffer": "ftbuffer"
+    }
+    inlet_type_import_values = {v: k for k, v in inlet_type_export_values.items()}
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -61,6 +69,10 @@ class Experiment(QObject):
             "PGroup": list(self.groups)
         }
 
+        data["vPSequence"] = {
+            "s": self.sequence
+        }
+
         return data
 
     def export(self) -> str:
@@ -70,7 +82,7 @@ class Experiment(QObject):
             Experiment: Experiment.nfb_export_data,
             Block: Block.nfb_export_data,
             Group: Group.nfb_export_data,
-            bool: lambda x: {"#text": int(x)}
+            bool: lambda x: {"#text": str(int(x))}
         }
 
         encoder = xml.XMLEncoder(separator="\n", indent="\t", metadata=False, hooks=enc_hooks)
