@@ -60,6 +60,7 @@ class Block(QObject):
         data["iDropOutliers"] = 0
         data["bSSDInTheEnd"] = self.start_data_driven_filter_designer
         data["fDuration"] = self.duration
+        data["fbSource"] = self.feedback_source
         data["sFb_type"] = self.feedback_type
         data["cString"] = ""
         data["bUseExtraMessage"] = 0
@@ -80,12 +81,6 @@ class Block(QObject):
         data["sMSignal"] = "None"
         data["fMSignalThreshold"] = 1
 
-        if self.feedback_source is self.FeedbackSourceAll:
-            data["fbSource"] = "All"
-        else:
-            # TODO: What to export when feedback_source is not "All"?
-            raise NotImplementedError
-
         return data
     
     def nfb_import_data(self, data: dict):
@@ -98,6 +93,7 @@ class Block(QObject):
         self.update_statistics = bool(int(data["bUpdateStatistics"]))
         self.start_data_driven_filter_designer = bool(int(data["bSSDInTheEnd"]))
         self.duration = float(data["fDuration"])
+        self.feedback_source = data["fbSource"]
         self.feedback_type = int(data["sFb_type"])
         self.mock_signal_path = data["sMockSignalFilePath"]
         self.mock_signal_dataset = data["sMockSignalFileDataset"]
@@ -108,9 +104,3 @@ class Block(QObject):
         self.beep = bool(int(data["bBeepAfter"]))
         self.random_bound = int(data["iRandomBound"])
         self.video_path = data["sVideoPath"]
-
-        if data["fbSource"] == "All":
-            self.feedback_source = self.FeedbackSourceAll
-        else:
-            # TODO: What to import when feedback_source is not "All"?
-            raise NotImplementedError

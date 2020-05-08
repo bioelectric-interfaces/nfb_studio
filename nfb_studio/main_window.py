@@ -107,7 +107,7 @@ class MainWindow(QMainWindow):
 
             block.duration = block_config.duration.value()
             block.feedback_source = block_config.feedback_source.text()
-            block.feedback_type = block_config.feedback_type.text()
+            block.feedback_type = block_config.feedback_type.currentText()
             block.random_bound = block_config.random_bound.currentText()
             block.video_path = block_config.video_path.text()
             block.mock_signal_path = block_config.mock_signal_path.text()
@@ -126,11 +126,16 @@ class MainWindow(QMainWindow):
 
             group.name = group_config.name.text()
             group.random_order = group_config.random_order.isChecked()
-            group.blocks = group_config.blocks.split(" ")
-            group.repeats = [int(number) for number in group_config.repeats.split(" ")]
+            if group_config.blocks.text() == "":
+                group.blocks = []
+                group.repeats = []
+            else:
+                group.blocks = group_config.blocks.text().split(" ")
+                group.repeats = [int(number) for number in group_config.repeats.text().split(" ")]
 
         self.experiment.name = self.experiment_config.name.text()
         self.experiment.inlet = self.experiment_config.inlet_type_export_values[self.experiment_config.inlet_type_selector.currentText()]
+        self.experiment.lsl_stream_name = self.experiment_config.lsl_stream_name.currentText()
         self.experiment.raw_data_path = self.experiment_config.lsl_filename.text()
         self.experiment.hostname_port = self.experiment_config.hostname_port.text()
         self.experiment.dc = self.experiment_config.dc.isChecked()
@@ -156,4 +161,50 @@ class MainWindow(QMainWindow):
 
         self.experiment.sequence = self.experiment_config.sequence.text().split(" ")
 
+        signals = []
+        for node in self.signal_editor.scheme.graph.nodes:
+            if isinstance(node, DerivedSignalExport):
+                signal = []
+                n = node
+
+                while(True):
+                    signal.append(n)
+
+                    if len(n.inputs) == 0:
+                        break
+                    else:
+                        n = list(n.inputs[0].edges)[0].sourceNode()
+                
+                signals.append(signal)
+        
+        for i in range(len(signals)):
+            data = {}
+
+            for node in signals[i]:
+                if isinstance(node, LSLInput):
+                    pass  # TODO: What to export for LSLInput?
+                elif isinstance(node, SpatialFilter):
+                    data["SpatialFilterMatrix"] = node.configWidget().matrix_path.text()
+                elif isinstance(node, BandpassFilter):
+                    data["fBandpassLowHz"] = None
+                    if node.configWidget().fBandpassLowHz_enable.isChecked():
+                        data["fBandpassLowHz"] = node.configWidget().fBandpassLowHz_input.value()
+
+                    data["fBandpassHighHz"] = None
+                    if node.configWidget().fBandpassHighHz_enable.isChecked():
+                        data["fBandpassHighHz"] = node.configWidget().fBandpassHighHz_input.value()
+                elif isinstance(node, EnvelopeDetector):
+                    data["fSmoothingFactor"] = node.configWidget().fSmoothingFactor_input.value()
+                elif isinstance(node, Standardise):
+                    data["fAverage"] = node.configWidget().fAverage_input.value()
+                    data["fStdDev"] = node.configWidget().fStdDev_input.value()
+                elif isinstance(node, DerivedSignalExport):
+                    data["sSignalName"] = node.configWidget().signalName_input.text()
+            
+            signals[i] = data
+        
+        self.experiment.signals = signals
+
         print(self.experiment.export())
+
+        

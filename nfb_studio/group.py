@@ -64,7 +64,8 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
         name_list = []
         repeat_list = []
 
-        for item in self:
+        for i in range(len(self)):
+            item = self[i]
             name_list.append(item[0].name)
             repeat_list.append(item[1])
 

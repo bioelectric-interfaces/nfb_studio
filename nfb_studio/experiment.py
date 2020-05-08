@@ -24,6 +24,7 @@ class Experiment(QObject):
         super().__init__(parent)
 
         self.name = "Experiment"
+        self.lsl_stream_name = "NVX136_Data"
         self.inlet = "lsl"
         self.raw_data_path = ""
         self.hostname_port = ""
@@ -37,6 +38,7 @@ class Experiment(QObject):
         self.show_proto_rectangle = False
         self.show_notch_filters = False
 
+        self.signals = []
         self.blocks = set()
         self.groups = set()
         self.sequence = []
@@ -45,6 +47,7 @@ class Experiment(QObject):
         data = {}
 
         data["sExperimentName"] = self.name
+        data["sStreamName"] = self.lsl_stream_name
         data["sPrefilterBand"] = str(self.prefilter_band[0]) + " " + str(self.prefilter_band[1])
         data["bDC"] = self.dc
         data["sInletType"] = self.inlet
@@ -60,6 +63,10 @@ class Experiment(QObject):
         data["bUseExpyriment"] = 0
         data["bShowPhotoRectangle"] = self.show_proto_rectangle
         data["sVizNotchFilters"] = self.show_notch_filters
+
+        data["vSignals"] = {
+            "DerivedSignal": list(self.signals)
+        }
 
         data["vProtocols"] = {
             "FeedbackProtocol": list(self.blocks)
