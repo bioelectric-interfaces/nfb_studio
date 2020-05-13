@@ -6,7 +6,7 @@ from sortedcontainers import SortedDict
 from nfb_studio.serial import xml, hooks
 
 from .property_tree import PropertyTree
-from .widgets.signal import SignalEditor
+from .widgets.scheme import SchemeEditor, Scheme
 from .block import Block
 from .group import Group
 
@@ -38,6 +38,7 @@ class Experiment(QObject):
         self.show_proto_rectangle = False
         self.show_notch_filters = False
 
+        self.signal_scheme = Scheme()
         self.signals = []
         self.blocks = set()
         self.groups = set()

@@ -7,10 +7,10 @@ from nfb_studio.gui import inches_to_pixels as px
 from nfb_studio.math import clamp
 from nfb_studio.util import TextLineItem, TextRectItem
 
-from .scheme_item import SchemeItem
+from ..scheme_item import SchemeItem
+from ..style import Style
 from .connection import Input, Output
 from .message import Message
-from .style import Style
 
 
 class Node(SchemeItem):

@@ -1,4 +1,4 @@
-"""Classes representing the graph stucture in the signal scheme."""
+"""Classes representing the graph stucture in the node scheme."""
 from typing import Union
 from itertools import filterfalse
 from collections import MutableSet
@@ -7,10 +7,7 @@ from PySide2.QtCore import QRectF
 
 from nfb_studio.util import GraphicsItemGroup
 
-from .node import Node
-from .edge import Edge
-from .connection import Input, Output
-
+from .node import Node, Edge, Input, Output
 
 class Graph(GraphicsItemGroup):
     """A collection of nodes and edges connecting them."""

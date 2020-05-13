@@ -1,47 +1,43 @@
-from PySide2.QtCore import Qt, QPointF, QRectF, QLineF
-from PySide2.QtGui import QPainter, QFontMetricsF
-from PySide2.QtWidgets import QGraphicsItem, QGraphicsLineItem
+from PySide2.QtCore import Qt, QPointF, QLineF
+from PySide2.QtGui import QFontMetricsF
 
-from nfb_studio.util import TextLineItem
-
-from ..style import Style
-from ..palette import Palette
-from ..scheme_item import SchemeItem
-from ..data_type import DataType, Unknown
+from ...style import Style
+from .data_type import DataType
 from .connection import Connection
 
-class Input(Connection):
-    """A data input into a node."""
 
+class Output(Connection):
+    """A data output from a node."""
+    
     def __init__(self, text=None, data_type: DataType = None):
-        super().__init__(text or "Input", data_type)
+        super().__init__(text or "Output", data_type)
 
-        self._text_item.setAlignMode(Qt.AlignRight)
+        self._text_item.setAlignMode(Qt.AlignLeft)
         self._trigger_item.setPos(self.stemTip())
-
-        self.setMultiple(False)
+        
+        self.setMultiple(True)
 
         self.styleChange()
 
     # Working with edges ===============================================================================================
     def attach(self, edge):
         """Attach an edge to this connection."""
-        edge.setTarget(self)
+        edge.setSource(self)
 
     def detach(self, edge):
         """Detach an edge from this connection.  
         Other connection of this edge is unaffected.
         """
         assert(edge in self.edges)
-        assert(edge.target() is self)
+        assert(edge.source() is self)
 
-        edge.setTarget(None)
+        edge.setSource(None)
 
     def detachAll(self):
         """Detach all edges."""
         edges_ = list(self.edges)  # self.edges will shrink during iteration
         for edge in edges_:
-            edge.setTarget(None)
+            edge.setSource(None)
 
     # Style and palette ================================================================================================
     def styleChange(self):
@@ -53,7 +49,7 @@ class Input(Connection):
         metrics = QFontMetricsF(self._text_item.font())
 
         self._stem_item.setLine(QLineF(self.stemRoot(), self.stemTip()))
-        self._text_item.setPos(self.stemTip().x() - margin, metrics.capHeight() / 2)
+        self._text_item.setPos(self.stemTip().x() + margin, metrics.capHeight() / 2)
 
     # Geometry and drawing =============================================================================================
     def stemRoot(self):
@@ -64,7 +60,7 @@ class Input(Connection):
         """Return position of stem's root (where the stem connects to the edge) in local coordinates."""
         stem_length = self.style().pixelMetric(Style.ConnectionStemLength)
 
-        return self.stemRoot() - QPointF(stem_length, 0)
+        return self.stemRoot() + QPointF(stem_length, 0)
 
     # Drawing edges ====================================================================================================
     # The heavy lifting such as detecting when the edge started being drawn, mouse moving and data transfers are handled
@@ -75,7 +71,7 @@ class Input(Connection):
         """
         fake_edge = self.scene()._dragging_edge  # The edge being dragged as the mouse moves
 
-        return fake_edge.target() is None and fake_edge.dataType() == self.dataType()
+        return fake_edge.source() is None and fake_edge.dataType() == self.dataType()
 
     def edgeDragDrop(self):
         """Called when a new edge has been dragged and was dropped.  
@@ -86,4 +82,4 @@ class Input(Connection):
         scene = self.scene()
         fake_edge = scene._dragging_edge
 
-        scene.connect_nodes(fake_edge.source(), self)
+        scene.connect_nodes(self, fake_edge.target())

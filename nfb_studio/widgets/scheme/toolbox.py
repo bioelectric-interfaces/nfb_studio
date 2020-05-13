@@ -1,31 +1,31 @@
-from PySide2.QtCore import Qt, QMimeData, QAbstractListModel, QModelIndex
+from PySide2.QtCore import Qt, QPointF, QMimeData, QAbstractListModel, QModelIndex
 from PySide2.QtWidgets import QListView
 from sortedcontainers import SortedDict
 
 from nfb_studio.serial import mime, hooks
-from .scheme import Node
 
 class Toolbox(QAbstractListModel):
-    """A list of signal nodes that can be dragged to the scheme.
+    """A list of scheme nodes that can be dragged to the scheme.
     """
 
     DragMimeType = "application/x-toolbox-drag"
+    """Toolbox assumes that all its items have the same MIME type."""
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
         self._items = SortedDict()
 
     def getView(self):
-        """Get a QListView suitable for displaying the toolbox."""
-        view = QListView()
-        view.setModel(self)
+        """Get a new QListView suitable for displaying the toolbox."""
+        v = QListView()
+        v.setModel(self)
 
-        view.setSelectionMode(view.SingleSelection)
-        view.setDragEnabled(True)
-        view.setDragDropMode(view.DragOnly)
+        v.setSelectionMode(v.SingleSelection)
+        v.setDragEnabled(True)
+        v.setDragDropMode(v.DragOnly)
 
-        return view
+        return v
 
     def rowCount(self, parent=QModelIndex()):
         return len(self._items)
@@ -63,7 +63,7 @@ class Toolbox(QAbstractListModel):
         return [self.DragMimeType]
     
     def mimeData(self, indexes):
-        assert(len(indexes) == 1)
+        assert len(indexes) == 1
         i = indexes[0].row()
 
         package = QMimeData()
@@ -71,6 +71,22 @@ class Toolbox(QAbstractListModel):
 
         return package
     
+    def schemeDropEvent(self, scheme, event):
+        """Event to be executed when an item from this toolbox gets dropped into a scheme.
+        This function can be added as a custom drop event for this toolbox's MIME type, which is usually done by the
+        SchemeEditor.
+        """
+        package = event.mimeData()
+        node = mime.load(package, self.DragMimeType, hooks=hooks.qt)
+
+        pos = event.scenePos() - QPointF(
+            node.boundingRect().size().width()/2,
+            node.boundingRect().size().height()/2
+        )
+        node.setPos(pos)
+        scheme.addItem(node)
+
+    # Serialization ====================================================================================================
     def serialize(self) -> dict:
         return self._items
     

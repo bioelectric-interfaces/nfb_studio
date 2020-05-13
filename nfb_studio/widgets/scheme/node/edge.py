@@ -3,12 +3,10 @@ from typing import Union
 from PySide2.QtCore import QPointF, QRectF, QLineF
 from PySide2.QtGui import QPainter, QPainterPath, QPen
 
-from .style import Style
-from .palette import Palette
-from .scheme_item import SchemeItem
+from ..scheme_item import SchemeItem
+from ..style import Style
 from .node import Node
-from .connection import Input, Output, Connection
-from .data_type import DataType
+from .connection import Input, Output, Connection, DataType
 
 
 class Edge(SchemeItem):

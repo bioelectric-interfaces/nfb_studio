@@ -2,8 +2,8 @@ from PySide2.QtCore import Qt, QPointF, QRectF, QLineF, QMimeData
 from PySide2.QtGui import QDrag, QPainterPath
 from PySide2.QtWidgets import QGraphicsSceneMouseEvent, QGraphicsSceneDragDropEvent, QApplication
 
-from ..scheme_item import SchemeItem
-from ..style import Style
+from ...scheme_item import SchemeItem
+from ...style import Style
 
 class Trigger(SchemeItem):
     """Special invisible item that handles the area from which and to which the edge can be drawn."""

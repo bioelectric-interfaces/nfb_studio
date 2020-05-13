@@ -10,12 +10,9 @@ from PySide2.QtWidgets import (
 from nfb_studio.serial import mime, hooks
 
 from .graph import Graph
-from .node import Node
-from .edge import Edge
-from .connection import Input, Output, Connection
+from .node import Node, Edge, Input, Output, Connection
 from .style import Style
 from .palette import Palette
-from nfb_studio.widgets import signal
 
 class Scheme(QGraphicsScene):
     """A data model for the nfb experiment's system of signals and their components.
@@ -68,6 +65,10 @@ class Scheme(QGraphicsScene):
 
             delete_shortcut = QShortcut(QKeySequence.Delete, self)
             delete_shortcut.activated.connect(scene.deleteEvent)
+        
+        def setScheme(self, scheme):
+            """Alias function for setScene."""
+            self.setScene(scheme)
 
 
     ClipboardMimeType = "application/x-nfb_studio-graph"
@@ -77,8 +78,13 @@ class Scheme(QGraphicsScene):
         super().__init__(parent)
         self.graph = Graph()
 
-        self.view = self.View()
-        self.view.setScene(self)
+        self._view = None
+
+        self._custom_drop_events = {}
+        """A dict mapping MIME types to custom functions to be executed when drag and drop operation finishes.  
+        Users of this scheme can set their own drop event for a particular MIME type. MIME types that are present in
+        this dict will always be accepted drags.
+        """
 
         # Drag-drawing edges support -----------------------------------------------------------------------------------
         self._dragging_edge = None
@@ -94,6 +100,18 @@ class Scheme(QGraphicsScene):
 
         self.styleChange()
         self.paletteChange()
+
+    # Viewing ==========================================================================================================
+    def view(self):
+        """Return a Scheme.View, suitable for displaying contents of the scheme.
+        Note that only one view can exist for a given scheme. This function will construct the widget when it's first
+        called, and always return this widget.
+        """
+        if self._view is None:
+            self._view = self.View()
+            self._view.setScene(self)
+
+        return self._view
 
     # Element manipulation =============================================================================================
     def addItem(self, item: QGraphicsItem):
@@ -171,7 +189,7 @@ class Scheme(QGraphicsScene):
         self.graph.clear()
 
     # Observer methods =================================================================================================
-    def findNode(self, node_id: int) -> Union[Node, None]:
+    def findNode(self, node_id: int) -> Union[Node, None]:  # FIXME: Where is this used? What is the node_id?
         return self.graph.findNode(node_id)
 
     # Selection ========================================================================================================
@@ -283,25 +301,28 @@ class Scheme(QGraphicsScene):
 
     def dragEnterEvent(self, event):
         package = event.mimeData()
-        event.setAccepted(
-            package.hasFormat(signal.Toolbox.DragMimeType) or
-            package.hasFormat(Connection.EdgeDragMimeType)
+
+        # Form a list of accepted formats. Accepted formats include all format with custom drop functions, as well as
+        # Connection.EdgeDragMimeType
+        accepted_formats = (
+            list(self._custom_drop_events.keys()) + 
+            [Connection.EdgeDragMimeType]
         )
+        
+        # If any of the accepted_formats is present in package.formats(), accept the event.
+        for format in package.formats():
+            if format in accepted_formats:
+                event.accept()
+                break
     
     def dropEvent(self, event):
         package = event.mimeData()
 
-        if package.hasFormat(signal.Toolbox.DragMimeType):
-            node = mime.load(package, signal.Toolbox.DragMimeType, hooks=hooks.qt)
+        for format in self._custom_drop_events.keys():
+            if package.hasFormat(format):
+                self._custom_drop_events[format](scheme=self, event=event)
 
-            pos = event.scenePos() - QPointF(
-                node.boundingRect().size().width()/2,
-                node.boundingRect().size().height()/2
-            )
-            node.setPos(pos)
-            self.addItem(node)
-        else:
-            super().dropEvent(event)
+        super().dropEvent(event)
 
     def dragMoveEvent(self, event):
         if event.mimeData().hasFormat(Connection.EdgeDragMimeType) and self.hasEdgeDrag():
@@ -311,6 +332,19 @@ class Scheme(QGraphicsScene):
                 self._dragging_edge.setSourcePos(event.scenePos())
             else:
                 self._dragging_edge.setTargetPos(event.scenePos())
+
+    def setCustomDropEvent(self, format, event):
+        """Set a custom drop event for a particular MIME type (format).
+        Setting a custom event for a format will make this format get accepted by the scheme during drag and drop.
+        If event is None, the format is instead removed from the list of accepted formats.
+        If not None, event should be a function accepting two keyword arguments:
+        - scheme, which will contain this scheme
+        - event, which will contain the event that is being dropped
+        """
+        if event is None:
+            self._custom_drop_events.pop(format)
+        else:
+            self._custom_drop_events[format] = event
 
     # Key presses ======================================================================================================
     def keyPressEvent(self, event):

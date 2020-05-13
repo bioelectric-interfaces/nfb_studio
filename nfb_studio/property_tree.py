@@ -69,7 +69,8 @@ class PropertyTree(TreeModel):
         self.root().addItem(self.blocks_item)
         self.root().addItem(self.groups_item)
 
-    def view(self):
+    def getView(self):
+        """Get a new view, suitable for representing data from this property tree."""
         view = self.View()
         view.setModel(self)
 

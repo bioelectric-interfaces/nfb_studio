@@ -3,7 +3,7 @@ import sys
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QApplication, QMainWindow, QListView, QWidget, QHBoxLayout, QFormLayout, QLineEdit, QSpinBox
 
-from nfb_studio.widgets.signal import SignalEditor, Scheme, Node, Input, Output, InfoMessage, WarningMessage, ErrorMessage, Toolbox
+from nfb_studio.widgets.scheme import SchemeEditor, Scheme, Node, Input, Output, InfoMessage, WarningMessage, ErrorMessage, Toolbox
 from nfb_studio import std_encoder as encoder
 from nfb_studio.serial import xml
 

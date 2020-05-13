@@ -1,14 +1,14 @@
-from PySide2.QtCore import Qt, QPointF, QRectF, QLineF
-from PySide2.QtGui import QPainter, QFontMetricsF
+from PySide2.QtCore import QRectF
+from PySide2.QtGui import QPainter
 from PySide2.QtWidgets import QGraphicsItem, QGraphicsLineItem
 
 from nfb_studio.util import TextLineItem
 
-from ..style import Style
-from ..palette import Palette
-from ..scheme_item import SchemeItem
-from ..data_type import DataType, Unknown
+from ...style import Style
+from ...scheme_item import SchemeItem
+from .data_type import DataType
 from .trigger import Trigger
+
 
 class Connection(SchemeItem):
     """Connection is an input or output from a Node."""
@@ -30,7 +30,7 @@ class Connection(SchemeItem):
 
         self._trigger_item = Trigger(self)
 
-        self._data_type = data_type or Unknown
+        self._data_type = data_type or DataType.Unknown
         self._is_multiple = False
         """Determines if the connection can have multiple edges coming out of it.  
         By default, it is True for Input and False for Output.

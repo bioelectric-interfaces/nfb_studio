@@ -8,8 +8,8 @@ from PySide2.QtSvg import QGraphicsSvgItem, QSvgRenderer
 
 from nfb_studio.util import TextLineItem
 
-from .style import Style
-from .scheme_item import SchemeItem
+from ..scheme_item import SchemeItem
+from ..style import Style
 
 this_dir = os.path.dirname(__file__)
 

@@ -49,8 +49,8 @@ class DataType:
         return not self == other
 
 
-Invalid = DataType()
+DataType.Invalid = DataType()
 """Data type that results from default-constructing a DataType object."""
 
-Unknown = DataType("Unknown data", 1)
+DataType.Unknown = DataType("Unknown data", 1)
 """Data type that is assigned to default-constructed node connections."""

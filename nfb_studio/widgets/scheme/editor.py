@@ -1,0 +1,65 @@
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QMainWindow, QDockWidget, QWidget
+
+from .scheme import Scheme
+from .toolbox import Toolbox
+
+class SchemeEditor(QMainWindow):
+    """Scheme editor is the widget responsible for the scheme editing experience.  
+    As its main components, SchemeEditor contains the following widgets:
+    - scheme - the canvas for dragging and connecting nodes to form signals;
+    - toolbox - a list of draggable nodes to be put on the scheme;
+    - (optionally) config widget - a widget for manipulating properties of nodes.
+    """
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self._scheme = None
+        self._toolbox = None
+
+        self.toolbox_dock = QDockWidget("Node toolbox", self)
+        self.toolbox_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.toolbox_dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.toolbox_dock)
+        self.setToolbox(Toolbox(self))
+
+        self.config_widget_dock = QDockWidget("Configuration", self)
+        self.config_widget_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.config_widget_dock)
+        self.config_widget_dock.hide()
+
+    def setScheme(self, scheme: Scheme):
+        if self._scheme is not None:
+            self.setCentralWidget(QWidget())
+            self._scheme.view().configRequested.disconnect(self.showConfigWidget)
+            self._scheme.setCustomDropEvent(self.toolbox.DragMimeType, None)
+
+        self._scheme = scheme
+
+        if self._scheme is not None:
+            # Set the scheme as the central widget
+            self.setCentralWidget(self._scheme.view())
+
+            # Conect the signal for config widget
+            self._scheme.view().configRequested.connect(self.showConfigWidget)
+
+            # Add a custom drop event for the scheme from the toolbox
+            self._scheme.setCustomDropEvent(self.toolbox().DragMimeType, self.toolbox().schemeDropEvent)
+
+    def scheme(self):
+        return self._scheme
+
+    def setToolbox(self, toolbox):
+        self._toolbox = toolbox
+
+        self.toolbox_dock.setWidget(self._toolbox.getView())
+
+    def toolbox(self):
+        return self._toolbox
+
+    def showConfigWidget(self, node):
+        """Show config widget for a node.
+        This function is automatically connected as a slot to the scheme view's configRequested signal.
+        """
+        self.config_widget_dock.setWidget(node.configWidget())
+        self.config_widget_dock.show()

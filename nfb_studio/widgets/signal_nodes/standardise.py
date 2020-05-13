@@ -2,8 +2,7 @@
 import sys
 from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit, QDoubleSpinBox
 
-from ..signal import Node, Input, Output, DataType
-from ..signal.scheme.data_type import Unknown
+from ..scheme import Node, Input, Output, DataType
 
 
 class Standardise(Node):
@@ -34,7 +33,7 @@ class Standardise(Node):
         super().__init__(parent)
         
         self.setTitle("Standardise")
-        self.addInput(Input("Input", Unknown))
-        self.addOutput(Output("Output", Unknown))
+        self.addInput(Input("Input", DataType.Unknown))
+        self.addOutput(Output("Output", DataType.Unknown))
 
         self.setConfigWidget(self.Config())

@@ -1,8 +1,7 @@
 """NFB main source signal."""
 from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit
 
-from ..signal import Node, Input, Output, DataType
-from ..signal.scheme.data_type import Unknown
+from ..scheme import Node, Input, Output, DataType
 
 
 class DerivedSignalExport(Node):
@@ -21,7 +20,7 @@ class DerivedSignalExport(Node):
         super().__init__(parent)
 
         self.setTitle("Derived Signal Export")
-        self.addInput(Input("Input", Unknown))
-        self.addOutput(Output("Output", Unknown))
+        self.addInput(Input("Input", DataType.Unknown))
+        self.addOutput(Output("Output", DataType.Unknown))
 
         self.setConfigWidget(self.Config())
