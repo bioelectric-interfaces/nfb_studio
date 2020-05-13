@@ -170,7 +170,7 @@ class MainWindow(QMainWindow):
                 signal = []
                 n = node
 
-                while(True):
+                while True:
                     signal.append(n)
 
                     if len(n.inputs) == 0:

@@ -1,6 +1,7 @@
+from collections.abc import MutableSet
+
 from PySide2.QtCore import QRectF, QPointF
 from PySide2.QtWidgets import QGraphicsItem
-from collections.abc import MutableSet
 
 
 class GraphicsItemGroup(MutableSet):

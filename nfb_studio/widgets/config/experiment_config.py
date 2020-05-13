@@ -1,6 +1,6 @@
 """Config widget for general properties of an experiment."""
-from PySide2.QtWidgets import QWidget, QFormLayout, QLineEdit, QCheckBox, QLabel, QSizePolicy, QComboBox, QLineEdit, QHBoxLayout, QCheckBox, QDoubleSpinBox
-from nfb_studio.util.qt import DictWidget
+from PySide2.QtWidgets import QWidget, QFormLayout, QLabel, QComboBox, QLineEdit, QHBoxLayout, QCheckBox, QDoubleSpinBox
+from nfb_studio.util.qt import StackedDictWidget
 
 
 class ExperimentConfig(QWidget):
@@ -77,15 +77,15 @@ class ExperimentConfig(QWidget):
         self.lsl_filename = QLineEdit()
         self.hostname_port = QLineEdit("localhost:1972")
 
-        self.inlet_params = DictWidget()
+        self.inlet_params = StackedDictWidget()
         self.inlet_params.setMaximumHeight(25)
-        self.inlet_params["LSL stream"] = self.lsl_stream_name
-        self.inlet_params["LSL file stream"] = self.lsl_filename
-        self.inlet_params["LSL generator"] = QWidget()
-        self.inlet_params["Field trip buffer"] = self.hostname_port
+        self.inlet_params.addWidget("LSL stream", self.lsl_stream_name)
+        self.inlet_params.addWidget("LSL file stream", self.lsl_filename)
+        self.inlet_params.addWidget("LSL generator", QWidget())
+        self.inlet_params.addWidget("Field trip buffer", self.hostname_port)
         # TODO: LSL generator is not reflected in the exported file, even when selected.
 
-        self.inlet_type_selector.currentTextChanged.connect(self.inlet_params.setCurrent)
+        self.inlet_type_selector.currentTextChanged.connect(self.inlet_params.setCurrentKey)
 
         self.inlet_config = QWidget()
         self.inlet_config.setContentsMargins(0, 0, 0, 0)
