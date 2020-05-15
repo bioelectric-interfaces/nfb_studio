@@ -1,5 +1,9 @@
 from PySide2.QtCore import Qt, QModelIndex
-from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QAction
+from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QAction, QApplication
+
+from pynfb.main import *
+import PyQt5
+import nvx
 
 from nfb_studio.util.qt.tree_model import TreeModelItem
 
@@ -182,4 +186,17 @@ class MainWindow(QMainWindow):
         self.experiment.show_notch_filters = self.experiment_config.show_notch_filters.isChecked()
 
         # --------------------------------------------------------------------------------------------------------------
+        with open("_temp_experiment.xml", "w") as f:
+            f.write(self.experiment.export())
         print(self.experiment.export())
+
+        nvx.set_emulation(True)
+        app = PyQt5.QtWidgets.QApplication([])
+        self.ex = TheMainWindow(None)
+        
+        
+        self.ex.widget.params = xml_file_to_params("_temp_experiment.xml")
+        self.ex.widget.reset_parameters()
+        self.ex.widget.onClicked()
+
+        return app.exec_()

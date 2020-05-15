@@ -66,7 +66,7 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
 
         for i in range(len(self)):  # FIXME: Change to regular iteration
             item = self[i]
-            name_list.append(item[0].name)
+            name_list.append(item[0])
             repeat_list.append(item[1])
 
         # Export XML data ----------------------------------------------------------------------------------------------

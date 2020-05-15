@@ -3,7 +3,7 @@ from PySide2.QtCore import Qt, Signal, QObject, QAbstractItemModel, QModelIndex
 from PySide2.QtWidgets import QTreeView
 from sortedcontainers import SortedDict
 
-from nfb_studio.serial import xml, hooks
+from nfb_studio.serial import json, xml, hooks
 
 from .property_tree import PropertyTree
 from .widgets.scheme import SchemeEditor, Scheme
@@ -95,31 +95,32 @@ class Experiment(QObject):
         
         # Convert list of lists of nodes to a list of serialized signals
         for i in range(len(signals)):
-            data = {}
+            signal = {}
 
             for node in signals[i]:
                 if isinstance(node, LSLInput):
                     pass  # TODO: What to export for LSLInput?
                 elif isinstance(node, SpatialFilter):
-                    data["SpatialFilterMatrix"] = node.configWidget().matrix_path.text()
+                    signal["SpatialFilterMatrix"] = node.configWidget().matrix_path.text()
                 elif isinstance(node, BandpassFilter):
-                    data["fBandpassLowHz"] = None
+                    signal["fBandpassLowHz"] = None
                     if node.configWidget().fBandpassLowHz_enable.isChecked():
-                        data["fBandpassLowHz"] = node.configWidget().fBandpassLowHz_input.value()
+                        signal["fBandpassLowHz"] = node.configWidget().fBandpassLowHz_input.value()
                     
-                    data["fBandpassHighHz"] = None
+                    signal["fBandpassHighHz"] = None
                     if node.configWidget().fBandpassHighHz_enable.isChecked():
-                        data["fBandpassHighHz"] = node.configWidget().fBandpassHighHz_input.value()
+                        signal["fBandpassHighHz"] = node.configWidget().fBandpassHighHz_input.value()
                 elif isinstance(node, EnvelopeDetector):
-                    data["fSmoothingFactor"] = node.configWidget().smoothing_factor.value()
-                    data["method"] = node.configWidget().method.currentText()
+                    signal["fSmoothingFactor"] = node.configWidget().smoothing_factor.value()
+                    signal["method"] = node.configWidget().method.currentText()
                 elif isinstance(node, Standardise):
-                    data["fAverage"] = node.configWidget().fAverage_input.value()
-                    data["fStdDev"] = node.configWidget().fStdDev_input.value()
+                    signal["fAverage"] = node.configWidget().fAverage_input.value()
+                    signal["fStdDev"] = node.configWidget().fStdDev_input.value()
                 elif isinstance(node, DerivedSignalExport):
-                    data["sSignalName"] = node.configWidget().signalName_input.text()
+                    signal["sSignalName"] = node.configWidget().signalName_input.text()
             
-            signals[i] = data
+            signals[i] = signal
+            print(signal)
 
         data["vSignals"] = {
             "DerivedSignal": signals
@@ -154,6 +155,9 @@ class Experiment(QObject):
             Group: Group.nfb_export_data,
             bool: lambda x: {"#text": str(int(x))}
         }
+
+        e = json.JSONEncoder(hooks=enc_hooks)
+        print(e.encode(data))
 
         encoder = xml.XMLEncoder(separator="\n", indent="\t", metadata=False, hooks=enc_hooks)
 
