@@ -139,8 +139,6 @@ class Experiment(QObject):
             n = list(n.outputs[0].edges)[0].targetNode()
             sequence.append(n.title())
 
-        print(sequence)
-
         data["vPSequence"] = {
             "s": sequence
         }
