@@ -9,6 +9,8 @@ from .property_tree import PropertyTree
 from .widgets.scheme import SchemeEditor, Scheme
 from .block import Block
 from .group import Group
+from .widgets.signal_nodes import *
+from .widgets.sequence_nodes import *
 
 
 class Experiment(QObject):
@@ -39,10 +41,9 @@ class Experiment(QObject):
         self.show_notch_filters = False
 
         self.signal_scheme = Scheme()
-        self.signals = []
+        self.sequence_scheme = Scheme()
         self.blocks = set()
         self.groups = set()
-        self.sequence = []
     
     def nfb_export_data(self) -> dict:
         data = {}
@@ -65,10 +66,6 @@ class Experiment(QObject):
         data["bShowPhotoRectangle"] = self.show_proto_rectangle
         data["sVizNotchFilters"] = self.show_notch_filters
 
-        data["vSignals"] = {
-            "DerivedSignal": list(self.signals)
-        }
-
         data["vProtocols"] = {
             "FeedbackProtocol": list(self.blocks)
         }
@@ -77,8 +74,75 @@ class Experiment(QObject):
             "PGroup": list(self.groups)
         }
 
+        # Signals ------------------------------------------------------------------------------------------------------
+        signals = []
+
+        # Build a list of lists of nodes (e.g. list of sequences)
+        for node in self.signal_scheme.graph.nodes:
+            if isinstance(node, DerivedSignalExport):
+                signal = []
+                n = node
+
+                while True:
+                    signal.append(n)
+
+                    if len(n.inputs) == 0:
+                        break
+                    
+                    n = list(n.inputs[0].edges)[0].sourceNode()
+                
+                signals.append(signal)
+        
+        # Convert list of lists of nodes to a list of serialized signals
+        for i in range(len(signals)):
+            data = {}
+
+            for node in signals[i]:
+                if isinstance(node, LSLInput):
+                    pass  # TODO: What to export for LSLInput?
+                elif isinstance(node, SpatialFilter):
+                    data["SpatialFilterMatrix"] = node.configWidget().matrix_path.text()
+                elif isinstance(node, BandpassFilter):
+                    data["fBandpassLowHz"] = None
+                    if node.configWidget().fBandpassLowHz_enable.isChecked():
+                        data["fBandpassLowHz"] = node.configWidget().fBandpassLowHz_input.value()
+                    
+                    data["fBandpassHighHz"] = None
+                    if node.configWidget().fBandpassHighHz_enable.isChecked():
+                        data["fBandpassHighHz"] = node.configWidget().fBandpassHighHz_input.value()
+                elif isinstance(node, EnvelopeDetector):
+                    data["fSmoothingFactor"] = node.configWidget().smoothing_factor.value()
+                    data["method"] = node.configWidget().method.currentText()
+                elif isinstance(node, Standardise):
+                    data["fAverage"] = node.configWidget().fAverage_input.value()
+                    data["fStdDev"] = node.configWidget().fStdDev_input.value()
+                elif isinstance(node, DerivedSignalExport):
+                    data["sSignalName"] = node.configWidget().signalName_input.text()
+            
+            signals[i] = data
+
+        data["vSignals"] = {
+            "DerivedSignal": signals
+        }
+
+        # Experiment sequence ------------------------------------------------------------------------------------------
+        sequence = []
+        
+        # Determine the start node of the sequence and put it in `n`
+        n = next(iter(self.sequence_scheme.graph.nodes))
+        while len(n.inputs[0].edges) > 0:
+            n = list(n.inputs[0].edges)[0].sourceNode()
+        
+        # For each node in sequence, append it's title as next item in sequence
+        sequence.append(n.title())
+        while len(n.outputs[0].edges) > 0:
+            n = list(n.outputs[0].edges)[0].targetNode()
+            sequence.append(n.title())
+
+        print(sequence)
+
         data["vPSequence"] = {
-            "s": self.sequence
+            "s": sequence
         }
 
         return data

@@ -10,6 +10,7 @@ from .widgets.config import BlockConfig, GroupConfig, ExperimentConfig
 from .block import Block
 from .group import Group
 from .widgets.signal_nodes import *
+from .widgets.sequence_nodes import *
 
 
 class MainWindow(QMainWindow):
@@ -34,7 +35,7 @@ class MainWindow(QMainWindow):
         
         self.signal_editor = SchemeEditor()
         self.signal_editor.setScheme(self.experiment.signal_scheme)
-        self.signal_editor._toolbox.addItem("LSL Input", LSLInput())
+        self.signal_editor.toolbox().addItem("LSL Input", LSLInput())
         self.signal_editor.toolbox().addItem("Spatial Filter", SpatialFilter())
         self.signal_editor.toolbox().addItem("Bandpass Filter", BandpassFilter())
         self.signal_editor.toolbox().addItem("Envelope Detector", EnvelopeDetector())
@@ -44,6 +45,10 @@ class MainWindow(QMainWindow):
         self.block_stack = QStackedWidget()
         self.group_stack = QStackedWidget()
 
+        # Sequence editor ----------------------------------------------------------------------------------------------
+        self.sequence_editor = SchemeEditor()
+        self.sequence_editor.setScheme(self.experiment.sequence_scheme)
+
         # Central widget -----------------------------------------------------------------------------------------------
         self.central_widget = QStackedWidget()
         self.setCentralWidget(self.central_widget)
@@ -51,6 +56,7 @@ class MainWindow(QMainWindow):
         self.central_widget.addWidget(self.signal_editor)
         self.central_widget.addWidget(self.block_stack)
         self.central_widget.addWidget(self.group_stack)
+        self.central_widget.addWidget(self.sequence_editor)
 
         # Signals ------------------------------------------------------------------------------------------------------
         self.property_tree_view.blocktree_menu_add_action.triggered.connect(self.addBlock)
@@ -78,6 +84,8 @@ class MainWindow(QMainWindow):
         elif item.parent() is self.property_tree.groups_item:
             self.central_widget.setCurrentIndex(3)
             self.group_stack.setCurrentIndex(index.row())
+        elif item is self.property_tree.sequence_item:
+            self.central_widget.setCurrentIndex(4)
 
     def addBlock(self):
         block = Block()
@@ -90,6 +98,10 @@ class MainWindow(QMainWindow):
         self.property_tree.blocks_item.addItem(tree_item)
 
         self.block_stack.addWidget(block_config)
+
+        block_node = BlockNode()
+        block_node.setTitle(block.name)
+        self.sequence_editor.toolbox().addItem(block.name, block_node)
     
     def addGroup(self):
         group = Group()
@@ -103,7 +115,12 @@ class MainWindow(QMainWindow):
 
         self.group_stack.addWidget(group_config)
 
+        group_node = GroupNode()
+        group_node.setTitle(group.name)
+        self.sequence_editor.toolbox().addItem(group.name, group_node)
+
     def export(self):
+        # For each block, write it's data to the experiment ------------------------------------------------------------
         for i in range(self.block_stack.count()):
             block_config: BlockConfig = self.block_stack.widget(i)
             block: Block = block_config.data
@@ -123,6 +140,7 @@ class MainWindow(QMainWindow):
             block.beep = block_config.beep.isChecked()
             block.update_statistics = block_config.update_statistics.isChecked()
         
+        # For each group, write its data to the experiment -------------------------------------------------------------
         for i in range(self.group_stack.count()):
             group_config: GroupConfig = self.group_stack.widget(i)
             group: Group = group_config.data
@@ -136,6 +154,7 @@ class MainWindow(QMainWindow):
                 group.blocks = group_config.blocks.text().split(" ")
                 group.repeats = [int(number) for number in group_config.repeats.text().split(" ")]
 
+        # Write general experiment data --------------------------------------------------------------------------------
         self.experiment.name = self.experiment_config.name.text()
         self.experiment.inlet = self.experiment_config.inlet_type_export_values[self.experiment_config.inlet_type_selector.currentText()]
         self.experiment.lsl_stream_name = self.experiment_config.lsl_stream_name.currentText()
@@ -162,50 +181,5 @@ class MainWindow(QMainWindow):
         self.experiment.show_proto_rectangle = self.experiment_config.show_proto_rectangle.isChecked()
         self.experiment.show_notch_filters = self.experiment_config.show_notch_filters.isChecked()
 
-        self.experiment.sequence = self.experiment_config.sequence.text().split(" ")
-
-        signals = []
-        for node in self.signal_editor.scheme().graph.nodes:
-            if isinstance(node, DerivedSignalExport):
-                signal = []
-                n = node
-
-                while True:
-                    signal.append(n)
-
-                    if len(n.inputs) == 0:
-                        break
-                    else:
-                        n = list(n.inputs[0].edges)[0].sourceNode()
-                
-                signals.append(signal)
-        
-        for i in range(len(signals)):
-            data = {}
-
-            for node in signals[i]:
-                if isinstance(node, LSLInput):
-                    pass  # TODO: What to export for LSLInput?
-                elif isinstance(node, SpatialFilter):
-                    data["SpatialFilterMatrix"] = node.configWidget().matrix_path.text()
-                elif isinstance(node, BandpassFilter):
-                    data["fBandpassLowHz"] = None
-                    if node.configWidget().fBandpassLowHz_enable.isChecked():
-                        data["fBandpassLowHz"] = node.configWidget().fBandpassLowHz_input.value()
-
-                    data["fBandpassHighHz"] = None
-                    if node.configWidget().fBandpassHighHz_enable.isChecked():
-                        data["fBandpassHighHz"] = node.configWidget().fBandpassHighHz_input.value()
-                elif isinstance(node, EnvelopeDetector):
-                    data["fSmoothingFactor"] = node.configWidget().fSmoothingFactor_input.value()
-                elif isinstance(node, Standardise):
-                    data["fAverage"] = node.configWidget().fAverage_input.value()
-                    data["fStdDev"] = node.configWidget().fStdDev_input.value()
-                elif isinstance(node, DerivedSignalExport):
-                    data["sSignalName"] = node.configWidget().signalName_input.text()
-            
-            signals[i] = data
-        
-        self.experiment.signals = signals
-
+        # --------------------------------------------------------------------------------------------------------------
         print(self.experiment.export())

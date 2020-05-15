@@ -63,11 +63,14 @@ class PropertyTree(TreeModel):
         self.blocks_item.setText("Blocks")
         self.groups_item = TreeModelItem()
         self.groups_item.setText("Block Groups")
+        self.sequence_item = TreeModelItem()
+        self.sequence_item.setText("Sequence")
 
         self.root().addItem(self.general_item)
         self.root().addItem(self.signals_item)
         self.root().addItem(self.blocks_item)
         self.root().addItem(self.groups_item)
+        self.root().addItem(self.sequence_item)
 
     def getView(self):
         """Get a new view, suitable for representing data from this property tree."""

@@ -10,19 +10,24 @@ class EnvelopeDetector(Node):
         def __init__(self, parent=None):
             super().__init__(parent)
 
-            self.fSmoothingFactor_label = QLabel("fSmoothingFactor")
-            self.fSmoothingFactor_input = QDoubleSpinBox()
-            self.fSmoothingFactor_input.setValue(0)
-            self.fSmoothingFactor_input.setMinimum(0)
-            self.fSmoothingFactor_input.setMaximum(1)
-            self.fSmoothingFactor_input.setSingleStep(0.1)
+            self.smoothing_factor = QDoubleSpinBox()
+            self.smoothing_factor.setValue(0)
+            self.smoothing_factor.setMinimum(0)
+            self.smoothing_factor.setMaximum(1)
+            self.smoothing_factor.setSingleStep(0.1)
 
-            form = QFormLayout()
-            form.addRow(self.fSmoothingFactor_label, self.fSmoothingFactor_input)
-            self.setLayout(form)
+            self.method = QComboBox()
+            self.method.addItem("Rectification")
+            self.method.addItem("Fourier Transform")
+            self.method.addItem("Hilbert Transform")
+            self.method.addItem("cFIR")
 
-            # Disallow the widget window from expanding past the form's recommended size
-            self.setMaximumHeight(form.sizeHint().height())
+            layout = QFormLayout()
+            self.setLayout(layout)
+
+            layout.addRow("Smoothing factor", self.smoothing_factor)
+            layout.addRow("Method", self.method)
+
 
     def __init__(self, parent=None):
         super().__init__(parent)

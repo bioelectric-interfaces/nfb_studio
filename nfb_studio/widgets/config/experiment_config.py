@@ -111,8 +111,6 @@ class ExperimentConfig(QWidget):
         self.show_proto_rectangle = QCheckBox()
         self.show_notch_filters    = QCheckBox()
 
-        self.sequence = QLineEdit()
-
         # Adding properties to the widget ------------------------------------------------------------------------------
         layout.addRow("Name", self.name)
         layout.addRow("Inlet", self.inlet_config)
@@ -126,7 +124,6 @@ class ExperimentConfig(QWidget):
         layout.addRow("Reference sub", self.reference_sub)
         layout.addRow("Show proto rectangle", self.show_proto_rectangle)
         layout.addRow("Show notch filters", self.show_notch_filters)
-        layout.addRow("Sequence", self.sequence)
 
     def on_prefilterBandLow_toggled(self):
         if self.prefilterBandLow_enable.isChecked():
