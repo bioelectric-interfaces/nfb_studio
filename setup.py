@@ -1,10 +1,10 @@
+"""Install script for nfb_studio."""
 from setuptools import setup
-from importlib.util import find_spec
 
 install_requires = [
     "PySide2",
     "sortedcontainers",
-	"xmltodict"
+    "xmltodict",
 ]
 
 extras_require = {

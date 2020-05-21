@@ -103,13 +103,10 @@ class Experiment(QObject):
                 elif isinstance(node, SpatialFilter):
                     signal["SpatialFilterMatrix"] = node.configWidget().matrix_path.text()
                 elif isinstance(node, BandpassFilter):
-                    signal["fBandpassLowHz"] = None
-                    if node.configWidget().fBandpassLowHz_enable.isChecked():
-                        signal["fBandpassLowHz"] = node.configWidget().fBandpassLowHz_input.value()
-                    
-                    signal["fBandpassHighHz"] = None
-                    if node.configWidget().fBandpassHighHz_enable.isChecked():
-                        signal["fBandpassHighHz"] = node.configWidget().fBandpassHighHz_input.value()
+                    bounds = node.bounds()
+
+                    signal["fBandpassLowHz"] = bounds[0]
+                    signal["fBandpassHighHz"] = bounds[1]
                 elif isinstance(node, EnvelopeDetector):
                     signal["fSmoothingFactor"] = node.configWidget().smoothing_factor.value()
                     signal["method"] = node.configWidget().method.currentText()

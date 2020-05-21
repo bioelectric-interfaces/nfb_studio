@@ -10,82 +10,79 @@ class BandpassFilter(Node):
         def __init__(self, parent=None):
             super().__init__(parent)
 
-            # fBandpassLowHz -------------------------------------------------------------------------------------------
-            self.fBandpassLowHz_enable = QCheckBox()
-            self.fBandpassLowHz_enable.setChecked(True)
-            self.fBandpassLowHz_enable.stateChanged.connect(self.on_fBandpassLowHz_toggled)
+            # Upper bound ----------------------------------------------------------------------------------------------
+            self.lower_bound_enable = QCheckBox()
+            self.lower_bound_enable.setChecked(True)
+            self.lower_bound_enable.stateChanged.connect(self.adjust)
 
-            self.fBandpassLowHz_label = QLabel("fBandpassLowHz")
+            self.lower_bound = QDoubleSpinBox()
+            self.lower_bound.valueChanged.connect(self.adjust)
+            self.lower_bound.setMinimum(0)
+            self.lower_bound.setMaximum(250)
+            self.lower_bound.setValue(0)
 
-            self.fBandpassLowHz_lwidget = QWidget()
-            self.fBandpassLowHz_lwidget.setLayout(QHBoxLayout())
-            self.fBandpassLowHz_lwidget.layout().addWidget(self.fBandpassLowHz_enable)
-            self.fBandpassLowHz_lwidget.layout().addWidget(self.fBandpassLowHz_label)
+            layout = QHBoxLayout()
+            lower_bound_widget = QWidget()
+            lower_bound_widget.setLayout(layout)
+            layout.addWidget(self.lower_bound_enable)
+            layout.addWidget(self.lower_bound)
 
-            self.fBandpassLowHz_input = QDoubleSpinBox()
-            self.fBandpassLowHz_input.valueChanged.connect(self.on_fBandpassLowHz_changed)
-            self.fBandpassLowHz_input.setMinimum(0)
-            self.fBandpassLowHz_input.setMaximum(250)
-            self.fBandpassLowHz_input.setValue(0)
+            # Lower bound ----------------------------------------------------------------------------------------------
+            self.upper_bound_enable = QCheckBox()
+            self.upper_bound_enable.setChecked(True)
+            self.upper_bound_enable.stateChanged.connect(self.adjust)
 
-            # fBandpassHighHz ------------------------------------------------------------------------------------------
-            self.fBandpassHighHz_enable = QCheckBox()
-            self.fBandpassHighHz_enable.setChecked(True)
-            self.fBandpassHighHz_enable.stateChanged.connect(self.on_fBandpassHighHz_toggled)
+            self.upper_bound = QDoubleSpinBox()
+            self.upper_bound.valueChanged.connect(self.adjust)
+            self.upper_bound.setMaximum(250)
+            self.upper_bound.setValue(0)
 
-            self.fBandpassHighHz_label = QLabel("fBandpassHighHz")
-
-            self.fBandpassHighHz_lwidget = QWidget()
-            self.fBandpassHighHz_lwidget.setLayout(QHBoxLayout())
-            self.fBandpassHighHz_lwidget.layout().addWidget(self.fBandpassHighHz_enable)
-            self.fBandpassHighHz_lwidget.layout().addWidget(self.fBandpassHighHz_label)
-
-            self.fBandpassHighHz_input = QDoubleSpinBox()
-            self.fBandpassHighHz_input.valueChanged.connect(self.on_fBandpassHighHz_changed)
-            self.fBandpassHighHz_input.setMinimum(self.fBandpassLowHz_input.value())
-            self.fBandpassHighHz_input.setMaximum(250)
-            self.fBandpassHighHz_input.setValue(250)
+            layout = QHBoxLayout()
+            upper_bound_widget = QWidget()
+            upper_bound_widget.setLayout(layout)
+            layout.addWidget(self.upper_bound_enable)
+            layout.addWidget(self.upper_bound)
 
             # ----------------------------------------------------------------------------------------------------------
-            form = QFormLayout()
-            form.addRow(self.fBandpassLowHz_lwidget, self.fBandpassLowHz_input)
-            form.addRow(self.fBandpassHighHz_lwidget, self.fBandpassHighHz_input)
-            self.setLayout(form)
+            layout = QFormLayout()
+            layout.addRow("Lower bound", lower_bound_widget)
+            layout.addRow("Upper bound", upper_bound_widget)
+            self.setLayout(layout)
 
-            # Disallow the widget window from expanding past the form's recommended size
-            self.setMaximumHeight(form.sizeHint().height())
-
-        def on_fBandpassLowHz_toggled(self):
-            if self.fBandpassLowHz_enable.isChecked():
-                self.fBandpassLowHz_input.setEnabled(True)
-
-                # Update limits
-                self.fBandpassHighHz_input.setMinimum(self.fBandpassLowHz_input.value())
+        def bounds(self) -> tuple:
+            """Return both lower and upper bounds as a tuple.  
+            If a bound is disabled, tuple will contain None instead of that bound.
+            """
+            if self.lower_bound_enable.isChecked():
+                lower_bound_value = self.lower_bound.value()
             else:
-                self.fBandpassLowHz_input.setEnabled(False)
-
-                # Update limits
-                self.fBandpassHighHz_input.setMinimum(0)
-
-        def on_fBandpassHighHz_toggled(self):
-            if self.fBandpassHighHz_enable.isChecked():
-                self.fBandpassHighHz_input.setEnabled(True)
-
-                # Update limits
-                self.fBandpassLowHz_input.setMaximum(self.fBandpassHighHz_input.value())
+                lower_bound_value = None
+            
+            if self.upper_bound_enable.isChecked():
+                upper_bound_value = self.upper_bound.value()
             else:
-                self.fBandpassHighHz_input.setEnabled(False)
+                upper_bound_value = None
+            
+            return (lower_bound_value, upper_bound_value)
 
-                # Update limits
-                self.fBandpassLowHz_input.setMaximum(250)
+        def adjust(self):
+            """Adjust displayed values and limits in response to changes."""
+            
+            # Enable spinbox widgets based on their checkbox
+            self.lower_bound.setEnabled(self.lower_bound_enable.isChecked())
+            self.upper_bound.setEnabled(self.upper_bound_enable.isChecked())
 
-        def on_fBandpassLowHz_changed(self):
-            # Update limits
-            self.fBandpassHighHz_input.setMinimum(self.fBandpassLowHz_input.value())
+            # Adjust min and max so that lower_bound is never higher than upper_bound
+            if self.lower_bound_enable.isChecked():
+                self.upper_bound.setMinimum(self.lower_bound.value())
+            else:
+                self.upper_bound.setMinimum(0)
+            
+            if self.upper_bound_enable.isChecked():
+                self.lower_bound.setMinimum(self.upper_bound.value())
+            else:
+                self.lower_bound.setMaximum(250)
 
-        def on_fBandpassHighHz_changed(self):
-            # Update limits
-            self.fBandpassLowHz_input.setMaximum(self.fBandpassHighHz_input.value())
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -95,3 +92,9 @@ class BandpassFilter(Node):
         self.addOutput(Output("Output", DataType.Unknown))
 
         self.setConfigWidget(self.Config())
+
+    def bounds(self) -> tuple:
+        """Return both lower and upper bounds as a tuple.  
+        If a bound is disabled, tuple will contain None instead of that bound.
+        """
+        return self.configWidget().bounds()
