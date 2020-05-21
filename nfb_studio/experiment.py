@@ -156,9 +156,6 @@ class Experiment(QObject):
             bool: lambda x: {"#text": str(int(x))}
         }
 
-        e = json.JSONEncoder(hooks=enc_hooks)
-        print(e.encode(data))
-
         encoder = xml.XMLEncoder(separator="\n", indent="\t", metadata=False, hooks=enc_hooks)
 
         return encoder.encode(data)

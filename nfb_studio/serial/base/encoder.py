@@ -51,9 +51,6 @@ class BaseEncoder:
         # Get encode function for this object
         func = self.encode_function(obj)
 
-        #if isinstance(obj, dict) and "sSignalName" in obj:
-            #assert "vSignals" not in obj
-
         if func is not None:
             # If the function exists, encode this object
             result = func(obj)
@@ -79,7 +76,6 @@ class BaseEncoder:
             
             for key, value in obj.items():
                 # For each item, encode it
-                print("encoding", value)
                 encoded = self.encode(value)
                 if encoded is value and not self.in_place:
                     # If item could not be encoded and not in place, deepcopy it
@@ -98,7 +94,6 @@ class BaseEncoder:
             for i in range(len(obj)):
                 # For each item, encode it
                 value = obj[i]
-                print("encoding", value)
                 encoded = self.encode(value)
                 if encoded is value and not self.in_place:
                     # If item could not be encoded and not in place, deepcopy it
