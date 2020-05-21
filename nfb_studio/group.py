@@ -55,6 +55,18 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
         self.blocks.insert(index, value[0])
         self.repeats.insert(index, value[1])
 
+    def serialize(self) -> dict:
+        return {
+            "name": self.name,
+            "blocks": self.blocks,
+            "repeats": self.repeats,
+        }
+
+    def deserialize(self, data: dict):
+        self.name = data["name"]
+        self.blocks = data["blocks"]
+        self.repeats = data["repeats"]
+
     # NFB Export =======================================================================================================
     def nfb_export_data(self) -> dict:
         """Export this group into a dict to be encoded as XML for NFBLab.

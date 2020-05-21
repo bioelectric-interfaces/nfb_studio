@@ -59,3 +59,19 @@ class LSLInput(Node):
         self.setTitle("LSL Input")
         self.addOutput(Output("LSL data stream", DataType.Unknown))
         self.setConfigWidget(self.Config())
+
+    def add_nfb_export_data(self, signal: dict):
+        """Add this node's data to the dict representation of the signal."""
+        pass
+    
+    def serialize(self) -> dict:
+        data = super().serialize()
+
+        data["data_source"] = self.configWidget().input.currentText()
+        return data
+    
+    def deserialize(self, data: dict):
+        super().deserialize(data)
+
+        self.configWidget().input.setCurrentText(data["data_source"])
+        self.configWidget().adjust()

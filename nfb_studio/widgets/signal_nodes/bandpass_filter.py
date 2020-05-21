@@ -20,6 +20,7 @@ class BandpassFilter(Node):
             self.lower_bound.setMinimum(0)
             self.lower_bound.setMaximum(250)
             self.lower_bound.setValue(0)
+            self.lower_bound.setSuffix(" Hz")
 
             layout = QHBoxLayout()
             lower_bound_widget = QWidget()
@@ -34,8 +35,10 @@ class BandpassFilter(Node):
 
             self.upper_bound = QDoubleSpinBox()
             self.upper_bound.valueChanged.connect(self.adjust)
+            self.lower_bound.setMinimum(0)
             self.upper_bound.setMaximum(250)
-            self.upper_bound.setValue(0)
+            self.upper_bound.setValue(250)
+            self.upper_bound.setSuffix(" Hz")
 
             layout = QHBoxLayout()
             upper_bound_widget = QWidget()
@@ -65,6 +68,24 @@ class BandpassFilter(Node):
             
             return (lower_bound_value, upper_bound_value)
 
+        def setBounds(self, bounds: tuple):
+            """Set filtering bounds for the bandpass filter.
+            bounds is a tuple of lower and upper bound. If one of the bounds is None, that bound is disabled.
+            """
+            if bounds[0] is None:
+                self.lower_bound_enable.setChecked(False)
+                self.lower_bound.setValue(0)
+            else:
+                self.lower_bound_enable.setChecked(True)
+                self.lower_bound.setValue(bounds[0])
+            
+            if bounds[1] is None:
+                self.upper_bound_enable.setChecked(False)
+                self.upper_bound.setValue(0)
+            else:
+                self.upper_bound_enable.setChecked(True)
+                self.upper_bound.setValue(bounds[1])
+
         def adjust(self):
             """Adjust displayed values and limits in response to changes."""
             
@@ -79,7 +100,7 @@ class BandpassFilter(Node):
                 self.upper_bound.setMinimum(0)
             
             if self.upper_bound_enable.isChecked():
-                self.lower_bound.setMinimum(self.upper_bound.value())
+                self.lower_bound.setMaximum(self.upper_bound.value())
             else:
                 self.lower_bound.setMaximum(250)
 
@@ -98,3 +119,29 @@ class BandpassFilter(Node):
         If a bound is disabled, tuple will contain None instead of that bound.
         """
         return self.configWidget().bounds()
+    
+    def setBounds(self, bounds: tuple):
+        """Set filtering bounds for the bandpass filter.
+        bounds is a tuple of lower and upper bound. If one of the bounds is None, that bound is disabled.
+        """
+        self.configWidget().setBounds(bounds)
+
+    def add_nfb_export_data(self, signal: dict):
+        """Add this node's data to the dict representation of the signal."""
+        bounds = self.bounds()
+
+        signal["fBandpassLowHz"] = bounds[0]
+        signal["fBandpassHighHz"] = bounds[1]
+    
+    def serialize(self) -> dict:
+        data = super().serialize()
+
+        bounds = self.bounds()
+        data["lower_bound"] = bounds[0]
+        data["upper_bound"] = bounds[1]
+        return data
+    
+    def deserialize(self, data: dict):
+        super().deserialize(data)
+        
+        self.setBounds((data["lower_bound"], data["upper_bound"]))

@@ -9,20 +9,6 @@ class Block(QObject):
     Experiment consists of a sequence of blocks and block groups that are executed in some order.
     """
 
-    FeedbackSourceAll = object()
-    """A sentinel object marking that self.feedback_source is all sources."""
-
-    class FeedbackType(Enum):
-        """Possible values for self.feedback_type."""
-        Baseline = 0
-        Feedback = auto()
-    
-    class RandomBound(Enum):
-        """Possible values for self.random_bound."""
-        SimCircle = 0
-        RandomCircle = auto()
-        Bar = auto()
-
     attrchanged = Signal(str)
 
     def __init__(self, parent=None):
@@ -31,9 +17,9 @@ class Block(QObject):
         # General ------------------------------------------------------------------------------------------------------
         self.name = "Block"
         self.duration = 10.0
-        self.feedback_source = self.FeedbackSourceAll
-        self.feedback_type = self.FeedbackType.Baseline
-        self.random_bound = self.RandomBound.SimCircle
+        self.feedback_source = "All"
+        self.feedback_type = "Baseline"
+        self.random_bound = "SimCircle"
         self.video_path = ""
 
         # Mock signal --------------------------------------------------------------------------------------------------
@@ -83,6 +69,46 @@ class Block(QObject):
 
         return data
     
+    def serialize(self) -> dict:
+        return {
+            "name": self.name,
+            "duration": self.duration,
+            "feedback_source": self.feedback_source,
+            "feedback_type": self.feedback_type,
+            "random_bound": self.random_bound,
+            "video_path": self.video_path,
+
+            "mock_signal_path": self.mock_signal_path,
+            "mock_signal_dataset": self.mock_signal_dataset,
+            "mock_previous": self.mock_previous,
+            "mock_previous_reverse": self.mock_previous_reverse,
+            "mock_previous_random": self.mock_previous_random,
+
+            "start_data_driven_filter_designer": self.start_data_driven_filter_designer,
+            "pause": self.pause,
+            "beep": self.beep,
+            "update_statistics": self.update_statistics,
+        }
+
+    def deserialize(self, data: dict):
+        self.name = data["name"]
+        self.duration = data["duration"]
+        self.feedback_source = data["feedback_source"]
+        self.feedback_type = data["feedback_type"]
+        self.random_bound = data["random_bound"]
+        self.video_path = data["video_path"]
+
+        self.mock_signal_path = data["mock_signal_path"]
+        self.mock_signal_dataset = data["mock_signal_dataset"]
+        self.mock_previous = data["mock_previous"]
+        self.mock_previous_reverse = data["mock_previous_reverse"]
+        self.mock_previous_random = data["mock_previous_random"]
+
+        self.start_data_driven_filter_designer = data["start_data_driven_filter_designer"]
+        self.pause = data["pause"]
+        self.beep = data["beep"]
+        self.update_statistics = data["update_statistics"]
+
     def nfb_import_data(self, data: dict):
         """Import this block from a dict from NFBLab.
         Since the XML file stores everything as a string, this function is responsible for converting items to their

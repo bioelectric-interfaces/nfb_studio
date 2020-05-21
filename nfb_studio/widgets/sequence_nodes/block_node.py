@@ -13,3 +13,9 @@ class BlockNode(Node):
         self.addOutput(Output("Output", DataType.Unknown))
 
         #self.setConfigWidget(self.Config())
+
+    def serialize(self) -> dict:
+        return super().serialize()
+    
+    def deserialize(self, data: dict):
+        super().deserialize(data)

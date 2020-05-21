@@ -1,5 +1,7 @@
+import os
+
 from PySide2.QtCore import Qt, QModelIndex
-from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QAction
+from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QAction, QFileDialog
 
 from nfb_studio.util.qt.tree_model import TreeModelItem
 
@@ -65,6 +67,10 @@ class MainWindow(QMainWindow):
         # Menu bar -----------------------------------------------------------------------------------------------------
         menubar = self.menuBar()
         filemenu = menubar.addMenu("File")
+
+        save = filemenu.addAction("Save Experiment")
+        save.triggered.connect(self.save)
+
         export = filemenu.addAction("Export")
         export.triggered.connect(self.export)
 
@@ -182,5 +188,27 @@ class MainWindow(QMainWindow):
         self.experiment.show_notch_filters = self.experiment_config.show_notch_filters.isChecked()
 
         # --------------------------------------------------------------------------------------------------------------
-        with open("_temp_experiment.xml", "w") as f:
-            f.write(self.experiment.export())
+        data = self.experiment.export()
+
+        file_path = QFileDialog.getSaveFileName(filter="XML Files (*.xml)")[0]
+        if file_path == "":
+            return
+
+        if os.path.splitext(file_path)[1] == "":  # No extension
+            file_path = file_path + ".xml"
+
+        with open(file_path, "w") as file:
+            file.write(data)
+
+    def save(self):
+        data = self.experiment.save()
+        
+        file_path = QFileDialog.getSaveFileName(filter="Experiment Files (*.exp)")[0]
+        if file_path == "":
+            return
+
+        if os.path.splitext(file_path)[1] == "":  # No extension
+            file_path = file_path + ".exp"
+
+        with open(file_path, "w") as file:
+            file.write(data)

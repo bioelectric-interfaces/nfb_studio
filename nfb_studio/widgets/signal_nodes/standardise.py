@@ -37,3 +37,21 @@ class Standardise(Node):
         self.addOutput(Output("Output", DataType.Unknown))
 
         self.setConfigWidget(self.Config())
+
+    def add_nfb_export_data(self, signal: dict):
+        """Add this node's data to the dict representation of the signal."""
+        signal["fAverage"] = self.configWidget().fAverage_input.value()
+        signal["fStdDev"] = self.configWidget().fStdDev_input.value()
+    
+    def serialize(self) -> dict:
+        data = super().serialize()
+
+        data["average"] = self.configWidget().fAverage_input.value()
+        data["standard_deviation"] = self.configWidget().fStdDev_input.value()
+        return data
+    
+    def deserialize(self, data: dict):
+        super().deserialize(data)
+
+        self.configWidget().fAverage_input.setValue(data["average"])
+        self.configWidget().fStdDev_input.setValue(data["standard_deviation"])

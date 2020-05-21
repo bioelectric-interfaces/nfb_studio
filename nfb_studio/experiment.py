@@ -30,7 +30,7 @@ class Experiment(QObject):
         self.inlet = "lsl"
         self.raw_data_path = ""
         self.hostname_port = ""
-        self.dc = False
+        self.dc = False  # TODO: A more descriptive name?
         self.prefilter_band = (None, None)
         self.plot_raw = False
         self.plot_signals = False
@@ -45,7 +45,51 @@ class Experiment(QObject):
         self.blocks = set()
         self.groups = set()
     
+    def serialize(self) -> dict:
+        return {
+            "name": self.name,
+            "lsl_stream_name": self.lsl_stream_name,
+            "inlet": self.inlet,
+            "raw_data_path": self.raw_data_path,
+            "hostname_port": self.hostname_port,
+            "dc": self.dc,
+            "prefilter_band_lower_bound": self.prefilter_band[0],
+            "prefilter_band_upper_bound": self.prefilter_band[1],
+            "plot_raw": self.plot_raw,
+            "plot_signals": self.plot_signals,
+            "show_subject_window": self.show_subject_window,
+            "discard_channels": self.discard_channels,
+            "reference_sub": self.reference_sub,
+            "show_proto_rectangle": self.show_proto_rectangle,
+            "show_notch_filters": self.show_notch_filters,
+            "signal_scheme": self.signal_scheme,
+            "sequence_scheme": self.sequence_scheme,
+            "blocks": list(self.blocks),
+            "groups": list(self.groups),
+        }
+    
+    def deserialize(self, data: dict):
+        self.name = data["name"]
+        self.lsl_stream_name = data["lsl_stream_name"]
+        self.inlet = data["inlet"]
+        self.raw_data_path = data["raw_data_path"]
+        self.hostname_port = data["hostname_port"]
+        self.dc = data["dc"]
+        self.prefilter_band = (data["prefilter_band_lower_bound"], data["prefilter_band_upper_bound"])
+        self.plot_raw = data["plot_raw"]
+        self.plot_signals = data["plot_signals"]
+        self.show_subject_window = data["show_subject_window"]
+        self.discard_channels = data["discard_channels"]
+        self.reference_sub = data["reference_sub"]
+        self.show_proto_rectangle = data["show_proto_rectangle"]
+        self.show_notch_filters = data["show_notch_filters"]
+        self.signal_scheme = data["signal_scheme"]
+        self.sequence_scheme = data["sequence_scheme"]
+        self.blocks = set(data["blocks"])
+        self.groups = set(data["groups"])
+
     def nfb_export_data(self) -> dict:
+        """Export data in a dict format for encoding to XML and usage in NFBLab."""
         data = {}
 
         data["sExperimentName"] = self.name
@@ -98,26 +142,9 @@ class Experiment(QObject):
             signal = {}
 
             for node in signals[i]:
-                if isinstance(node, LSLInput):
-                    pass  # TODO: What to export for LSLInput?
-                elif isinstance(node, SpatialFilter):
-                    signal["SpatialFilterMatrix"] = node.configWidget().matrix_path.text()
-                elif isinstance(node, BandpassFilter):
-                    bounds = node.bounds()
-
-                    signal["fBandpassLowHz"] = bounds[0]
-                    signal["fBandpassHighHz"] = bounds[1]
-                elif isinstance(node, EnvelopeDetector):
-                    signal["fSmoothingFactor"] = node.configWidget().smoothing_factor.value()
-                    signal["method"] = node.configWidget().method.currentText()
-                elif isinstance(node, Standardise):
-                    signal["fAverage"] = node.configWidget().fAverage_input.value()
-                    signal["fStdDev"] = node.configWidget().fStdDev_input.value()
-                elif isinstance(node, DerivedSignalExport):
-                    signal["sSignalName"] = node.configWidget().signalName_input.text()
+                node.add_nfb_export_data(signal)
             
             signals[i] = signal
-            print(signal)
 
         data["vSignals"] = {
             "DerivedSignal": signals
@@ -156,3 +183,8 @@ class Experiment(QObject):
         encoder = xml.XMLEncoder(separator="\n", indent="\t", metadata=False, hooks=enc_hooks)
 
         return encoder.encode(data)
+
+    def save(self) -> str:
+        encoder = json.JSONEncoder(separator="\n", indent="\t", hooks=hooks.qt)
+
+        return encoder.encode(self)

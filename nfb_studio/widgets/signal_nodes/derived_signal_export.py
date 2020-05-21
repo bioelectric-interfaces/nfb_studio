@@ -1,5 +1,5 @@
 """NFB main source signal."""
-from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit
+from PySide2.QtWidgets import QWidget, QFormLayout, QLineEdit
 
 from ..scheme import Node, Input, Output, DataType
 
@@ -10,11 +10,17 @@ class DerivedSignalExport(Node):
         def __init__(self, parent=None):
             super().__init__(parent)
 
-            self.signalName_input = QLineEdit()
+            self.signal_name = QLineEdit("Signal")
 
-            form = QFormLayout()
-            form.addRow("Signal name", self.signalName_input)
-            self.setLayout(form)
+            layout = QFormLayout()
+            self.setLayout(layout)
+            layout.addRow("Signal name", self.signal_name)
+        
+        def signalName(self) -> str:
+            return self.signal_name.text()
+        
+        def setSignalName(self, name: str):
+            self.signal_name.setText(name)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -24,3 +30,23 @@ class DerivedSignalExport(Node):
         self.addOutput(Output("Output", DataType.Unknown))
 
         self.setConfigWidget(self.Config())
+    
+    def signalName(self) -> str:
+        return self.configWidget().signalName()
+
+    def setSignalName(self, name: str):
+        self.configWidget().setSignalName(name)
+
+    def add_nfb_export_data(self, signal: dict):
+        """Add this node's data to the dict representation of the signal."""
+        signal["sSignalName"] = self.signalName()
+    
+    def serialize(self) -> dict:
+        data = super().serialize()
+
+        data["signal_name"] = self.signalName()
+        return data
+    
+    def deserialize(self, data: dict):
+        super().deserialize(data)
+        self.configWidget().setSignalName(data["signal_name"])
