@@ -188,3 +188,8 @@ class Experiment(QObject):
         encoder = json.JSONEncoder(separator="\n", indent="\t", hooks=hooks.qt)
 
         return encoder.encode(self)
+    
+    def load(self, data: str):
+        decoder = json.JSONDecoder(hooks=hooks.qt)
+
+        

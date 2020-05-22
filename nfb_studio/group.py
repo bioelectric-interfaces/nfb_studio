@@ -1,4 +1,5 @@
 """NFB block group."""
+import itertools
 from typing import Union
 from collections.abc import MutableSequence
 
@@ -19,15 +20,35 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
     This class contains two lists that are always the same size: a list of blocks, and a list of repeats each block has
     set. This class also is a MutableSequence, which means you can get and set both values at once with the operator[].
     """
+    newid = itertools.count()
 
     def __init__(self, parent=None):
         super().__init__(parent)
         
-        self.name = "Group"
+        self.name = "Group" + str(next(self.newid))
         self.blocks = []
         self.repeats = []
 
         self.random_order = False
+
+        self._view = None
+
+    def view(self):
+        """Return the view (config widget) for this group."""
+        return self._view
+    
+    def setView(self, view, /):
+        view.setModel(self)
+    
+    def sync(self):
+        view = self.view()
+        if view is None:
+            return
+        
+        view.name.setText(self.name)
+        view.blocks = " ".join(self.blocks)
+        view.repeats = " ".join(self.repeats)
+        view.random_order.setChecked(self.random_order)
 
     # MutableSequence method implementations ===========================================================================
     def __getitem__(self, index):

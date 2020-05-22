@@ -4,20 +4,18 @@ from PySide2.QtWidgets import QWidget, QFormLayout, QLabel, QDoubleSpinBox, QSpi
 
 
 class BlockConfig(QWidget):
-    """Config widget for a single experiment block."""
-    newid = itertools.count()
-
-    def __init__(self, block, parent=None):
+    """Config widget for a single experiment block.  
+    In a model-view paradigm, this is a view, and block is a model. A new block can be set using setModel.
+    """
+    def __init__(self, parent=None):
         super().__init__(parent)
         layout = QFormLayout()
         self.setLayout(layout)
 
-        self.data = block
-
-        self.name = QLabel("Block" + str(next(self.newid)))
-        self.data.name = self.name.text()
+        self._model = None
 
         # Block properties ---------------------------------------------------------------------------------------------
+        self.name = QLabel("Block")
         self.duration = QDoubleSpinBox()
         self.duration.setValue(10)
         self.duration.setSuffix("s")
@@ -74,3 +72,38 @@ class BlockConfig(QWidget):
         layout.addRow("Video path", self.video_path)
         layout.addRow(mock_signal_groupbox)
         layout.addRow(after_block_groupbox)
+
+    def setModel(self, block, /):
+        """Set the model block for this view.
+        Data in the view will be updated to reflect the new block.
+        """
+        self._model = block
+        block._view = self
+        self._model.sync()
+    
+    def model(self):
+        return self._model
+    
+    def sync(self):
+        """Sync data from this view to the block model.
+        "Sync" in this context means one way copy of data from self to model. A similarly named function in the block
+        copies data the opposite way. Use one or the other depending on where data was changed.
+        """
+        block = self.model()
+        if block is None:
+            return
+        
+        block.duration = self.duration.value()
+        block.feedback_source = self.feedback_source.text()
+        block.feedback_type = self.feedback_type.currentText()
+        block.random_bound = self.random_bound.currentText()
+        block.video_path = self.video_path.text()
+        block.mock_signal_path = self.mock_signal_path.text()
+        block.mock_signal_dataset = self.mock_signal_dataset.text()
+        block.mock_previous = self.mock_previous.value()
+        block.mock_previous_reverse = self.mock_previous_reverse.isChecked()
+        block.mock_previous_random = self.mock_previous_random.isChecked()
+        block.start_data_driven_filter_designer = self.start_data_driven_filter_designer.isChecked()
+        block.pause = self.pause.isChecked()
+        block.beep = self.beep.isChecked()
+        block.update_statistics = self.update_statistics.isChecked()

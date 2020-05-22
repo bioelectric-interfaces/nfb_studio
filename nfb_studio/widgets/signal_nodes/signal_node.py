@@ -14,6 +14,7 @@ class SignalNode(Node):
 
         def setNode(self, node):
             self._node = node
+            self._node.sync()
         
         def node(self):
             return self._node

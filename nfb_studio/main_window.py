@@ -95,7 +95,8 @@ class MainWindow(QMainWindow):
 
     def addBlock(self):
         block = Block()
-        block_config = BlockConfig(block)
+        block_config = BlockConfig()
+        block.setView(block_config)
 
         self.experiment.blocks.add(block)
 
@@ -111,7 +112,8 @@ class MainWindow(QMainWindow):
     
     def addGroup(self):
         group = Group()
-        group_config = GroupConfig(group)
+        group_config = GroupConfig()
+        group.setView(group_config)
 
         self.experiment.groups.add(group)
 
@@ -212,3 +214,13 @@ class MainWindow(QMainWindow):
 
         with open(file_path, "w") as file:
             file.write(data)
+
+    def load(self):
+        file_path = QFileDialog.getOpenFileName(filter="Experiment Files (*.exp)")[0]
+        if file_path == "":
+            return
+
+        with open(file_path) as file:
+            data = file.read()
+        
+        

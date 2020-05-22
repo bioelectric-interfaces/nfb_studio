@@ -1,4 +1,5 @@
 """NFB Experiment block."""
+import itertools
 from enum import Enum, auto
 
 from PySide2.QtCore import QObject, Signal
@@ -8,14 +9,13 @@ class Block(QObject):
     """A single step of an experiment.
     Experiment consists of a sequence of blocks and block groups that are executed in some order.
     """
-
-    attrchanged = Signal(str)
+    newid = itertools.count()
 
     def __init__(self, parent=None):
         super().__init__(parent)
         
         # General ------------------------------------------------------------------------------------------------------
-        self.name = "Block"
+        self.name = "Block" + str(next(self.newid))
         self.duration = 10.0
         self.feedback_source = "All"
         self.feedback_type = "Baseline"
@@ -34,7 +34,38 @@ class Block(QObject):
         self.pause = False
         self.beep = False
         self.update_statistics = False
+
+        # --------------------------------------------------------------------------------------------------------------
+        self._view = None
     
+    def view(self):
+        """Return the view (config widget) for this block."""
+        return self._view
+
+    def setView(self, view, /):
+        view.setModel(self)
+
+    def sync(self):
+        view = self.view()
+        if view is None:
+            return
+        
+        view.name.setText(self.name)
+        view.duration.setValue(self.duration)
+        view.feedback_source.setText(self.feedback_source)
+        view.feedback_type.setCurrentText(self.feedback_type)
+        view.mock_signal_path.setText(self.mock_signal_path)
+        view.mock_signal_dataset.setText(self.mock_signal_dataset)
+        view.mock_previous.setValue(self.mock_previous)
+        view.mock_previous_reverse.setChecked(self.mock_previous_reverse)
+        view.mock_previous_random.setChecked(self.mock_previous_random)
+        view.pause.setChecked(self.pause)
+        view.beep.setChecked(self.beep)
+        view.start_data_driven_filter_designer.setChecked(self.start_data_driven_filter_designer)
+        view.update_statistics.setChecked(self.update_statistics)
+        view.random_bound.setCurrentText(self.random_bound)
+        view.video_path.setText(self.video_path)
+
     def nfb_export_data(self) -> dict:
         """Export this block into a dict to be encoded as XML for NFBLab.
         Bool items are written as-is. The encoder is responsible for converting them into int format.
