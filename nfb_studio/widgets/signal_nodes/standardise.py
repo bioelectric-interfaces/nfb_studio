@@ -3,55 +3,83 @@ import sys
 from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit, QDoubleSpinBox
 
 from ..scheme import Node, Input, Output, DataType
+from .signal_node import SignalNode
 
 
-class Standardise(Node):
-    class Config(QWidget):
+class Standardise(SignalNode):
+    class Config(SignalNode.Config):
         """Config widget displayed for LSLInput."""
         def __init__(self, parent=None):
-            super().__init__(parent)
+            super().__init__(parent=parent)
 
             # Add a new layout
-            self.fAverage_label = QLabel("fAverage")
-            self.fAverage_input = QDoubleSpinBox()
-            self.fAverage_input.setMaximum(sys.float_info.max)
+            self.average = QDoubleSpinBox()
+            self.average.setMaximum(sys.float_info.max)
 
-            self.fStdDev_label = QLabel("fStdDev")
-            self.fStdDev_input = QDoubleSpinBox()
-            self.fStdDev_input.setValue(1)
-            self.fStdDev_input.setMaximum(sys.float_info.max)
+            self.standard_deviation = QDoubleSpinBox()
+            self.standard_deviation.setMaximum(sys.float_info.max)
 
-            form = QFormLayout()
-            form.addRow(self.fAverage_label, self.fAverage_input)
-            form.addRow(self.fStdDev_label, self.fStdDev_input)
-            self.setLayout(form)
+            layout = QFormLayout()
+            self.setLayout(layout)
 
-            # Disallow the widget window from expanding past the form's recommended size
-            self.setMaximumHeight(form.sizeHint().height())
+            layout.addRow("Average", self.average)
+            layout.addRow("Std. Deviation", self.standard_deviation)
+        
+        def sync(self):
+            n = self.node()
+            if n is None:
+                return
+
+            n._average = self.average.value()
+            n._standard_deviation = self.standard_deviation.value()
 
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         
         self.setTitle("Standardise")
         self.addInput(Input("Input", DataType.Unknown))
         self.addOutput(Output("Output", DataType.Unknown))
 
-        self.setConfigWidget(self.Config())
+        self._average = 0
+        self._standard_deviation = 1
+        self.sync()
+    
+    def average(self):
+        return self._average
+    
+    def standardDeviation(self):
+        return self._standard_deviation
+    
+    def setAverage(self, value, /):
+        self._average = value
+        self.sync()
+    
+    def setStandardDeviation(self, value, /):
+        self._standard_deviation = value
+        self.sync()
+
+    def sync(self):
+        if not self.hasConfigWidget():
+            return
+        
+        w = self.configWidget()
+        w.average.setValue(self.average())
+        w.standard_deviation.setValue(self.standardDeviation())
 
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""
-        signal["fAverage"] = self.configWidget().fAverage_input.value()
-        signal["fStdDev"] = self.configWidget().fStdDev_input.value()
+        signal["fAverage"] = self.average()
+        signal["fStdDev"] = self.standardDeviation()
     
     def serialize(self) -> dict:
         data = super().serialize()
 
-        data["average"] = self.configWidget().fAverage_input.value()
-        data["standard_deviation"] = self.configWidget().fStdDev_input.value()
+        data["average"] = self.average()
+        data["standard_deviation"] = self.standardDeviation()
         return data
     
     def deserialize(self, data: dict):
         super().deserialize(data)
 
-        self.configWidget().fAverage_input.setValue(data["average"])
-        self.configWidget().fStdDev_input.setValue(data["standard_deviation"])
+        self.setAverage(data["average"])
+        self.setStandardDeviation(data["standard_deviation"])
