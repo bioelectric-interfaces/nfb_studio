@@ -32,9 +32,9 @@ class Experiment(QObject):
         self.hostname_port = ""
         self.dc = False  # TODO: A more descriptive name?
         self.prefilter_band = (None, None)
-        self.plot_raw = False
-        self.plot_signals = False
-        self.show_subject_window = False
+        self.plot_raw = True
+        self.plot_signals = True
+        self.show_subject_window = True
         self.discard_channels = ""
         self.reference_sub = ""
         self.show_proto_rectangle = False
@@ -44,6 +44,59 @@ class Experiment(QObject):
         self.sequence_scheme = Scheme()
         self.blocks = set()
         self.groups = set()
+
+        self._view = None
+    
+    def view(self):
+        return self._view
+    
+    def setView(self, view, /):
+        view.setModel(self)
+    
+    def sync(self):
+        view = self.view()
+        if view is None:
+            return
+
+        # General properties -------------------------------------------------------------------------------------------
+        general = view.general_config
+        
+        general.name.setText(self.name)
+        general.inlet_type.setCurrentText(general.inlet_type_import_values[self.inlet])
+        general.lsl_stream_name.setCurrentText(self.lsl_stream_name)
+        general.lsl_filename.setText(self.raw_data_path)
+        general.hostname_port.setText(self.hostname_port)
+        general.dc.setChecked(self.dc)
+
+        if self.prefilter_band[0] == None:
+            general.prefilterBandLow_enable.setChecked(False)
+            general.prefilterBandLow_input.setValue(0)
+        else:
+            general.prefilterBandLow_enable.setChecked(True)
+            general.prefilterBandLow_input.setValue(self.prefilter_band[0])
+        
+        if self.prefilter_band[1] == None:
+            general.prefilterBandHigh_enable.setChecked(False)
+            general.prefilterBandHigh_input.setValue(0)
+        else:
+            general.prefilterBandHigh_enable.setChecked(True)
+            general.prefilterBandHigh_input.setValue(self.prefilter_band[1])
+        
+        general.plot_raw.setChecked(self.plot_raw)
+        general.plot_signals.setChecked(self.plot_signals)
+        general.show_subject_window.setChecked(self.show_subject_window)
+        general.discard_channels.setText(self.discard_channels)
+        general.reference_sub.setText(self.reference_sub)
+        general.show_proto_rectangle.setChecked(self.show_proto_rectangle)
+        general.show_notch_filters.setChecked(self.show_notch_filters)
+
+        # Blocks -------------------------------------------------------------------------------------------------------
+        for block in self.blocks:
+            view.addBlock(block)
+        
+        for group in self.groups:
+            view.addGroup(group)
+
     
     def serialize(self) -> dict:
         return {

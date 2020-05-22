@@ -3,7 +3,7 @@ from PySide2.QtWidgets import QWidget, QFormLayout, QLabel, QComboBox, QLineEdit
 from nfb_studio.util.qt import StackedDictWidget
 
 
-class ExperimentConfig(QWidget):
+class GeneralConfig(QWidget):
     """Config widget for general properties of an experiment."""
 
     inlet_type_export_values = {
@@ -14,12 +14,10 @@ class ExperimentConfig(QWidget):
     }
     inlet_type_import_values = {v: k for k, v in inlet_type_export_values.items()}
 
-    def __init__(self, experiment, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         layout = QFormLayout()
         self.setLayout(layout)
-
-        self.data = experiment
 
         self.name = QLineEdit()
 
@@ -64,11 +62,11 @@ class ExperimentConfig(QWidget):
         self.prefilterBandHigh_rwidget.layout().addWidget(self.prefilterBandHigh_input)
 
         # Inlet selection ----------------------------------------------------------------------------------------------
-        self.inlet_type_selector = QComboBox()
-        self.inlet_type_selector.addItem("LSL stream")
-        self.inlet_type_selector.addItem("LSL file stream")
-        self.inlet_type_selector.addItem("LSL generator")
-        self.inlet_type_selector.addItem("Field trip buffer")
+        self.inlet_type = QComboBox()
+        self.inlet_type.addItem("LSL stream")
+        self.inlet_type.addItem("LSL file stream")
+        self.inlet_type.addItem("LSL generator")
+        self.inlet_type.addItem("Field trip buffer")
 
         self.lsl_stream_name = QComboBox()
         self.lsl_stream_name.addItem("NVX136_Data")
@@ -85,13 +83,13 @@ class ExperimentConfig(QWidget):
         self.inlet_params.addWidget("Field trip buffer", self.hostname_port)
         # TODO: LSL generator is not reflected in the exported file, even when selected.
 
-        self.inlet_type_selector.currentTextChanged.connect(self.inlet_params.setCurrentKey)
+        self.inlet_type.currentTextChanged.connect(self.inlet_params.setCurrentKey)
 
         self.inlet_config = QWidget()
         self.inlet_config.setContentsMargins(0, 0, 0, 0)
         inlet_layout = QHBoxLayout()
         inlet_layout.setContentsMargins(0, 0, 0, 0)
-        inlet_layout.addWidget(self.inlet_type_selector)
+        inlet_layout.addWidget(self.inlet_type)
         inlet_layout.addWidget(self.inlet_params)
         self.inlet_config.setLayout(inlet_layout)
 
@@ -124,6 +122,34 @@ class ExperimentConfig(QWidget):
         layout.addRow("Reference sub", self.reference_sub)
         layout.addRow("Show proto rectangle", self.show_proto_rectangle)
         layout.addRow("Show notch filters", self.show_notch_filters)
+    
+    def sync_to(self, ex, /):
+        ex.name = self.name.text()
+        ex.inlet = self.inlet_type_export_values[self.inlet_type.currentText()]
+        ex.lsl_stream_name = self.lsl_stream_name.currentText()
+        ex.raw_data_path = self.lsl_filename.text()
+        ex.hostname_port = self.hostname_port.text()
+        ex.dc = self.dc.isChecked()
+        
+        if self.prefilterBandLow_enable.isChecked():
+            prefilterBandLow = self.prefilterBandLow_input.value()
+        else:
+            prefilterBandLow = None
+        
+        if self.prefilterBandHigh_enable.isChecked():
+            prefilterBandHigh = self.prefilterBandHigh_input.value()
+        else:
+            prefilterBandHigh = None
+        
+        ex.prefilter_band = (prefilterBandLow, prefilterBandHigh)
+        ex.plot_raw = self.plot_raw.isChecked()
+        ex.plot_signals = self.plot_signals.isChecked()
+        ex.show_subject_window = self.show_subject_window.isChecked()
+        ex.discard_channels = self.discard_channels.text()
+        ex.reference_sub = self.reference_sub.text()
+        ex.show_proto_rectangle = self.show_proto_rectangle.isChecked()
+        ex.show_notch_filters = self.show_notch_filters.isChecked()
+
 
     def on_prefilterBandLow_toggled(self):
         if self.prefilterBandLow_enable.isChecked():

@@ -1,5 +1,6 @@
 """NFB main source signal."""
-from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QFrame
 
 from ..scheme import Node, Output, DataType
 from .signal_node import SignalNode
@@ -26,17 +27,17 @@ class LSLInput(SignalNode):
 
             self.data_source = QComboBox()
             for source in LSLInput.data_sources:
-                self.input.addItem(source.name)
+                self.data_source.addItem(source.name)
             self.data_source.currentTextChanged.connect(self.adjust)
 
             self.channel_count = QLabel()
-            self.channel_count.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-            self.channel_count.setAlignment(QtCore.Qt.AlignCenter)
+            self.channel_count.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+            self.channel_count.setAlignment(Qt.AlignCenter)
             self.channel_count.setMargin(5)
 
             self.frequency = QLabel()
-            self.frequency.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-            self.frequency.setAlignment(QtCore.Qt.AlignCenter)
+            self.frequency.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+            self.frequency.setAlignment(Qt.AlignCenter)
             self.frequency.setMargin(5)
 
             layout = QFormLayout()
@@ -55,7 +56,7 @@ class LSLInput(SignalNode):
 
             # Find the data_source with the selected name
             for data_source in LSLInput.data_sources:
-                if data_source.name == self.input.currentText():
+                if data_source.name == self.data_source.currentText():
                     break
             else:
                 data_source = None

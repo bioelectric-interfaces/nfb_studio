@@ -26,8 +26,8 @@ class EnvelopeDetector(SignalNode):
             layout = QFormLayout()
             self.setLayout(layout)
 
-            layout.addRow("Smoothing factor", self._smoothing_factor)
-            layout.addRow("Method", self._method)
+            layout.addRow("Smoothing factor", self.smoothing_factor)
+            layout.addRow("Method", self.method)
 
         def sync(self):
             n = self.node()

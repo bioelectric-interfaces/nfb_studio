@@ -62,4 +62,4 @@ class DerivedSignalExport(SignalNode):
     
     def deserialize(self, data: dict):
         super().deserialize(data)
-        self.configWidget().setSignalName(data["signal_name"])
+        self.setSignalName(data["signal_name"])
