@@ -1,9 +1,8 @@
 """Config widget for a single experiment block."""
-import itertools
-from PySide2.QtWidgets import QWidget, QFormLayout, QLabel, QDoubleSpinBox, QSpinBox, QComboBox, QLineEdit, QCheckBox, QGroupBox
+from PySide2.QtWidgets import QWidget, QFormLayout, QDoubleSpinBox, QSpinBox, QComboBox, QLineEdit, QCheckBox, QGroupBox
 
 
-class BlockConfig(QWidget):
+class BlockView(QWidget):
     """Config widget for a single experiment block.  
     In a model-view paradigm, this is a view, and block is a model. A new block can be set using setModel.
     """
@@ -15,7 +14,6 @@ class BlockConfig(QWidget):
         self._model = None
 
         # Block properties ---------------------------------------------------------------------------------------------
-        self.name = QLabel("Block")
         self.duration = QDoubleSpinBox()
         self.duration.setValue(10)
         self.duration.setSuffix("s")
@@ -64,7 +62,6 @@ class BlockConfig(QWidget):
         after_block_gblayout.addRow("Update statistics", self.update_statistics)
 
         # Adding properties to the widget ------------------------------------------------------------------------------
-        layout.addRow("Name", self.name)
         layout.addRow("Duration", self.duration)
         layout.addRow("Source", self.feedback_source)
         layout.addRow("FB Type", self.feedback_type)
@@ -73,21 +70,21 @@ class BlockConfig(QWidget):
         layout.addRow(mock_signal_groupbox)
         layout.addRow(after_block_groupbox)
 
+    def model(self):
+        return self._model
+
     def setModel(self, block, /):
         """Set the model block for this view.
         Data in the view will be updated to reflect the new block.
         """
         self._model = block
         block._view = self
-        self._model.sync()
+        self._model.updateView()
     
-    def model(self):
-        return self._model
-    
-    def sync(self):
-        """Sync data from this view to the block model.
-        "Sync" in this context means one way copy of data from self to model. A similarly named function in the block
-        copies data the opposite way. Use one or the other depending on where data was changed.
+    def updateModel(self):
+        """Copy data from this view to the block model.
+        A similarly named function in the block copies data the opposite way. Use one or the other depending on where
+        data was changed.
         """
         block = self.model()
         if block is None:

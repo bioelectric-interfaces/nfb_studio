@@ -3,17 +3,17 @@ from PySide2.QtCore import Qt, Signal, QObject, QAbstractItemModel, QModelIndex
 from PySide2.QtWidgets import QTreeView
 from sortedcontainers import SortedDict
 
+from nfb_studio.block import Block, BlockDict
+from nfb_studio.group import Group, GroupDict
 from nfb_studio.serial import json, xml, hooks
+from nfb_studio.widgets.scheme import SchemeEditor, Scheme
+from nfb_studio.widgets.signal_nodes import *
+from nfb_studio.widgets.sequence_nodes import *
 
 from .property_tree import PropertyTree
-from .widgets.scheme import SchemeEditor, Scheme
-from .block import Block
-from .group import Group
-from .widgets.signal_nodes import *
-from .widgets.sequence_nodes import *
 
 
-class Experiment(QObject):
+class Experiment:
     inlet_type_export_values = {
         "LSL stream": "lsl",
         "LSL file stream": "lsl_from_file",
@@ -22,9 +22,7 @@ class Experiment(QObject):
     }
     inlet_type_import_values = {v: k for k, v in inlet_type_export_values.items()}
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
+    def __init__(self):
         self.name = "Experiment"
         self.lsl_stream_name = "NVX136_Data"
         self.inlet = "lsl"
@@ -42,24 +40,53 @@ class Experiment(QObject):
 
         self.signal_scheme = Scheme()
         self.sequence_scheme = Scheme()
-        self.blocks = set()
-        self.groups = set()
+        self.blocks = BlockDict()
+        self.groups = GroupDict()
+
+        self.blocks.setExperiment(self)
+        self.groups.setExperiment(self)
 
         self._view = None
     
+    # Access functions =================================================================================================
     def view(self):
         return self._view
     
     def setView(self, view, /):
         view.setModel(self)
     
-    def sync(self):
+    # Serialization ====================================================================================================
+    def export(self) -> str:
+        data = {"NeurofeedbackSignalSpecs": self}
+
+        enc_hooks = {
+            Experiment: Experiment.nfb_export_data,
+            Block: Block.nfb_export_data,
+            Group: Group.nfb_export_data,
+            bool: lambda x: {"#text": str(int(x))}
+        }
+
+        encoder = xml.XMLEncoder(separator="\n", indent="\t", metadata=False, hooks=enc_hooks)
+
+        return encoder.encode(data)
+
+    def save(self) -> str:
+        encoder = json.JSONEncoder(separator="\n", indent="\t", hooks=hooks.qt)
+
+        return encoder.encode(self)
+    
+    @classmethod
+    def load(cls, data: str):
+        decoder = json.JSONDecoder(hooks=hooks.qt)
+        return decoder.decode(data)
+
+    def updateView(self):
         view = self.view()
         if view is None:
             return
 
         # General properties -------------------------------------------------------------------------------------------
-        general = view.general_config
+        general = view.general_view
         
         general.name.setText(self.name)
         general.inlet_type.setCurrentText(general.inlet_type_import_values[self.inlet])
@@ -90,14 +117,25 @@ class Experiment(QObject):
         general.show_proto_rectangle.setChecked(self.show_proto_rectangle)
         general.show_notch_filters.setChecked(self.show_notch_filters)
 
-        # Blocks -------------------------------------------------------------------------------------------------------
-        for block in self.blocks:
-            view.addBlock(block)
+        # Blocks and groups --------------------------------------------------------------------------------------------
+        while view.property_tree.blocks_item.childrenCount() > 0:
+            name = view.property_tree.blocks_item.item(0).text()
+            view.property_tree.blocks_item.removeItem(0)
+            view.blocks.removeWidget(name)
+            view.sequence_editor.toolbox().removeItem(name)
         
-        for group in self.groups:
-            view.addGroup(group)
+        while view.property_tree.groups_item.childrenCount() > 0:
+            name = view.property_tree.groups_item.item(0).text()
+            view.property_tree.groups_item.removeItem(0)
+            view.groups.removeWidget(name)
+            view.sequence_editor.toolbox().removeItem(name)
 
-    
+        for name in self.blocks:
+            self.blocks.itemAdded.emit(name)
+        
+        for name in self.groups:
+            self.groups.itemAdded.emit(name)
+
     def serialize(self) -> dict:
         return {
             "name": self.name,
@@ -117,8 +155,8 @@ class Experiment(QObject):
             "show_notch_filters": self.show_notch_filters,
             "signal_scheme": self.signal_scheme,
             "sequence_scheme": self.sequence_scheme,
-            "blocks": list(self.blocks),
-            "groups": list(self.groups),
+            "blocks": self.blocks,
+            "groups": self.groups,
         }
     
     def deserialize(self, data: dict):
@@ -138,13 +176,17 @@ class Experiment(QObject):
         self.show_notch_filters = data["show_notch_filters"]
         self.signal_scheme = data["signal_scheme"]
         self.sequence_scheme = data["sequence_scheme"]
-        self.blocks = set(data["blocks"])
-        self.groups = set(data["groups"])
+        self.blocks = data["blocks"]
+        self.groups = data["groups"]
+
+        self.blocks.setExperiment(self)
+        self.groups.setExperiment(self)
 
     def nfb_export_data(self) -> dict:
         """Export data in a dict format for encoding to XML and usage in NFBLab."""
         data = {}
 
+        # General ------------------------------------------------------------------------------------------------------
         data["sExperimentName"] = self.name
         data["sStreamName"] = self.lsl_stream_name
         data["sPrefilterBand"] = str(self.prefilter_band[0]) + " " + str(self.prefilter_band[1])
@@ -163,13 +205,27 @@ class Experiment(QObject):
         data["bShowPhotoRectangle"] = self.show_proto_rectangle
         data["sVizNotchFilters"] = self.show_notch_filters
 
+        # Blocks -------------------------------------------------------------------------------------------------------
         data["vProtocols"] = {
-            "FeedbackProtocol": list(self.blocks)
+            "FeedbackProtocol": []
         }
 
+        for name in self.blocks:
+            block = self.blocks[name]
+
+            data["vProtocols"]["FeedbackProtocol"].append(block.nfb_export_data())  # Add other information
+            data["vProtocols"]["FeedbackProtocol"][-1]["sProtocolName"] = name  # Add name
+
+        # Groups -------------------------------------------------------------------------------------------------------
         data["vPGroups"] = {
             "PGroup": list(self.groups)
         }
+
+        for name in self.groups:
+            group = self.groups[name]
+
+            data["vProtocols"]["FeedbackProtocol"].append(block.nfb_export_data())  # Add other information
+            data["vProtocols"]["FeedbackProtocol"][-1]["sName"] = name  # Add name
 
         # Signals ------------------------------------------------------------------------------------------------------
         signals = []
@@ -222,27 +278,4 @@ class Experiment(QObject):
         }
 
         return data
-
-    def export(self) -> str:
-        data = {"NeurofeedbackSignalSpecs": self}
-
-        enc_hooks = {
-            Experiment: Experiment.nfb_export_data,
-            Block: Block.nfb_export_data,
-            Group: Group.nfb_export_data,
-            bool: lambda x: {"#text": str(int(x))}
-        }
-
-        encoder = xml.XMLEncoder(separator="\n", indent="\t", metadata=False, hooks=enc_hooks)
-
-        return encoder.encode(data)
-
-    def save(self) -> str:
-        encoder = json.JSONEncoder(separator="\n", indent="\t", hooks=hooks.qt)
-
-        return encoder.encode(self)
-    
-    def load(self, data: str):
-        decoder = json.JSONDecoder(hooks=hooks.qt)
-
         

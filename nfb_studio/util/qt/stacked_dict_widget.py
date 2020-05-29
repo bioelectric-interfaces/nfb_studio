@@ -1,5 +1,5 @@
 from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QStackedWidget
+from PySide2.QtWidgets import QWidget, QStackedWidget
 
 
 class StackedDictWidget(QStackedWidget):
@@ -12,7 +12,16 @@ class StackedDictWidget(QStackedWidget):
 
         self._widgets = {}
     
-    def addWidget(self, key, widget):
+    def addWidget(self, key, widget: QWidget):
+        if not isinstance(widget, QWidget):
+            raise TypeError(
+                "Added widget must be of type \""
+                + QWidget.__name__
+                + "\", not \""
+                + type(widget).__name__
+                + "\""
+            )
+
         self.removeWidget(key)  # Remove old widget
 
         super().addWidget(widget)
@@ -29,6 +38,9 @@ class StackedDictWidget(QStackedWidget):
         
         return widget
     
+    def keys(self):
+        return self._widgets.keys()
+
     def widget(self, key):
         return self._widgets.get(key, None)
     

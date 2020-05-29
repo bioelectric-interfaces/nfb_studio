@@ -52,6 +52,19 @@ class Toolbox(QAbstractListModel):
         self._items[name] = item
         self.endInsertRows()
 
+    def removeItem(self, name):
+        """Remove an item with a specified name from a toolbox.
+        If an item with such a name does not exist, does nothing.
+        """
+        if name not in self._items:
+            return
+        
+        i = self._items.index(name)
+
+        self.beginRemoveRows(QModelIndex(), i, i)
+        self._items.pop(name)
+        self.endRemoveRows()
+
     def flags(self, index: QModelIndex):
         default_flags = super().flags(index)
 

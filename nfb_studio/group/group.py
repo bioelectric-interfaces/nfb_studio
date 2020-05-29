@@ -1,11 +1,8 @@
 """NFB block group."""
-import itertools
 from typing import Union
 from collections.abc import MutableSequence
 
 from PySide2.QtCore import QObject
-
-from .block import Block
 
 
 class GroupMetaclass(type(QObject), type(MutableSequence)):
@@ -20,12 +17,10 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
     This class contains two lists that are always the same size: a list of blocks, and a list of repeats each block has
     set. This class also is a MutableSequence, which means you can get and set both values at once with the operator[].
     """
-    newid = itertools.count()
 
     def __init__(self, parent=None):
         super().__init__(parent)
         
-        self.name = "Group" + str(next(self.newid))
         self.blocks = []
         self.repeats = []
 
@@ -40,14 +35,13 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
     def setView(self, view, /):
         view.setModel(self)
     
-    def sync(self):
+    def updateView(self):
         view = self.view()
         if view is None:
             return
         
-        view.name.setText(self.name)
-        view.blocks = " ".join(self.blocks)
-        view.repeats = " ".join(self.repeats)
+        view.blocks.setText(" ".join(self.blocks))
+        view.repeats.setText(" ".join([str(x) for x in self.repeats]))
         view.random_order.setChecked(self.random_order)
 
     # MutableSequence method implementations ===========================================================================
@@ -66,11 +60,11 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
         assert len(self.blocks) == len(self.repeats)
         return len(self.blocks)
     
-    def insert(self, index, value: Union[Block, tuple]):
+    def insert(self, index, value):
         """Insert a new item into the group.
         Value can either be a single block or a tuple(block, repeats).
         """
-        if isinstance(value, Block):
+        if not isinstance(value, tuple):
             value = (value, 1)
         
         self.blocks.insert(index, value[0])
@@ -78,13 +72,11 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
 
     def serialize(self) -> dict:
         return {
-            "name": self.name,
             "blocks": self.blocks,
             "repeats": self.repeats,
         }
 
     def deserialize(self, data: dict):
-        self.name = data["name"]
         self.blocks = data["blocks"]
         self.repeats = data["repeats"]
 
@@ -105,7 +97,6 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
         # Export XML data ----------------------------------------------------------------------------------------------
         data = {}
 
-        data["sName"] = self.name
         data["sList"] = " ".join(name_list)
         data["sNumberList"] = " ".join(str(number) for number in repeat_list)
         data["bShuffle"] = self.random_order
@@ -118,7 +109,6 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
         in an invalid state. The caller method is responsible for converting self.blocks from a list of names to a list
         of actual blocks.
         """
-        self.name = data["sName"]
         self.random_order = bool(int(data["bShuffle"]))
 
         if data["sList"] is not None:

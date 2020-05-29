@@ -371,16 +371,14 @@ class Scheme(QGraphicsScene):
 
     def deserialize(self, data: dict):
         """Deserialize this object from a dict of data."""
-        # Clear --------------------------------------------------------------------------------------------------------
-        for node in self.nodes:
-            self.removeItem(node)
+        self.clear()
 
         # Deserialize as graph -----------------------------------------------------------------------------------------
         self.graph.deserialize(data)
 
         # Bring the scene up to speed ----------------------------------------------------------------------------------
-        for node in self.nodes:
+        for node in self.graph.nodes:
             super().addItem(node)
 
-        for edge in self.edges:
+        for edge in self.graph.edges:
             super().addItem(edge)

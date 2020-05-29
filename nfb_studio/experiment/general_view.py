@@ -3,8 +3,11 @@ from PySide2.QtWidgets import QWidget, QFormLayout, QLabel, QComboBox, QLineEdit
 from nfb_studio.util.qt import StackedDictWidget
 
 
-class GeneralConfig(QWidget):
-    """Config widget for general properties of an experiment."""
+class GeneralView(QWidget):
+    """Config widget for general properties of an experiment.
+    This "view" does not have a model. Instead, it is a part of a bigger view called ExperimentView, and gets updated
+    with it.
+    """
 
     inlet_type_export_values = {
         "LSL stream": "lsl",
@@ -123,7 +126,7 @@ class GeneralConfig(QWidget):
         layout.addRow("Show proto rectangle", self.show_proto_rectangle)
         layout.addRow("Show notch filters", self.show_notch_filters)
     
-    def sync_to(self, ex, /):
+    def updateModel(self, ex, /):
         ex.name = self.name.text()
         ex.inlet = self.inlet_type_export_values[self.inlet_type.currentText()]
         ex.lsl_stream_name = self.lsl_stream_name.currentText()

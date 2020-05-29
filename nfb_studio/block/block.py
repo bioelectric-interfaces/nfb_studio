@@ -1,5 +1,4 @@
 """NFB Experiment block."""
-import itertools
 from enum import Enum, auto
 
 from PySide2.QtCore import QObject, Signal
@@ -9,13 +8,10 @@ class Block(QObject):
     """A single step of an experiment.
     Experiment consists of a sequence of blocks and block groups that are executed in some order.
     """
-    newid = itertools.count()
-
     def __init__(self, parent=None):
         super().__init__(parent)
         
         # General ------------------------------------------------------------------------------------------------------
-        self.name = "Block" + str(next(self.newid))
         self.duration = 10.0
         self.feedback_source = "All"
         self.feedback_type = "Baseline"
@@ -45,12 +41,11 @@ class Block(QObject):
     def setView(self, view, /):
         view.setModel(self)
 
-    def sync(self):
+    def updateView(self):
         view = self.view()
         if view is None:
             return
         
-        view.name.setText(self.name)
         view.duration.setValue(self.duration)
         view.feedback_source.setText(self.feedback_source)
         view.feedback_type.setCurrentText(self.feedback_type)
@@ -72,7 +67,6 @@ class Block(QObject):
         """
         data = {}
 
-        data["sProtocolName"] = self.name
         data["bUpdateStatistics"] = self.update_statistics
         data["iDropOutliers"] = 0
         data["bSSDInTheEnd"] = self.start_data_driven_filter_designer
@@ -102,7 +96,6 @@ class Block(QObject):
     
     def serialize(self) -> dict:
         return {
-            "name": self.name,
             "duration": self.duration,
             "feedback_source": self.feedback_source,
             "feedback_type": self.feedback_type,
@@ -122,7 +115,6 @@ class Block(QObject):
         }
 
     def deserialize(self, data: dict):
-        self.name = data["name"]
         self.duration = data["duration"]
         self.feedback_source = data["feedback_source"]
         self.feedback_type = data["feedback_type"]
@@ -145,8 +137,6 @@ class Block(QObject):
         Since the XML file stores everything as a string, this function is responsible for converting items to their
         proper types.
         """
-
-        self.name = data["sProtocolName"]
         self.update_statistics = bool(int(data["bUpdateStatistics"]))
         self.start_data_driven_filter_designer = bool(int(data["bSSDInTheEnd"]))
         self.duration = float(data["fDuration"])

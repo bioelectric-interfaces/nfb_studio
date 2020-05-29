@@ -1,8 +1,8 @@
 """Config widget for a group of blocks."""
-from PySide2.QtWidgets import QWidget, QFormLayout, QLabel, QLineEdit, QCheckBox
+from PySide2.QtWidgets import QWidget, QFormLayout, QLineEdit, QCheckBox
 
 
-class GroupConfig(QWidget):
+class GroupView(QWidget):
     """Config widget for a group of blocks."""
 
     def __init__(self, parent=None):
@@ -12,13 +12,10 @@ class GroupConfig(QWidget):
 
         self._model = None
 
-        self.name = QLabel()
-
         self.blocks = QLineEdit()
         self.repeats = QLineEdit()
         self.random_order = QCheckBox()
 
-        layout.addRow("Name", self.name)
         layout.addRow("Blocks", self.blocks)
         layout.addRow("Repeats", self.repeats)
         layout.addRow("Random order", self.random_order)
@@ -29,16 +26,15 @@ class GroupConfig(QWidget):
     def setModel(self, group, /):
         self._model = group
         group._view = self
-        self._model.sync()
+        self._model.updateView()
 
-    def sync(self):
-        """Sync data from this view to the group model.
-        "Sync" in this context means one way copy of data from self to model. A similarly named function in the group
-        copies data the opposite way. Use one or the other depending on where data was changed.
+    def updateModel(self):
+        """Copy data from this view to the group model.
+        A similarly named function in the group copies data the opposite way. Use one or the other depending on where
+        data was changed.
         """
         group = self.model()
 
-        group.name = self.name.text()
         group.random_order = self.random_order.isChecked()
         if self.blocks.text() == "":
             group.blocks = []
