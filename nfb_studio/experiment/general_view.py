@@ -1,6 +1,6 @@
 """Config widget for general properties of an experiment."""
 from PySide2.QtWidgets import QWidget, QFormLayout, QLabel, QComboBox, QLineEdit, QHBoxLayout, QCheckBox, QDoubleSpinBox
-from nfb_studio.util.qt import StackedDictWidget
+from nfb_studio.util import StackedDictWidget
 
 
 class GeneralView(QWidget):

@@ -10,8 +10,6 @@ from nfb_studio.widgets.scheme import SchemeEditor, Scheme
 from nfb_studio.widgets.signal_nodes import *
 from nfb_studio.widgets.sequence_nodes import *
 
-from .property_tree import PropertyTree
-
 
 class Experiment:
     inlet_type_export_values = {
@@ -118,15 +116,15 @@ class Experiment:
         general.show_notch_filters.setChecked(self.show_notch_filters)
 
         # Blocks and groups --------------------------------------------------------------------------------------------
-        while view.property_tree.blocks_item.childrenCount() > 0:
-            name = view.property_tree.blocks_item.item(0).text()
-            view.property_tree.blocks_item.removeItem(0)
+        while view.tree.blocks.childCount() > 0:
+            name = view.tree.blocks.child(0).text(0)
+            view.tree.blocks.takeChild(0)
             view.blocks.removeWidget(name)
             view.sequence_editor.toolbox().removeItem(name)
         
-        while view.property_tree.groups_item.childrenCount() > 0:
-            name = view.property_tree.groups_item.item(0).text()
-            view.property_tree.groups_item.removeItem(0)
+        while view.tree.groups.childCount() > 0:
+            name = view.tree.groups.child(0).text(0)
+            view.tree.groups.takeChild(0)
             view.groups.removeWidget(name)
             view.sequence_editor.toolbox().removeItem(name)
 

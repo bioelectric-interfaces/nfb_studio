@@ -1,12 +1,11 @@
 import os
 
 from PySide2.QtCore import Qt, QModelIndex
-from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QAction, QFileDialog
+from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QAction, QFileDialog, QTreeWidgetItem
 
 from nfb_studio.block import Block, BlockView
 from nfb_studio.group import Group, GroupView
-from nfb_studio.util.qt import StackedDictWidget
-from nfb_studio.util.qt.tree_model import TreeModelItem
+from nfb_studio.util import StackedDictWidget
 from nfb_studio.widgets.scheme import SchemeEditor
 from nfb_studio.widgets.signal_nodes import *
 from nfb_studio.widgets.sequence_nodes import *
@@ -23,12 +22,16 @@ class ExperimentView(QMainWindow):
         self._model = None
 
         # Property tree ------------------------------------------------------------------------------------------------
-        self.property_tree = PropertyTree()
-        self.property_tree_view = self.property_tree.getView()
-        self.property_tree_view.clicked.connect(self.setCurrentIndex)
+        self.tree = PropertyTree()
+        self.tree.currentItemChanged.connect(self.setCurrentWidget)
+        self.tree.addBlockClicked.connect(self.addNewBlock)
+        self.tree.addGroupClicked.connect(self.addNewGroup)
+        self.tree.removeBlockClicked.connect(lambda item: self.removeBlock(item.text(0)))
+        self.tree.removeGroupClicked.connect(lambda item: self.removeGroup(item.text(0)))
 
+        # Property tree dock widget ------------------------------------------------------------------------------------
         self.property_tree_dock = QDockWidget("Properties", self)
-        self.property_tree_dock.setWidget(self.property_tree_view)
+        self.property_tree_dock.setWidget(self.tree)
         self.property_tree_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.property_tree_dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.property_tree_dock)
@@ -58,18 +61,6 @@ class ExperimentView(QMainWindow):
         self.central_widget.addWidget(self.blocks)
         self.central_widget.addWidget(self.groups)
         self.central_widget.addWidget(self.sequence_editor)
-
-        # Signals ------------------------------------------------------------------------------------------------------
-        def add_new_block():
-            ex = self.model()
-            ex.blocks[ex.blocks.getName()] = Block()
-        
-        def add_new_group():
-            ex = self.model()
-            ex.groups[ex.groups.getName()] = Group()
-
-        self.property_tree_view.blocktree_menu_add_action.triggered.connect(add_new_block)
-        self.property_tree_view.grouptree_menu_add_action.triggered.connect(add_new_group)
 
     def model(self):
         return self._model
@@ -106,31 +97,61 @@ class ExperimentView(QMainWindow):
         # Write general experiment data
         self.general_view.updateModel(ex)
 
-    def setCurrentIndex(self, index: QModelIndex):
-        """Set central widget in the main window to display config info for item at `index` in the property tree."""
-        self.property_tree_view.setCurrentIndex(index)
+    def addNewBlock(self):
+        """Add a new block into the experiment."""
+        ex = self.model()
+        if ex is None:
+            return
 
-        item = self.property_tree.item(index)
+        ex.blocks[ex.blocks.getName()] = Block()
+    
+    def addNewGroup(self):
+        ex = self.model()
+        if ex is None:
+            return
+
+        ex.groups[ex.groups.getName()] = Group()
+    
+    def removeBlock(self, name):
+        ex = self.model()
+        if ex is None:
+            return
         
-        if item is self.property_tree.general_item:
-            self.central_widget.setCurrentIndex(0)
-        if item is self.property_tree.signals_item:
-            self.central_widget.setCurrentIndex(1)
-        elif item.parent() is self.property_tree.blocks_item:
-            self.central_widget.setCurrentIndex(2)
-            self.blocks.setCurrentIndex(index.row())
-        elif item.parent() is self.property_tree.groups_item:
-            self.central_widget.setCurrentIndex(3)
-            self.groups.setCurrentIndex(index.row())
-        elif item is self.property_tree.sequence_item:
-            self.central_widget.setCurrentIndex(4)
+        ex.blocks.pop(name)
+    
+    def removeGroup(self, name):
+        ex = self.model()
+        if ex is None:
+            return
+        
+        ex.groups.pop(name)
+
+    def setCurrentWidget(self, item):
+        """Set central widget in the main window to display config info for item in the property tree."""        
+        if item is self.tree.general:
+            # General
+            self.central_widget.setCurrentWidget(self.general_view)
+        elif item is self.tree.signals:
+            # Signal editor
+            self.central_widget.setCurrentWidget(self.signal_editor)
+        elif item.parent() is self.tree.blocks:
+            # A block
+            self.central_widget.setCurrentWidget(self.blocks)
+            self.blocks.setCurrentKey(item.text(0))
+        elif item.parent() is self.tree.groups:
+            # A group
+            self.central_widget.setCurrentWidget(self.groups)
+            self.groups.setCurrentKey(item.text(0))
+        elif item is self.tree.sequence:
+            # Sequence editor
+            self.central_widget.setCurrentWidget(self.sequence_editor)
 
     def _onBlockAdded(self, name):
         """Function that gets called when a new block has been added to the model."""
         # Add an item to the property tree
-        tree_item = TreeModelItem()
-        tree_item.setText(name)
-        self.property_tree.blocks_item.addItem(tree_item)
+        tree_item = QTreeWidgetItem()
+        tree_item.setText(0, name)
+        self.tree.blocks.addChild(tree_item)
         
         # Add a view to the widget stack
         block_view = BlockView()
@@ -141,13 +162,16 @@ class ExperimentView(QMainWindow):
         node = BlockNode()
         node.setTitle(name)
         self.sequence_editor.toolbox().addItem(name, node)
+
+        # Select this item
+        self.tree.setCurrentItem(tree_item)
     
     def _onGroupAdded(self, name):
         """Function that gets called when a new group has been added to the model."""
         # Add an item to the property tree
-        tree_item = TreeModelItem()
-        tree_item.setText(name)
-        self.property_tree.groups_item.addItem(tree_item)
+        tree_item = QTreeWidgetItem()
+        tree_item.setText(0, name)
+        self.tree.groups.addChild(tree_item)
 
         # Add a view to the widget stack
         group_view = GroupView()
@@ -158,29 +182,32 @@ class ExperimentView(QMainWindow):
         node = GroupNode()
         node.setTitle(name)
         self.sequence_editor.toolbox().addItem(name, node)
+
+        # Select this item
+        self.tree.setCurrentItem(tree_item)
     
     def _onBlockRemoved(self, name):
         """Function that gets called when a block has been removed from the model."""
         # Find and remove it from the property tree
-        for i in range(view.property_tree.blocks_item.childrenCount()):
-            item = view.property_tree.blocks_item.item(i)
-            if item.text() == key:
-                view.property_tree.blocks_item.removeItem(i)
+        for i in range(self.tree.blocks.childCount()):
+            item = self.tree.blocks.child(i)
+            if item.text(0) == name:
+                self.tree.blocks.takeChild(i)
                 break
         
         # Remove from widget stack and the sequence editor toolbox
-        view.blocks.removeWidget(key)
-        view.sequence_editor.toolbox().removeItem(key)
+        self.blocks.removeWidget(name)
+        self.sequence_editor.toolbox().removeItem(name)
     
     def _onGroupRemoved(self, name):
         """Function that gets called when a block has been removed from the model."""
         # Find and remove it from the property tree        
-        for i in range(view.property_tree.groups_item.childrenCount()):
-            item = view.property_tree.groups_item.item(i)
-            if item.text() == key:
-                view.property_tree.groups_item.removeItem(i)
+        for i in range(self.tree.groups.childCount()):
+            item = self.tree.groups.child(i)
+            if item.text(0) == name:
+                self.tree.groups.takeChild(i)
                 break
         
         # Remove from widget stack and the sequence editor toolbox
-        view.groups.removeWidget(key)
-        view.sequence_editor.toolbox().removeItem(key)
+        self.groups.removeWidget(name)
+        self.sequence_editor.toolbox().removeItem(name)

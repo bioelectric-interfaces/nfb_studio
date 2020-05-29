@@ -1,88 +1,72 @@
-from PySide2.QtCore import Qt, QObject, QAbstractItemModel, QModelIndex, QPoint
-from PySide2.QtWidgets import QTreeView, QMenu, QAction
+from PySide2.QtCore import Qt, QObject, QAbstractItemModel, QModelIndex, QPoint, Signal
+from PySide2.QtWidgets import QTreeView, QMenu, QAction, QTreeWidget, QTreeWidgetItem
 
-from nfb_studio.util.qt import TreeModel, TreeModelItem
 
-class PropertyTree(TreeModel):
-
-    class View(QTreeView):
-        def __init__(self, parent=None):
-            super().__init__(parent)
-            self.setHeaderHidden(True)
-            self.setContextMenuPolicy(Qt.CustomContextMenu)
-            self.customContextMenuRequested.connect(self.showContextMenu)
-
-            # Context menu actions -------------------------------------------------------------------------------------
-            self.blocktree_menu = QMenu("Block Tree")
-            self.blocktree_menu_add_action = QAction("Add")
-            self.blocktree_menu.addAction(self.blocktree_menu_add_action)
-
-            self.block_menu = QMenu("Block")
-            self.block_menu_delete_action = QAction("Delete")
-            self.block_menu.addAction(self.block_menu_delete_action)
-
-            self.grouptree_menu = QMenu("Group Tree")
-            self.grouptree_menu_add_action = QAction("Add")
-            self.grouptree_menu.addAction(self.grouptree_menu_add_action)
-
-            self.group_menu = QMenu("Group")
-            self.group_menu_delete_action = QAction("Delete")
-            self.group_menu.addAction(self.group_menu_delete_action)
-        
-        def setModel(self, model):
-            if not isinstance(model, PropertyTree):
-                raise TypeError(
-                    "PropertyTree.View can only have PropertyTree as it's model, not " + type(model).__name__)
-
-            super().setModel(model)
-
-        def showContextMenu(self, point: QPoint):
-            index = self.indexAt(point)
-            if not index.isValid():
-                return
-            
-            item = self.model().item(index)
-
-            if item is self.model().blocks_item:
-                self.blocktree_menu.exec_(self.viewport().mapToGlobal(point))
-            elif item is self.model().groups_item:
-                self.grouptree_menu.exec_(self.viewport().mapToGlobal(point))
-            elif item.parent() is self.model().blocks_item:
-                self.block_menu.exec_(self.viewport().mapToGlobal(point))
-            elif item.parent() is self.model().groups_item:
-                self.group_menu.exec_(self.viewport().mapToGlobal(point))
+class PropertyTree(QTreeWidget):
+    """A tree widget displaying experiment properties inside the ExperimentView.
+    Since this widget is entirely contained in the view model, there is no need for model-view separation.
+    """
+    addBlockClicked = Signal()
+    addGroupClicked = Signal()
+    renameBlockClicked = Signal()
+    renameGroupClicked = Signal()
+    removeBlockClicked = Signal(QTreeWidgetItem)
+    removeGroupClicked = Signal(QTreeWidgetItem)
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        
-        self.general_item = TreeModelItem()
-        self.general_item.setText("General")
-        self.signals_item = TreeModelItem()
-        self.signals_item.setText("Signals")
-        self.blocks_item = TreeModelItem()
-        self.blocks_item.setText("Blocks")
-        self.groups_item = TreeModelItem()
-        self.groups_item.setText("Block Groups")
-        self.sequence_item = TreeModelItem()
-        self.sequence_item.setText("Sequence")
+        self.setHeaderHidden(True)
+        self.setSelectionMode(self.SingleSelection)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.showContextMenu)
 
-        self.root().addItem(self.general_item)
-        self.root().addItem(self.signals_item)
-        self.root().addItem(self.blocks_item)
-        self.root().addItem(self.groups_item)
-        self.root().addItem(self.sequence_item)
+        self.general = QTreeWidgetItem()
+        self.signals = QTreeWidgetItem()
+        self.blocks = QTreeWidgetItem()
+        self.groups = QTreeWidgetItem()
+        self.sequence = QTreeWidgetItem()
 
-    def getView(self):
-        """Get a new view, suitable for representing data from this property tree."""
-        view = self.View()
-        view.setModel(self)
+        self.general.setText(0, "General")
+        self.signals.setText(0, "Signals")
+        self.blocks.setText(0, "Blocks")
+        self.groups.setText(0, "Block Groups")
+        self.sequence.setText(0, "Sequence")
 
-        return view
+        self.addTopLevelItem(self.general)
+        self.addTopLevelItem(self.signals)
+        self.addTopLevelItem(self.blocks)
+        self.addTopLevelItem(self.groups)
+        self.addTopLevelItem(self.sequence)
+    
+    def showContextMenu(self, point: QPoint):
+        global_point = self.viewport().mapToGlobal(point)
+        item = self.itemAt(point)
 
-    def headerData(self, section, orientation: Qt.Orientation, role=Qt.DisplayRole):
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Vertical:
-                return section
-            else:
-                return "Properties"
-        return None
+        if item is self.blocks:
+            # Menu for "Blocks" item -----------------------------------------------------------------------------------
+            menu = QMenu()
+            add = menu.addAction("New Block")
+            add.triggered.connect(lambda: self.addBlockClicked.emit())
+
+            menu.exec_(global_point)
+        elif item is self.groups:
+            # Menu for "Groups" item -----------------------------------------------------------------------------------
+            menu = QMenu()
+            add = menu.addAction("New Group")
+            add.triggered.connect(lambda: self.addGroupClicked.emit())
+
+            menu.exec_(global_point)
+        elif item.parent() is self.blocks:
+            # Menu for an individual block -----------------------------------------------------------------------------
+            menu = QMenu()
+            add = menu.addAction("Delete")
+            add.triggered.connect(lambda: self.removeBlockClicked.emit(item))
+
+            menu.exec_(global_point)
+        elif item.parent() is self.groups:
+            # Menu for an individual group -----------------------------------------------------------------------------
+            menu = QMenu()
+            add = menu.addAction("Delete")
+            add.triggered.connect(lambda: self.removeGroupClicked.emit(item))
+
+            menu.exec_(global_point)

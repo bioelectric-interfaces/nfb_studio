@@ -1,5 +1,4 @@
 """Internally used dictionary for groups."""
-from nfb_studio.util.qt.tree_model import TreeModelItem
 from nfb_studio.item_dict import ItemDict
 from nfb_studio.widgets.sequence_nodes import GroupNode
 

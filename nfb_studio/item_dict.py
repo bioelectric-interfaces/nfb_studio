@@ -75,7 +75,7 @@ class ItemDict(QObject, MutableMapping, metaclass=ItemDictMetaclass):
         d[new_key] = d.pop(old_key)
         self.blockSignals(False)
 
-        self.itemRenamed.emit(old_key, new_key)
+        self.itemRenamed.emit(new_key, old_key)
 
     def __iter__(self):
         return self._data.__iter__()
