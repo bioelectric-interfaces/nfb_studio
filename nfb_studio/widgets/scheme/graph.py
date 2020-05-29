@@ -5,8 +5,7 @@ from collections import MutableSet
 
 from PySide2.QtCore import QRectF
 
-from nfb_studio.util import GraphicsItemGroup
-
+from .graphics_item_group import GraphicsItemGroup
 from .node import Node, Edge, Input, Output
 
 class Graph(GraphicsItemGroup):
