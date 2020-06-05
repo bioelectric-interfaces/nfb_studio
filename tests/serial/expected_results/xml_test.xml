@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root __class__.__qualname__="ExampleClass" __class__.__module__="tests.serial.example_class">
+	<nested __class__.__qualname__="ExampleClass.Nested" __class__.__module__="tests.serial.example_class">
+		<int_var>-5</int_var>
+		<float_var>0.69</float_var>
+		<string_var>string</string_var>
+		<list_var>1</list_var>
+		<list_var>2</list_var>
+		<list_var>3</list_var>
+		<tuple_var>1</tuple_var>
+		<tuple_var>2</tuple_var>
+		<tuple_var>3</tuple_var>
+		<dict_var>
+			<1>1</1>
+			<2>2</2>
+			<3>3</3>
+		</dict_var>
+		<set_var>1</set_var>
+		<set_var>2</set_var>
+		<set_var>3</set_var>
+		<bool_var1>true</bool_var1>
+		<bool_var2>false</bool_var2>
+		<none_var></none_var>
+	</nested>
+	<dict_var>
+		<nested __class__.__qualname__="ExampleClass.Nested" __class__.__module__="tests.serial.example_class">
+			<int_var>-5</int_var>
+			<float_var>0.69</float_var>
+			<string_var>string</string_var>
+			<list_var>1</list_var>
+			<list_var>2</list_var>
+			<list_var>3</list_var>
+			<tuple_var>1</tuple_var>
+			<tuple_var>2</tuple_var>
+			<tuple_var>3</tuple_var>
+			<dict_var>
+				<1>1</1>
+				<2>2</2>
+				<3>3</3>
+			</dict_var>
+			<set_var>1</set_var>
+			<set_var>2</set_var>
+			<set_var>3</set_var>
+			<bool_var1>true</bool_var1>
+			<bool_var2>false</bool_var2>
+			<none_var></none_var>
+		</nested>
+	</dict_var>
+	<list_var></list_var>
+	<list_var __class__.__qualname__="ExampleClass.Nested" __class__.__module__="tests.serial.example_class">
+		<int_var>-5</int_var>
+		<float_var>0.69</float_var>
+		<string_var>string</string_var>
+		<list_var>1</list_var>
+		<list_var>2</list_var>
+		<list_var>3</list_var>
+		<tuple_var>1</tuple_var>
+		<tuple_var>2</tuple_var>
+		<tuple_var>3</tuple_var>
+		<dict_var>
+			<1>1</1>
+			<2>2</2>
+			<3>3</3>
+		</dict_var>
+		<set_var>1</set_var>
+		<set_var>2</set_var>
+		<set_var>3</set_var>
+		<bool_var1>true</bool_var1>
+		<bool_var2>false</bool_var2>
+		<none_var></none_var>
+	</list_var>
+</root>

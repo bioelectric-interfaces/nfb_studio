@@ -2,67 +2,80 @@ from copy import deepcopy
 from typing import Union
 from importlib import import_module
 from inspect import isclass
+from functools import reduce
 
 from ..hooks import Hooks
 
 
+def deepgetattr(obj, attr):
+    """Recurses through an attribute chain to get the ultimate value."""
+    return reduce(getattr, attr.split('.'), obj)
+
+
 class BaseDecoder:
-    def __init__(self, *, hooks: Union[dict, tuple, Hooks] = None, in_place=False, **kw):
+    def __init__(self, *, hooks: Union[dict, tuple, Hooks] = None):
         self.hooks = hooks
-        self.in_place = in_place
 
     def decode(self, data):
-        # If data is not a dict, it is not an encoded object and is returned as-is -------------------------------------
-        if not isinstance(data, dict):
-            if self.in_place:
-                return data
-            return deepcopy(data)
-        
-        if self.in_place:
-            result = data
-        else:
-            result = {}
+        if isinstance(data, dict):
+            return self.decode_dict(data)
+        if isinstance(data, list):
+            return self.decode_list(data)
 
-        # Regardless of whether data is an encoded object or a plain dict, recursively decode its items ----------------
-        for key, value in data:
+        return data       
+    
+    def decode_list(self, data):
+        result = []
+        for item in data:
+            result.append(self.decode(item))
+        return result
+    
+    def decode_dict(self, data):
+        """Decode a dict object.
+        If dict has metadata, this function will call decode_custom after decoding the internal values.
+        """
+        result = {}
+        for key, value in data.items():
             result[key] = self.decode(value)
         
-        # If data does not have __class__, it is not considered an encoded object and is returned ----------------------
-        if "__class__" not in data:
-            return data
+        if "__class__" in result:
+            # Decode custom object
+            result = self.decode_custom(result)
+        
+        return result
 
-        # This looks like an encoded python object. Create it and deserialize data into it. ----------------------------
+    def decode_custom(self, data):
         # The following code is adapted from django.utils.module_loading module.
         module_path = data["__class__"]["__module__"]
         class_name = data["__class__"]["__qualname__"]
 
         module = import_module(module_path)
 
-        # Get the class that needs to be instantiated ------------------------------------------------------------------
+        # Get the class that needs to be instantiated
         try:
-            cls = getattr(module, class_name)
+            cls = deepgetattr(module, class_name)
         except AttributeError:
             message = "module \"{}\" does not define a \"{}\" class".format(module_path, class_name)
             raise ImportError(message)
 
-        # Verify that cls is in fact a class ---------------------------------------------------------------------------
+        # Verify that cls is in fact a class
         if not isclass(cls):
             raise TypeError("{}.{} is not a class".format(module_path, class_name))
 
-        # Default-construct an object of that class --------------------------------------------------------------------
+        # Default-construct an object of that class
         obj = cls()
 
-        # Load the json data into the object ---------------------------------------------------------------------------
+        # Load the json data into the object
         if cls in self.hooks:
             self.hooks[cls](obj, data)
             return obj
-        elif hasattr(obj, "deserialize") and callable(obj.deserialize):
+        if hasattr(obj, "deserialize") and callable(obj.deserialize):
             obj.deserialize(data)
             return obj
-        else:
-            message = "an instance of {}.{} does not have a callable \"deserialize\" attribute" \
-                .format(module_path, class_name)
-            raise AttributeError(message)
+        
+        message = "an instance of {}.{} does not have a callable \"deserialize\" attribute" \
+            .format(module_path, class_name)
+        raise AttributeError(message)
 
     @property
     def hooks(self):
