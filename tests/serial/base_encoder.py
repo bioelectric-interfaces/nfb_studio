@@ -70,13 +70,13 @@ class TestBaseEncoder(TestCase):
     maxDiff = None
 
     def test_encoder(self):
-        encoder = base.BaseEncoder()
+        e = base.BaseEncoder()
 
         obj = ExampleClass()
-        self.assertEqual(encoder.encode(obj), self.expected_result)
+        self.assertEqual(e.encode(obj), self.expected_result)
 
     def test_encoder_no_metadata(self):
-        encoder = base.BaseEncoder(metadata=False)
+        e = base.BaseEncoder(metadata=False)
 
         # Remove metadata from expected result
         expected_result = deepcopy(self.expected_result)
@@ -86,7 +86,7 @@ class TestBaseEncoder(TestCase):
         expected_result["list_var"][1].pop("__class__")
 
         obj = ExampleClass()
-        self.assertEqual(encoder.encode(obj), expected_result)
+        self.assertEqual(e.encode(obj), expected_result)
     
     def test_encoder_hooks(self):
         def hook(obj):
@@ -94,7 +94,7 @@ class TestBaseEncoder(TestCase):
             result["extra"] = None
             return result
         
-        encoder = base.BaseEncoder(hooks={ExampleClass.Nested: hook})
+        e = base.BaseEncoder(hooks={ExampleClass.Nested: hook})
 
         # Add the "extra" field to expected result
         expected_result = deepcopy(self.expected_result)
@@ -103,4 +103,25 @@ class TestBaseEncoder(TestCase):
         expected_result["list_var"][1]["extra"] = None
 
         obj = ExampleClass()
-        self.assertEqual(encoder.encode(obj), expected_result)
+        self.assertEqual(e.encode(obj), expected_result)
+
+    def test_encoder_non_dict(self):
+        class C:
+            def serialize(self):
+                return 0
+        
+        e = base.BaseEncoder()
+        obj = {"data": C()}
+
+        self.assertRaises(ValueError, e.encode, obj)
+
+    def test_encoder_non_dict_no_metadata(self):
+        class C:
+            def serialize(self):
+                return 0
+        
+        e = base.BaseEncoder(metadata=False)
+        obj = {"data": C()}
+        expected_result = {"data": 0}
+
+        self.assertEqual(e.encode(obj), expected_result)

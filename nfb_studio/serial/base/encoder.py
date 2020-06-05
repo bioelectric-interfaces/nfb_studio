@@ -45,7 +45,7 @@ class BaseEncoder:
             if self.unknown_objects == "as-is":
                 return obj
             if self.unknown_objects == "error":
-                raise TypeError("object of type \"" + type(obj).__qualname__ + "\" cannot be encoded")
+                raise TypeError("object of type \"{}\" cannot be encoded".format(type(obj).__qualname__))
         
         result = func(obj)
         result = self.encode(result)
@@ -53,7 +53,11 @@ class BaseEncoder:
         if self.metadata and not isinstance(result, dict):
             # If custom function did not return a dict and metadata is enabled, raise ValueError because this metadata
             # has nowhere to be written
-            raise ValueError("serialized value of type \"" + type(obj) + "\" is not a dict, metadata cannot be written")
+            raise ValueError(
+                "serialized value of type \"{}\" is not a dict, metadata cannot be written".format(
+                    type(obj).__qualname__
+                )
+            )
 
         # Write metadata about the object
         if self.metadata:
