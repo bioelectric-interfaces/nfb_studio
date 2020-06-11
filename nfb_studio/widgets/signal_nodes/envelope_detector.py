@@ -37,6 +37,8 @@ class EnvelopeDetector(SignalNode):
             n._smoothing_factor = self.smoothing_factor.value()
             n._method = self.method.currentText()
 
+    default_smoothing_factor = 0  # TODO: Is this the correct default value?
+    default_method = "Rectification"
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -45,8 +47,8 @@ class EnvelopeDetector(SignalNode):
         self.addInput(Input("Input", DataType.Unknown))
         self.addOutput(Output("Output", DataType.Unknown))
 
-        self._smoothing_factor = 0  # TODO: Is this the correct default value?
-        self._method = "Rectification"
+        self._smoothing_factor = self.default_smoothing_factor
+        self._method = self.default_method
 
     def smoothingFactor(self) -> float:
         return self._smoothing_factor

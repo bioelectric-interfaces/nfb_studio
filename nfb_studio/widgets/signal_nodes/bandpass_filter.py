@@ -87,6 +87,8 @@ class BandpassFilter(SignalNode):
             else:
                 self.lower_bound.setMaximum(250)
 
+    default_lower_bound = 0
+    default_upper_bound = 250
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -95,8 +97,8 @@ class BandpassFilter(SignalNode):
         self.addInput(Input("Input", DataType.Unknown))
         self.addOutput(Output("Output", DataType.Unknown))
 
-        self._lower_bound = 0
-        self._upper_bound = 250
+        self._lower_bound = self.default_lower_bound
+        self._upper_bound = self.default_upper_bound
         self.sync()
     
     def lowerBound(self):
@@ -121,6 +123,10 @@ class BandpassFilter(SignalNode):
         
         w = self.configWidget()
         
+        # Prevent view fields from emitting signals while they are updated
+        w.lower_bound.blockSignals(True)
+        w.upper_bound.blockSignals(True)
+
         if self.upperBound() is None:
             w.upper_bound_enable.setChecked(False)
         else:
@@ -132,6 +138,11 @@ class BandpassFilter(SignalNode):
         else:
             w.lower_bound_enable.setChecked(True)
             w.lower_bound.setValue(self.lowerBound())
+        
+        # Release the block and call adjust
+        w.lower_bound.blockSignals(False)
+        w.upper_bound.blockSignals(False)
+        w.adjust()
 
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""

@@ -33,6 +33,9 @@ class Standardise(SignalNode):
             n._average = self.average.value()
             n._standard_deviation = self.standard_deviation.value()
 
+    default_average = 0
+    default_standard_deviation = 1
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         
@@ -40,8 +43,8 @@ class Standardise(SignalNode):
         self.addInput(Input("Input", DataType.Unknown))
         self.addOutput(Output("Output", DataType.Unknown))
 
-        self._average = 0
-        self._standard_deviation = 1
+        self._average = self.default_average
+        self._standard_deviation = self.default_standard_deviation
         self.sync()
     
     def average(self):

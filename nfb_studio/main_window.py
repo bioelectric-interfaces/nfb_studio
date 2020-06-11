@@ -26,6 +26,9 @@ class MainWindow(QMainWindow):
         export = filemenu.addAction("Export")
         export.triggered.connect(self.export)
 
+        import_xml = filemenu.addAction("Import")
+        import_xml.triggered.connect(self.import_xml)
+
     def experiment(self):
         return self._experiment
 
@@ -73,4 +76,15 @@ class MainWindow(QMainWindow):
             data = file.read()
         
         ex = Experiment.load(data)
+        self.setExperiment(ex)
+
+    def import_xml(self):
+        file_path = QFileDialog.getOpenFileName(filter="XML Files (*.xml)")[0]
+        if file_path == "":
+            return
+
+        with open(file_path) as file:
+            data = file.read()
+        
+        ex = Experiment.import_xml(data)
         self.setExperiment(ex)

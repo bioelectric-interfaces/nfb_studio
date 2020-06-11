@@ -103,14 +103,15 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
 
         return data
     
-    def nfb_import_data(self, data: dict):
-        """Import this group from a dict from NFBLab.
-        Note that since self.blocks needs to contain references to other decoded objects, this function leaves the group
-        in an invalid state. The caller method is responsible for converting self.blocks from a list of names to a list
-        of actual blocks.
-        """
-        self.random_order = bool(int(data["bShuffle"]))
+    @classmethod
+    def nfb_import_data(cls, data: dict):
+        """Import this group from a dict from NFBLab."""
+        group = cls()
+
+        group.random_order = bool(float(data["bShuffle"]))
 
         if data["sList"] is not None:
-            self.blocks = data["sList"].split(" ")
-            self.repeats = [int(number) for number in data["sNumberList"].split(" ")]
+            group.blocks = data["sList"].split(" ")
+            group.repeats = [int(number) for number in data["sNumberList"].split(" ")]
+
+        return group

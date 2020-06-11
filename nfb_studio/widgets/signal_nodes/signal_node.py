@@ -37,9 +37,8 @@ class SignalNode(Node):
             return w
         
         w = self.Config()
-        w.setNode(self)
-
         self.setConfigWidget(w)
+        w.setNode(self)
         return w
 
     def hasConfigWidget(self):

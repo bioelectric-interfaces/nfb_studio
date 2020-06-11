@@ -8,6 +8,8 @@ class Block(QObject):
     """A single step of an experiment.
     Experiment consists of a sequence of blocks and block groups that are executed in some order.
     """
+    random_bound_types = ["SimCircle", "RandomCircle", "Bar"]
+
     def __init__(self, parent=None):
         super().__init__(parent)
         
@@ -87,7 +89,7 @@ class Block(QObject):
         data["bShowReward"] = 0
         data["bPauseAfter"] = self.pause
         data["bBeepAfter"] = self.beep
-        data["iRandomBound"] = self.random_bound
+        data["iRandomBound"] = self.random_bound_types.index(self.random_bound)
         data["sVideoPath"] = self.video_path
         data["sMSignal"] = "None"
         data["fMSignalThreshold"] = 1
@@ -132,22 +134,27 @@ class Block(QObject):
         self.beep = data["beep"]
         self.update_statistics = data["update_statistics"]
 
-    def nfb_import_data(self, data: dict):
+    @classmethod
+    def nfb_import_data(cls, data: dict):
         """Import this block from a dict from NFBLab.
         Since the XML file stores everything as a string, this function is responsible for converting items to their
         proper types.
         """
-        self.update_statistics = bool(int(data["bUpdateStatistics"]))
-        self.start_data_driven_filter_designer = bool(int(data["bSSDInTheEnd"]))
-        self.duration = float(data["fDuration"])
-        self.feedback_source = data["fbSource"]
-        self.feedback_type = int(data["sFb_type"])
-        self.mock_signal_path = data["sMockSignalFilePath"]
-        self.mock_signal_dataset = data["sMockSignalFileDataset"]
-        self.mock_previous = int(data["iMockPrevious"])
-        self.mock_previous_reverse = bool(int(data["bReverseMockPrevious"]))
-        self.mock_previous_random = bool(int(data["bRandomMockPrevious"]))
-        self.pause = bool(int(data["bPauseAfter"]))
-        self.beep = bool(int(data["bBeepAfter"]))
-        self.random_bound = int(data["iRandomBound"])
-        self.video_path = data["sVideoPath"]
+        b = cls()
+
+        b.update_statistics = bool(float(data["bUpdateStatistics"]))
+        b.start_data_driven_filter_designer = bool(float(data["bSSDInTheEnd"]))
+        b.duration = float(data["fDuration"])
+        b.feedback_source = data["fbSource"]
+        b.feedback_type = data["sFb_type"]
+        b.mock_signal_path = data["sMockSignalFilePath"]
+        b.mock_signal_dataset = data["sMockSignalFileDataset"]
+        b.mock_previous = int(float(data["iMockPrevious"]))
+        b.mock_previous_reverse = bool(float(data["bReverseMockPrevious"]))
+        b.mock_previous_random = bool(float(data["bRandomMockPrevious"]))
+        b.pause = bool(float(data["bPauseAfter"]))
+        b.beep = bool(float(data["bBeepAfter"]))
+        b.random_bound = b.random_bound_types[int(float(data["iRandomBound"]))]
+        b.video_path = data["sVideoPath"]
+
+        return b

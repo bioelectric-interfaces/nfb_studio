@@ -25,6 +25,8 @@ class SpatialFilter(SignalNode):
             
             n._matrix_path = self.matrix_path.text()
 
+    default_matrix_path = ""
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -32,7 +34,7 @@ class SpatialFilter(SignalNode):
         self.addInput(Input("Input", DataType.Unknown))
         self.addOutput(Output("Output", DataType.Unknown))
 
-        self._matrix_path = ""
+        self._matrix_path = self.default_matrix_path
         self.sync()
 
     def matrixPath(self) -> str:
