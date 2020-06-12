@@ -81,7 +81,7 @@ class Experiment:
             Experiment: Experiment.nfb_export_data,
             Block: Block.nfb_export_data,
             Group: Group.nfb_export_data,
-            bool: lambda x: {"#text": str(int(x))}
+            bool: lambda x: int(x)
         }
 
         encoder = xml.XMLEncoder(separator="\n", indent="\t", metadata=False, hooks=enc_hooks)
@@ -160,7 +160,7 @@ class Experiment:
 
         # Decode signals -----------------------------------------------------------------------------------------------
         node_pos = [0, 0]
-        node_xdiff = -100
+        node_xdiff = -100  # TODO: Change to a size dependent on node default width
         node_ydiff = 100
 
         for signal_data in data["vSignals"]["DerivedSignal"]:

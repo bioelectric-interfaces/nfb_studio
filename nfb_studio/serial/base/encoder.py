@@ -10,7 +10,10 @@ class BaseEncoder:
         self.unknown_objects = unknown_objects
 
     def encode(self, obj, /):
-        # Default-encodable objects
+        # Encode known objects
+        if self.encode_function(obj) is not None:
+            # If an object has an encode function, prioritize this encoding function above all
+            return self.encode_custom(obj)
         if type(obj) in {int, float, str, bool, type(None)}:
             return obj
         if type(obj) in {list, tuple, set}:
@@ -18,8 +21,11 @@ class BaseEncoder:
         if type(obj) == dict:
             return self.encode_dict_like(obj)
         
-        # Custom objects
-        return self.encode_custom(obj)
+        # If the object could not be encoded, do as indicated in self.unknown_objects
+        if self.unknown_objects == "as-is":
+            return obj
+        if self.unknown_objects == "error":
+            raise TypeError("object of type \"{}\" cannot be encoded".format(type(obj).__qualname__))
 
     def encode_list_like(self, obj: Union[list, tuple, set]):
         result = []
@@ -40,12 +46,7 @@ class BaseEncoder:
     def encode_custom(self, obj):
         # Get encode function for this object
         func = self.encode_function(obj)
-
-        if func is None:
-            if self.unknown_objects == "as-is":
-                return obj
-            if self.unknown_objects == "error":
-                raise TypeError("object of type \"{}\" cannot be encoded".format(type(obj).__qualname__))
+        assert func is not None
         
         result = func(obj)
         result = self.encode(result)
