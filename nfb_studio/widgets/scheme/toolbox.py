@@ -62,8 +62,10 @@ class Toolbox(QAbstractListModel):
         i = self._items.index(name)
 
         self.beginRemoveRows(QModelIndex(), i, i)
-        self._items.pop(name)
+        item = self._items.pop(name)
         self.endRemoveRows()
+
+        return item
 
     def flags(self, index: QModelIndex):
         default_flags = super().flags(index)

@@ -66,16 +66,16 @@ class ItemDict(QObject, MutableMapping, metaclass=ItemDictMetaclass):
         self.itemRemoved.emit(key)
         self.updateView(key)
     
-    def rename(old_key, new_key):
+    def rename(self, old_key, new_key):
         """Rename an item in the dict, changing the key. Emits itemRenamed signal."""
         if old_key not in self:
             raise KeyError("No key \"" + old_key + "\" in dict")
 
         self.blockSignals(True)
-        d[new_key] = d.pop(old_key)
+        self[new_key] = self.pop(old_key)
         self.blockSignals(False)
 
-        self.itemRenamed.emit(new_key, old_key)
+        self.itemRenamed.emit(old_key, new_key)
 
     def __iter__(self):
         return self._data.__iter__()

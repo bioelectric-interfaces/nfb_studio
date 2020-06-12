@@ -24,10 +24,12 @@ class ExperimentView(QMainWindow):
         # Property tree ------------------------------------------------------------------------------------------------
         self.tree = PropertyTree()
         self.tree.currentItemChanged.connect(self.setCurrentWidget)
-        self.tree.addBlockClicked.connect(self.addNewBlock)
-        self.tree.addGroupClicked.connect(self.addNewGroup)
-        self.tree.removeBlockClicked.connect(lambda item: self.removeBlock(item.text(0)))
-        self.tree.removeGroupClicked.connect(lambda item: self.removeGroup(item.text(0)))
+        self.tree.addBlockTriggered.connect(self.addNewBlock)
+        self.tree.addGroupTriggered.connect(self.addNewGroup)
+        self.tree.renameBlockTriggered.connect(lambda item, name: self.renameBlock(item.text(0), name))
+        self.tree.renameGroupTriggered.connect(lambda item, name: self.renameGroup(item.text(0), name))
+        self.tree.removeBlockTriggered.connect(lambda item: self.removeBlock(item.text(0)))
+        self.tree.removeGroupTriggered.connect(lambda item: self.removeGroup(item.text(0)))
 
         # Property tree dock widget ------------------------------------------------------------------------------------
         self.property_tree_dock = QDockWidget("Properties", self)
@@ -72,8 +74,10 @@ class ExperimentView(QMainWindow):
         self.sequence_editor.setScheme(model.sequence_scheme)
 
         model.blocks.itemAdded.connect(self._onBlockAdded)
+        model.blocks.itemRenamed.connect(self._onBlockRenamed)
         model.blocks.itemRemoved.connect(self._onBlockRemoved)
         model.groups.itemAdded.connect(self._onGroupAdded)
+        model.groups.itemRenamed.connect(self._onGroupRenamed)
         model.groups.itemRemoved.connect(self._onGroupRemoved)
 
         model._view = self
@@ -112,6 +116,20 @@ class ExperimentView(QMainWindow):
 
         ex.groups[ex.groups.getName()] = Group()
     
+    def renameBlock(self, old_name, new_name):
+        ex = self.model()
+        if ex is None:
+            return
+        
+        ex.blocks.rename(old_name, new_name)
+    
+    def renameGroup(self, old_name, new_name):
+        ex = self.model()
+        if ex is None:
+            return
+        
+        ex.groups.rename(old_name, new_name)
+
     def removeBlock(self, name):
         ex = self.model()
         if ex is None:
@@ -151,6 +169,7 @@ class ExperimentView(QMainWindow):
         # Add an item to the property tree
         tree_item = QTreeWidgetItem()
         tree_item.setText(0, name)
+        tree_item.setFlags(tree_item.flags() | Qt.ItemIsEditable)
         self.tree.blocks.addChild(tree_item)
         
         # Add a view to the widget stack
@@ -171,6 +190,7 @@ class ExperimentView(QMainWindow):
         # Add an item to the property tree
         tree_item = QTreeWidgetItem()
         tree_item.setText(0, name)
+        tree_item.setFlags(tree_item.flags() | Qt.ItemIsEditable)
         self.tree.groups.addChild(tree_item)
 
         # Add a view to the widget stack
@@ -186,6 +206,58 @@ class ExperimentView(QMainWindow):
         # Select this item
         self.tree.setCurrentItem(tree_item)
     
+    def _onBlockRenamed(self, old_name, new_name):
+        """Function that gets called when a block has been renamed."""
+        # Rename it in the property tree
+        for i in range(self.tree.blocks.childCount()):
+            item = self.tree.blocks.child(i)
+            if item.text(0) == old_name:
+                item.setText(0, new_name)
+                break
+        
+        # Rename in widget stack
+        current_key = self.blocks.currentKey()
+
+        w = self.blocks.removeWidget(old_name)
+        self.blocks.addWidget(new_name, w)
+
+        if current_key == old_name:
+            self.blocks.setCurrentKey(new_name)
+
+        # Rename in the sequence editor
+        node = self.sequence_editor.toolbox().removeItem(old_name)
+        self.sequence_editor.toolbox().addItem(new_name, node)
+
+        for node in self.sequence_editor.scheme().graph.nodes:
+            if node.title() == old_name:
+                node.setTitle(new_name)
+
+    def _onGroupRenamed(self, old_name, new_name):
+        """Function that gets called when a group has been renamed."""
+        # Rename it in the property tree
+        for i in range(self.tree.groups.childCount()):
+            item = self.tree.groups.child(i)
+            if item.text(0) == old_name:
+                item.setText(0, new_name)
+                break
+        
+        # Rename in widget stack
+        current_key = self.groups.currentKey()
+
+        w = self.groups.removeWidget(name)
+        self.groups.addWidget(new_name, w)
+
+        if current_key == old_name:
+            self.groups.setCurrentKey(new_name)
+
+        # Rename in the sequence editor
+        node = self.sequence_editor.toolbox().removeItem(old_name)
+        self.sequence_editor.toolbox().addItem(new_name, node)
+
+        for node in self.sequence_editor.scheme().graph.nodes:
+            if node.title() == old_name:
+                node.setTitle(new_name)
+
     def _onBlockRemoved(self, name):
         """Function that gets called when a block has been removed from the model."""
         # Find and remove it from the property tree

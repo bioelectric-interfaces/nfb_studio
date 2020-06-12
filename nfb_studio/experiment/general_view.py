@@ -97,20 +97,20 @@ class GeneralView(QWidget):
         self.inlet_config.setLayout(inlet_layout)
 
         # --------------------------------------------------------------------------------------------------------------
-        self.dc                 = QCheckBox()
-        self.name     = QLineEdit("Experiment")
+        self.name = QLineEdit("Experiment")
+        self.dc = QCheckBox()
 
-        self.plot_raw            = QCheckBox()
+        self.plot_raw = QCheckBox()
         self.plot_raw.setChecked(True)
-        self.plot_signals        = QCheckBox()
+        self.plot_signals = QCheckBox()
         self.plot_signals.setChecked(True)
-        self.show_subject_window  = QCheckBox()
+        self.show_subject_window = QCheckBox()
         self.show_subject_window.setChecked(True)
 
-        self.discard_channels    = QLineEdit()
-        self.reference_sub       = QLineEdit()
+        self.discard_channels = QLineEdit()
+        self.reference_sub = QLineEdit()
         self.show_proto_rectangle = QCheckBox()
-        self.show_notch_filters    = QCheckBox()
+        self.show_notch_filters = QCheckBox()
 
         # Adding properties to the widget ------------------------------------------------------------------------------
         layout.addRow("Name", self.name)
@@ -152,7 +152,6 @@ class GeneralView(QWidget):
         ex.reference_sub = self.reference_sub.text()
         ex.show_proto_rectangle = self.show_proto_rectangle.isChecked()
         ex.show_notch_filters = self.show_notch_filters.isChecked()
-
 
     def on_prefilterBandLow_toggled(self):
         if self.prefilterBandLow_enable.isChecked():

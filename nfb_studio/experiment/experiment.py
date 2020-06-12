@@ -1,4 +1,5 @@
 """NFB Experiment."""
+import re
 from PySide2.QtCore import Qt, Signal, QObject, QAbstractItemModel, QModelIndex
 from PySide2.QtWidgets import QTreeView
 from sortedcontainers import SortedDict
@@ -46,6 +47,25 @@ class Experiment:
 
         self._view = None
     
+    def checkName(self, name: str):
+        """Check if a name is appropriate for adding a new block or group.
+        Returns a bool (name good or not) and a reason why the name is not good (or None).
+        """
+        if name == "":
+            return (False, "Name cannot be blank.")
+        
+        if " " in name:
+            return (False, "Name cannot contain spaces.")
+
+        match = re.search(r"([^A-Za-z0-9_])", name)
+        if match:
+            return (False, "Illegal character '{}'".format(match.group(0)))
+
+        if name in self.blocks or name in self.groups:
+            return (False, "Name already in use.")
+        
+        return (True, None)
+
     # Access functions =================================================================================================
     def view(self):
         return self._view
