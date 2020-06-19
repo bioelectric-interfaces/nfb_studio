@@ -48,6 +48,7 @@ class ExperimentView(QMainWindow):
         self.signal_editor.toolbox().addItem("Envelope Detector", EnvelopeDetector())
         self.signal_editor.toolbox().addItem("Standardise", Standardise())
         self.signal_editor.toolbox().addItem("Signal Export", DerivedSignalExport())
+        self.signal_editor.toolbox().addItem("Composite Signal Export", CompositeSignalExport())
 
         self.blocks = StackedDictWidget()
         self.groups = StackedDictWidget()

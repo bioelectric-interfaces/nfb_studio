@@ -233,6 +233,19 @@ class Experiment:
             node_pos[0] = 0
             node_pos[1] += node_ydiff
 
+        # Add composite signals separately
+        for comp_data in data["vSignals"]["CompositeSignal"]:
+            n = CompositeSignalExport()
+            n.setSignalName(comp_data["sSignalName"])
+            n.setExpression(comp_data["sExpression"])
+
+            # Set position and add to scheme
+            n.setPos(*node_pos)
+            node_pos[0] = 0
+            node_pos[1] += node_ydiff
+
+            ex.signal_scheme.addItem(n)
+
         # Decode blocks ------------------------------------------------------------------------------------------------
         for block_data in data["vProtocols"]["FeedbackProtocol"]:
             block = Block.nfb_import_data(block_data)
@@ -417,7 +430,7 @@ class Experiment:
             data["vProtocols"]["FeedbackProtocol"].append(block.nfb_export_data())  # Add other information
             data["vProtocols"]["FeedbackProtocol"][-1]["sName"] = name  # Add name
 
-        # Signals ------------------------------------------------------------------------------------------------------
+        # Derived Signals ----------------------------------------------------------------------------------------------
         signals = []
 
         # Build a list of lists of nodes (e.g. list of sequences)
@@ -448,6 +461,17 @@ class Experiment:
         data["vSignals"] = {
             "DerivedSignal": signals
         }
+
+        # Composite signals --------------------------------------------------------------------------------------------
+        signals = []
+
+        for node in self.signal_scheme.graph.nodes:
+            if isinstance(node, CompositeSignalExport):
+                signal = {}
+                node.add_nfb_export_data(signal)
+                signals.append(signal)
+        
+        data["vSignals"]["CompositeSignal"] = signals
 
         # Experiment sequence ------------------------------------------------------------------------------------------
         sequence = []
