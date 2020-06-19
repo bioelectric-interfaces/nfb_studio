@@ -1,7 +1,8 @@
 import os
 
 from PySide2.QtCore import Qt, QModelIndex
-from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QAction, QFileDialog, QTreeWidgetItem
+from PySide2.QtGui import QStandardItem
+from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QAction, QFileDialog
 
 from nfb_studio.block import Block, BlockView
 from nfb_studio.group import Group, GroupView
@@ -23,17 +24,19 @@ class ExperimentView(QMainWindow):
 
         # Property tree ------------------------------------------------------------------------------------------------
         self.tree = PropertyTree()
-        self.tree.currentItemChanged.connect(self.setCurrentWidget)
         self.tree.addBlockTriggered.connect(self.addNewBlock)
         self.tree.addGroupTriggered.connect(self.addNewGroup)
-        self.tree.renameBlockTriggered.connect(lambda item, name: self.renameBlock(item.text(0), name))
-        self.tree.renameGroupTriggered.connect(lambda item, name: self.renameGroup(item.text(0), name))
-        self.tree.removeBlockTriggered.connect(lambda item: self.removeBlock(item.text(0)))
-        self.tree.removeGroupTriggered.connect(lambda item: self.removeGroup(item.text(0)))
+        self.tree.renameBlockTriggered.connect(lambda item, name: self.renameBlock(item.text(), name))
+        self.tree.renameGroupTriggered.connect(lambda item, name: self.renameGroup(item.text(), name))
+        self.tree.removeBlockTriggered.connect(lambda item: self.removeBlock(item.text()))
+        self.tree.removeGroupTriggered.connect(lambda item: self.removeGroup(item.text()))
+
+        self.tree_view = self.tree.getView()
+        self.tree_view.currentIndexChanged.connect(self.displayTreeItem)
 
         # Property tree dock widget ------------------------------------------------------------------------------------
         self.property_tree_dock = QDockWidget("Properties", self)
-        self.property_tree_dock.setWidget(self.tree)
+        self.property_tree_dock.setWidget(self.tree_view)
         self.property_tree_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.property_tree_dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.property_tree_dock)
@@ -71,6 +74,7 @@ class ExperimentView(QMainWindow):
     def setModel(self, model, /):
         self._model = model
 
+        self.tree.setExperiment(model)
         self.signal_editor.setScheme(model.signal_scheme)
         self.sequence_editor.setScheme(model.sequence_scheme)
 
@@ -145,8 +149,10 @@ class ExperimentView(QMainWindow):
         
         ex.groups.pop(name)
 
-    def setCurrentWidget(self, item):
-        """Set central widget in the main window to display config info for item in the property tree."""        
+    def displayTreeItem(self, index: QModelIndex):
+        """Display the widget corresponding to the item in the property tree."""
+        item = self.tree.itemFromIndex(index)
+
         if item is self.tree.general:
             # General
             self.central_widget.setCurrentWidget(self.general_view)
@@ -156,11 +162,11 @@ class ExperimentView(QMainWindow):
         elif item.parent() is self.tree.blocks:
             # A block
             self.central_widget.setCurrentWidget(self.blocks)
-            self.blocks.setCurrentKey(item.text(0))
+            self.blocks.setCurrentKey(item.text())
         elif item.parent() is self.tree.groups:
             # A group
             self.central_widget.setCurrentWidget(self.groups)
-            self.groups.setCurrentKey(item.text(0))
+            self.groups.setCurrentKey(item.text())
         elif item is self.tree.sequence:
             # Sequence editor
             self.central_widget.setCurrentWidget(self.sequence_editor)
@@ -168,10 +174,9 @@ class ExperimentView(QMainWindow):
     def _onBlockAdded(self, name):
         """Function that gets called when a new block has been added to the model."""
         # Add an item to the property tree
-        tree_item = QTreeWidgetItem()
-        tree_item.setText(0, name)
+        tree_item = QStandardItem(name)
         tree_item.setFlags(tree_item.flags() | Qt.ItemIsEditable)
-        self.tree.blocks.addChild(tree_item)
+        self.tree.blocks.appendRow(tree_item)
         
         # Add a view to the widget stack
         block_view = BlockView()
@@ -184,15 +189,14 @@ class ExperimentView(QMainWindow):
         self.sequence_editor.toolbox().addItem(name, node)
 
         # Select this item
-        self.tree.setCurrentItem(tree_item)
+        self.tree_view.setCurrentIndex(self.tree.indexFromItem(tree_item))
     
     def _onGroupAdded(self, name):
         """Function that gets called when a new group has been added to the model."""
         # Add an item to the property tree
-        tree_item = QTreeWidgetItem()
-        tree_item.setText(0, name)
+        tree_item = QStandardItem(name)
         tree_item.setFlags(tree_item.flags() | Qt.ItemIsEditable)
-        self.tree.groups.addChild(tree_item)
+        self.tree.groups.appendRow(tree_item)
 
         # Add a view to the widget stack
         group_view = GroupView()
@@ -205,15 +209,15 @@ class ExperimentView(QMainWindow):
         self.sequence_editor.toolbox().addItem(name, node)
 
         # Select this item
-        self.tree.setCurrentItem(tree_item)
+        self.tree_view.setCurrentIndex(self.tree.indexFromItem(tree_item))
     
     def _onBlockRenamed(self, old_name, new_name):
         """Function that gets called when a block has been renamed."""
         # Rename it in the property tree
-        for i in range(self.tree.blocks.childCount()):
+        for i in range(self.tree.blocks.rowCount()):
             item = self.tree.blocks.child(i)
-            if item.text(0) == old_name:
-                item.setText(0, new_name)
+            if item.text() == old_name:
+                item.setText(new_name)
                 break
         
         # Rename in widget stack
@@ -236,10 +240,10 @@ class ExperimentView(QMainWindow):
     def _onGroupRenamed(self, old_name, new_name):
         """Function that gets called when a group has been renamed."""
         # Rename it in the property tree
-        for i in range(self.tree.groups.childCount()):
+        for i in range(self.tree.groups.rowCount()):
             item = self.tree.groups.child(i)
-            if item.text(0) == old_name:
-                item.setText(0, new_name)
+            if item.text() == old_name:
+                item.setText(new_name)
                 break
         
         # Rename in widget stack

@@ -1,1 +1,3 @@
-from .property_tree import PropertyTree
+from .model import PropertyTree
+from .view import PropertyTreeView
+from .delegate import PropertyTreeDelegate

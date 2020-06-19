@@ -321,13 +321,13 @@ class Experiment:
         general.show_notch_filters.setChecked(self.show_notch_filters)
 
         # Blocks and groups --------------------------------------------------------------------------------------------
-        while view.tree.blocks.childCount() > 0:
+        while view.tree.blocks.rowCount() > 0:
             name = view.tree.blocks.child(0).text(0)
             view.tree.blocks.takeChild(0)
             view.blocks.removeWidget(name)
             view.sequence_editor.toolbox().removeItem(name)
         
-        while view.tree.groups.childCount() > 0:
+        while view.tree.groups.rowCount() > 0:
             name = view.tree.groups.child(0).text(0)
             view.tree.groups.takeChild(0)
             view.groups.removeWidget(name)
