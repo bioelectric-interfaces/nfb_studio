@@ -35,8 +35,9 @@ class CompositeSignalExport(SignalNode):
         super().__init__(parent=parent)
 
         self.setTitle("Composite Signal Export")
-        self.addInput(Input("Input", DataType.Unknown))
-        self.addOutput(Output("Output", DataType.Unknown))
+        i = Input("Input", DataType.Unknown)
+        i.setMultiple(True)
+        self.addInput(i)
 
         self._signal_name = "Signal"
         self._expression = ""

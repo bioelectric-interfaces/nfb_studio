@@ -32,7 +32,7 @@ class Connection(SchemeItem):
         self._data_type = data_type or DataType.Unknown
         self._is_multiple = False
         """Determines if the connection can have multiple edges coming out of it.  
-        By default, it is True for Input and False for Output.
+        By default, it is False for Input and True for Output.
         """
 
         self._approved_selection = True
@@ -169,12 +169,14 @@ class Connection(SchemeItem):
     def serialize(self) -> dict:
         return {
             "text": self.text(),
-            "data_type": self.dataType()
+            "data_type": self.dataType(),
+            "is_multiple": self.isMultiple(),
         }
 
     def deserialize(self, data: dict):
         self.setText(data["text"])
         self.setDataType(data["data_type"])
+        self.setMultiple(data["is_multiple"])
     
     # Drawing edges ====================================================================================================
     # The heavy lifting such as detecting when the edge started being drawn, mouse moving and data transfers are handled
