@@ -5,8 +5,14 @@ from ..scheme import Node, Input, Output, DataType
 
 
 class SignalNode(Node):
+    """A node representing part of the signal in the signal designer.
+    In the model-view relationship the config widget is the view, and the node is the model.
+    """
+
     class Config(QWidget):
-        """Config widget displayed for a signal node."""
+        """Config widget displayed for a signal node.
+        In the model-view relationship the config widget is the view, and the node is the model.
+        """
         def __init__(self, parent=None):
             super().__init__(parent=parent)
 
@@ -14,16 +20,17 @@ class SignalNode(Node):
 
         def setNode(self, node):
             self._node = node
-            self._node.sync()
+            self.updateView()
         
         def node(self):
             return self._node
         
-        def sync(self):
-            """Sync data in this widget to the data in the node.
-            "Sync" in this context means one-way copy from self to node. A similarly named function in the
-            node copies data the other way. Call one or the other depending on where the data was changed.
-            """
+        def updateView(self):
+            """Update the view (self), based on the model (node) data."""
+            pass
+
+        def updateModel(self):
+            """Update model (node) data based on the view (self)."""
             pass
 
 
@@ -47,10 +54,17 @@ class SignalNode(Node):
         """
         return super().configWidget() is not None
 
-    def sync(self):
-        """Sync data in this node to the data in the config widget.
-        "Sync" in this context means one-way copy from self to configWidget. A similarly named function in the
-        configWidget copies data the other way. Call one or the other depending on where the data was changed.
-        This function is also called automatically when the configWidget is first created.
+    # Model-view interactions ==========================================================================================
+    def updateView(self):
+        """Update the view (config widget), based on the model (self) data.
+        This function checks if the node has a view and calls its update function.
         """
-        pass
+        if self.hasConfigWidget():
+            self.configWidget().updateView()
+
+    def updateModel(self):
+        """Update model (self) data based on the view (config widget).
+        This function checks if the node has a view and calls its update function.
+        """
+        if self.hasConfigWidget():
+            self.configWidget().updateModel()

@@ -18,12 +18,19 @@ class SpatialFilter(SignalNode):
 
             layout.addRow("Matrix path", self.matrix_path)
         
-        def sync(self):
+        def updateModel(self):
             n = self.node()
             if n is None:
                 return
             
             n._matrix_path = self.matrix_path.text()
+        
+        def updateView(self):
+            n = self.node()
+            if n is None:
+                return
+            
+            self.matrix_path.setText(n.matrixPath())
 
     default_matrix_path = ""
 
@@ -35,21 +42,14 @@ class SpatialFilter(SignalNode):
         self.addOutput(Output("Output", DataType.Unknown))
 
         self._matrix_path = self.default_matrix_path
-        self.sync()
+        self.updateView()
 
     def matrixPath(self) -> str:
         return self._matrix_path
     
     def setMatrixPath(self, matrix_path: str, /):
         self._matrix_path = matrix_path
-        self.sync()
-
-    def sync(self):
-        if not self.hasConfigWidget():
-            return
-        
-        w = self.configWidget()
-        w.matrix_path.setText(self.matrixPath())
+        self.updateView()
 
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""

@@ -29,13 +29,21 @@ class EnvelopeDetector(SignalNode):
             layout.addRow("Smoothing factor", self.smoothing_factor)
             layout.addRow("Method", self.method)
 
-        def sync(self):
+        def updateModel(self):
             n = self.node()
             if n is None:
                 return
             
             n._smoothing_factor = self.smoothing_factor.value()
             n._method = self.method.currentText()
+        
+        def updateView(self):
+            n = self.node()
+            if n is None:
+                return
+            
+            self.smoothing_factor.setValue(n.smoothingFactor())
+            self.method.setCurrentText(n.method())
 
     default_smoothing_factor = 0  # TODO: Is this the correct default value?
     default_method = "Rectification"
@@ -55,22 +63,14 @@ class EnvelopeDetector(SignalNode):
     
     def setSmoothingFactor(self, factor: float, /):
         self._smoothing_factor = factor
-        self.sync()
+        self.updateView()
     
     def method(self) -> str:
         return self._method
     
     def setMethod(self, method: str, /):
         self._method = method
-        self.sync()
-    
-    def sync(self):
-        if not self.hasConfigWidget():
-            return
-        
-        w = self.configWidget()
-        w.smoothing_factor.setValue(self.smoothingFactor())
-        w.method.setCurrentText(self.method())
+        self.updateView()
 
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""

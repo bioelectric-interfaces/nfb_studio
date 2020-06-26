@@ -12,19 +12,25 @@ class DerivedSignalExport(SignalNode):
             super().__init__(parent=parent)
 
             self.signal_name = QLineEdit("Signal")
-            self.signal_name.editingFinished.connect(self.sync)
+            self.signal_name.editingFinished.connect(self.updateModel)
 
             layout = QFormLayout()
             self.setLayout(layout)
             layout.addRow("Signal name", self.signal_name)
         
-        def sync(self):
+        def updateModel(self):
             n = self.node()
             if n is None:
                 return
             
             n._signal_name = self.signal_name.text()
     
+        def updateView(self):
+            n = self.node()
+            if n is None:
+                return
+            
+            self.signal_name.setText(n.signalName())
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -34,21 +40,14 @@ class DerivedSignalExport(SignalNode):
         self.addOutput(Output("Output", DataType.Unknown))
 
         self._signal_name = "Signal"
-        self.sync()
+        self.updateView()
 
     def signalName(self) -> str:
         return self._signal_name
 
     def setSignalName(self, name: str, /):
         self._signal_name = name
-        self.sync()
-    
-    def sync(self):
-        if not self.hasConfigWidget():
-            return
-        
-        w = self.configWidget()
-        w.signal_name.setText(self.signalName())
+        self.updateView()
 
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""

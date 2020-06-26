@@ -51,13 +51,13 @@ class BandpassFilter(SignalNode):
             layout.addRow("Upper bound", upper_bound_widget)
             self.setLayout(layout)
 
-        def sync(self):
+        def updateModel(self):
             n = self.node()
             if n is None:
                 return
             
             if self.lower_bound_enable.isChecked():
-                # Value is set direcly to a private field to prevent n.sync() from being called.
+                # Value is set direcly to a private field to prevent updateView() from being called.
                 n._lower_bound = self.lower_bound.value()
             else:
                 n._lower_bound = None
@@ -67,10 +67,36 @@ class BandpassFilter(SignalNode):
             else:
                 n._upper_bound = None
 
+        def updateView(self):
+            n = self.node()
+            if n is None:
+                return
+            
+            # Prevent view fields from emitting signals while they are updated
+            self.lower_bound.blockSignals(True)
+            self.upper_bound.blockSignals(True)
+
+            if n.upperBound() is None:
+                self.upper_bound_enable.setChecked(False)
+            else:
+                self.upper_bound_enable.setChecked(True)
+                self.upper_bound.setValue(n.upperBound())
+            
+            if n.lowerBound() is None:
+                self.lower_bound_enable.setChecked(False)
+            else:
+                self.lower_bound_enable.setChecked(True)
+                self.lower_bound.setValue(n.lowerBound())
+            
+            # Release the block and call adjust
+            self.lower_bound.blockSignals(False)
+            self.upper_bound.blockSignals(False)
+            self.adjust()
+
         def adjust(self):
             """Adjust displayed values and limits in response to changes."""
             # Propagate changes to the node
-            self.sync()
+            self.updateModel()
             
             # Enable spinbox widgets based on their checkbox
             self.lower_bound.setEnabled(self.lower_bound_enable.isChecked())
@@ -99,7 +125,7 @@ class BandpassFilter(SignalNode):
 
         self._lower_bound = self.default_lower_bound
         self._upper_bound = self.default_upper_bound
-        self.sync()
+        self.updateView()
     
     def lowerBound(self):
         return self._lower_bound
@@ -109,40 +135,11 @@ class BandpassFilter(SignalNode):
     
     def setLowerBound(self, value, /):
         self._lower_bound = value
-        self.sync()
+        self.updateView()
     
     def setUpperBound(self, value, /):
         self._upper_bound = value
-        self.sync()
-    
-    def sync(self):
-        # Nodes create their config widget on demand. To not create a config widget just for syncing to it, a check is
-        # performed.
-        if not self.hasConfigWidget():
-            return
-        
-        w = self.configWidget()
-        
-        # Prevent view fields from emitting signals while they are updated
-        w.lower_bound.blockSignals(True)
-        w.upper_bound.blockSignals(True)
-
-        if self.upperBound() is None:
-            w.upper_bound_enable.setChecked(False)
-        else:
-            w.upper_bound_enable.setChecked(True)
-            w.upper_bound.setValue(self.upperBound())
-        
-        if self.lowerBound() is None:
-            w.lower_bound_enable.setChecked(False)
-        else:
-            w.lower_bound_enable.setChecked(True)
-            w.lower_bound.setValue(self.lowerBound())
-        
-        # Release the block and call adjust
-        w.lower_bound.blockSignals(False)
-        w.upper_bound.blockSignals(False)
-        w.adjust()
+        self.updateView()
 
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""

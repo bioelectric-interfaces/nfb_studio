@@ -14,10 +14,10 @@ class Standardise(SignalNode):
 
             # Add a new layout
             self.average = QDoubleSpinBox()
-            self.average.setMaximum(sys.float_info.max)
+            self.average.setMaximum(sys.float_info.max)  # TODO: proper max
 
             self.standard_deviation = QDoubleSpinBox()
-            self.standard_deviation.setMaximum(sys.float_info.max)
+            self.standard_deviation.setMaximum(sys.float_info.max)  # TODO: proper max
 
             layout = QFormLayout()
             self.setLayout(layout)
@@ -25,13 +25,21 @@ class Standardise(SignalNode):
             layout.addRow("Average", self.average)
             layout.addRow("Std. Deviation", self.standard_deviation)
         
-        def sync(self):
+        def updateModel(self):
             n = self.node()
             if n is None:
                 return
 
             n._average = self.average.value()
             n._standard_deviation = self.standard_deviation.value()
+        
+        def updateView(self):
+            n = self.node()
+            if n is None:
+                return
+            
+            self.average.setValue(n.average())
+            self.standard_deviation.setValue(n.standardDeviation())
 
     default_average = 0
     default_standard_deviation = 1
@@ -45,7 +53,7 @@ class Standardise(SignalNode):
 
         self._average = self.default_average
         self._standard_deviation = self.default_standard_deviation
-        self.sync()
+        self.updateView()
     
     def average(self):
         return self._average
@@ -55,19 +63,11 @@ class Standardise(SignalNode):
     
     def setAverage(self, value, /):
         self._average = value
-        self.sync()
+        self.updateView()
     
     def setStandardDeviation(self, value, /):
         self._standard_deviation = value
-        self.sync()
-
-    def sync(self):
-        if not self.hasConfigWidget():
-            return
-        
-        w = self.configWidget()
-        w.average.setValue(self.average())
-        w.standard_deviation.setValue(self.standardDeviation())
+        self.updateView()
 
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""

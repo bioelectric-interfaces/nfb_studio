@@ -12,24 +12,31 @@ class CompositeSignalExport(SignalNode):
             super().__init__(parent=parent)
 
             self.signal_name = QLineEdit("Signal")
-            self.signal_name.editingFinished.connect(self.sync)
+            self.signal_name.editingFinished.connect(self.updateModel)
 
             self.expression = QLineEdit()
-            self.expression.editingFinished.connect(self.sync)
+            self.expression.editingFinished.connect(self.updateModel)
 
             layout = QFormLayout()
             self.setLayout(layout)
             layout.addRow("Signal name", self.signal_name)
             layout.addRow("Expression", self.expression)
         
-        def sync(self):
+        def updateModel(self):
             n = self.node()
             if n is None:
                 return
             
             n._signal_name = self.signal_name.text()
             n._expression = self.expression.text()
-    
+
+        def updateView(self):
+            n = self.node()
+            if n is None:
+                return
+
+            self.signal_name.setText(n.signalName())
+            self.expression.setText(n.expression())
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -41,7 +48,7 @@ class CompositeSignalExport(SignalNode):
 
         self._signal_name = "Signal"
         self._expression = ""
-        self.sync()
+        self.updateView()
 
     def signalName(self) -> str:
         return self._signal_name
@@ -51,19 +58,11 @@ class CompositeSignalExport(SignalNode):
 
     def setSignalName(self, name: str, /):
         self._signal_name = name
-        self.sync()
+        self.updateView()
     
     def setExpression(self, eq: str, /):
         self._expression = eq
-        self.sync()
-    
-    def sync(self):
-        if not self.hasConfigWidget():
-            return
-        
-        w = self.configWidget()
-        w.signal_name.setText(self.signalName())
-        w.expression.setText(self.expression())
+        self.updateView()
 
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""
