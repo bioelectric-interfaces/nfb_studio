@@ -3,9 +3,13 @@ from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit
 
 from ..scheme import Node, Input, Output, DataType
 from .signal_node import SignalNode
+from .lsl_input import LSLInput
 
 
 class SpatialFilter(SignalNode):
+    input_type = LSLInput.output_type
+    output_type = DataType(101)
+
     class Config(SignalNode.Config):
         """Config widget displayed for LSLInput."""
         def __init__(self, parent=None):
@@ -38,8 +42,8 @@ class SpatialFilter(SignalNode):
         super().__init__(parent=parent)
 
         self.setTitle("Spatial Filter")
-        self.addInput(Input("Input", DataType.Unknown))
-        self.addOutput(Output("Output", DataType.Unknown))
+        self.addInput(Input("Input", self.input_type))
+        self.addOutput(Output("Output", self.output_type))
 
         self._matrix_path = self.default_matrix_path
         self.updateView()

@@ -2,15 +2,15 @@ from PySide2.QtCore import Qt, QPointF, QLineF
 from PySide2.QtGui import QFontMetricsF
 
 from ...style import Style
-from .data_type import DataType
+from .data_type import DataType, convertible
 from .connection import Connection
 
 
 class Input(Connection):
     """A data input into a node."""
 
-    def __init__(self, text=None, data_type: DataType = None):
-        super().__init__(text or "Input", data_type)
+    def __init__(self, text=None, datatype: DataType = None):
+        super().__init__(text or "Input", datatype)
 
         self._text_item.setAlignMode(Qt.AlignRight)
         self._trigger_item.setPos(self.stemTip())
@@ -71,7 +71,7 @@ class Input(Connection):
         """
         fake_edge = self.scene()._dragging_edge  # The edge being dragged as the mouse moves
 
-        return fake_edge.target() is None and fake_edge.dataType() == self.dataType()
+        return fake_edge.target() is None and convertible(fake_edge.dataType(), self.dataType())
 
     def edgeDragDrop(self):
         """Called when a new edge has been dragged and was dropped.  

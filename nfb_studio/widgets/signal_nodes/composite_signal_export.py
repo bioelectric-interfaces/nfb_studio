@@ -3,9 +3,12 @@ from PySide2.QtWidgets import QWidget, QFormLayout, QLineEdit
 
 from ..scheme import Node, Input, Output, DataType
 from .signal_node import SignalNode
+from .derived_signal_export import DerivedSignalExport
 
 
 class CompositeSignalExport(SignalNode):
+    input_type = DerivedSignalExport.output_type
+
     class Config(SignalNode.Config):
         """Config widget displayed for LSLInput."""
         def __init__(self, parent=None):
@@ -42,7 +45,7 @@ class CompositeSignalExport(SignalNode):
         super().__init__(parent=parent)
 
         self.setTitle("Composite Signal Export")
-        i = Input("Input", DataType.Unknown)
+        i = Input("Input", self.input_type)
         i.setMultiple(True)
         self.addInput(i)
 

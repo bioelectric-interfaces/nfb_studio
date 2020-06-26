@@ -3,9 +3,13 @@ from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit
 
 from ..scheme import Node, Input, Output, DataType
 from .signal_node import SignalNode
+from .spatial_filter import SpatialFilter
 
 
 class BandpassFilter(SignalNode):
+    input_type = SpatialFilter.output_type
+    output_type = DataType(102)
+
     class Config(SignalNode.Config):
         """Config widget displayed for BandpassFilter."""
         def __init__(self, parent=None):
@@ -120,8 +124,8 @@ class BandpassFilter(SignalNode):
         super().__init__(parent=parent)
 
         self.setTitle("Bandpass Filter")
-        self.addInput(Input("Input", DataType.Unknown))
-        self.addOutput(Output("Output", DataType.Unknown))
+        self.addInput(Input("Input", self.input_type))
+        self.addOutput(Output("Output", self.output_type))
 
         self._lower_bound = self.default_lower_bound
         self._upper_bound = self.default_upper_bound

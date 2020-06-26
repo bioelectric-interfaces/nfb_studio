@@ -3,9 +3,21 @@ from PySide2.QtWidgets import QWidget, QFormLayout, QLineEdit
 
 from ..scheme import Node, Input, Output, DataType
 from .signal_node import SignalNode
+from .spatial_filter import SpatialFilter
+from .bandpass_filter import BandpassFilter
+from .envelope_detector import EnvelopeDetector
+from .standardise import Standardise
 
 
 class DerivedSignalExport(SignalNode):
+    input_type = DataType(107, convertible_from=[
+        SpatialFilter.output_type,
+        BandpassFilter.output_type,
+        EnvelopeDetector.output_type,
+        Standardise.output_type,
+    ])
+    output_type = DataType(108)
+
     class Config(SignalNode.Config):
         """Config widget displayed for LSLInput."""
         def __init__(self, parent=None):
@@ -36,8 +48,8 @@ class DerivedSignalExport(SignalNode):
         super().__init__(parent=parent)
 
         self.setTitle("Derived Signal Export")
-        self.addInput(Input("Input", DataType.Unknown))
-        self.addOutput(Output("Output", DataType.Unknown))
+        self.addInput(Input("Input", self.input_type))
+        self.addOutput(Output("Output", self.output_type))
 
         self._signal_name = "Signal"
         self.updateView()

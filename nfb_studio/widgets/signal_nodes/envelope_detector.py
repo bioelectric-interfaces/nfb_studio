@@ -3,9 +3,14 @@ from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit
 
 from ..scheme import Node, Input, Output, DataType
 from .signal_node import SignalNode
+from .spatial_filter import SpatialFilter
+from .bandpass_filter import BandpassFilter
 
 
 class EnvelopeDetector(SignalNode):
+    input_type = DataType(103, convertible_from=[SpatialFilter.output_type, BandpassFilter.output_type])
+    output_type = DataType(104)
+
     class Config(SignalNode.Config):
         """Config widget displayed for LSLInput."""
         def __init__(self, parent=None):
@@ -52,8 +57,8 @@ class EnvelopeDetector(SignalNode):
         super().__init__(parent=parent)
 
         self.setTitle("Envelope Detector")
-        self.addInput(Input("Input", DataType.Unknown))
-        self.addOutput(Output("Output", DataType.Unknown))
+        self.addInput(Input("Input", self.input_type))
+        self.addOutput(Output("Output", self.output_type))
 
         self._smoothing_factor = self.default_smoothing_factor
         self._method = self.default_method

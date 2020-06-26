@@ -4,9 +4,19 @@ from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit
 
 from ..scheme import Node, Input, Output, DataType
 from .signal_node import SignalNode
+from .spatial_filter import SpatialFilter
+from .bandpass_filter import BandpassFilter
+from .envelope_detector import EnvelopeDetector
 
 
 class Standardise(SignalNode):
+    input_type = DataType(105, convertible_from=[
+        SpatialFilter.output_type,
+        BandpassFilter.output_type,
+        EnvelopeDetector.output_type,
+    ])
+    output_type = DataType(106)
+
     class Config(SignalNode.Config):
         """Config widget displayed for LSLInput."""
         def __init__(self, parent=None):
@@ -48,8 +58,8 @@ class Standardise(SignalNode):
         super().__init__(parent=parent)
         
         self.setTitle("Standardise")
-        self.addInput(Input("Input", DataType.Unknown))
-        self.addOutput(Output("Output", DataType.Unknown))
+        self.addInput(Input("Input", self.input_type))
+        self.addOutput(Output("Output", self.output_type))
 
         self._average = self.default_average
         self._standard_deviation = self.default_standard_deviation

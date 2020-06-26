@@ -13,7 +13,7 @@ class Connection(SchemeItem):
     """Connection is an input or output from a Node."""
     EdgeDragMimeType = Trigger.DragMimeType
 
-    def __init__(self, text=None, data_type: DataType = None, parent: QGraphicsItem = None):
+    def __init__(self, text=None, datatype: DataType = None, parent: QGraphicsItem = None):
         super().__init__(parent)
 
         self.setFlag(self.ItemSendsScenePositionChanges)  # To enable edge adjusting
@@ -29,7 +29,7 @@ class Connection(SchemeItem):
 
         self._trigger_item = Trigger(self)
 
-        self._data_type = data_type or DataType.Unknown
+        self._datatype = datatype or DataType.Unknown
         self._is_multiple = False
         """Determines if the connection can have multiple edges coming out of it.  
         By default, it is False for Input and True for Output.
@@ -70,7 +70,7 @@ class Connection(SchemeItem):
         return self._text_item.text()
 
     def dataType(self):
-        return self._data_type
+        return self._datatype
 
     def isMultiple(self):
         return self._is_multiple
@@ -78,8 +78,8 @@ class Connection(SchemeItem):
     def setText(self, text):
         self._text_item.setText(text)
 
-    def setDataType(self, data_type):
-        self._data_type = data_type
+    def setDataType(self, datatype):
+        self._datatype = datatype
 
         for edge in self.edges:
             # Verify that all edges are fine with changing the data type.
@@ -169,13 +169,13 @@ class Connection(SchemeItem):
     def serialize(self) -> dict:
         return {
             "text": self.text(),
-            "data_type": self.dataType(),
+            "datatype": self.dataType(),
             "is_multiple": self.isMultiple(),
         }
 
     def deserialize(self, data: dict):
         self.setText(data["text"])
-        self.setDataType(data["data_type"])
+        self.setDataType(data["datatype"])
         self.setMultiple(data["is_multiple"])
     
     # Drawing edges ====================================================================================================

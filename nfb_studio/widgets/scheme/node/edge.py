@@ -7,6 +7,7 @@ from ..scheme_item import SchemeItem
 from ..style import Style
 from .node import Node
 from .connection import Input, Output, Connection, DataType
+from .connection.data_type import convertible
 
 
 class Edge(SchemeItem):
@@ -262,13 +263,12 @@ class Edge(SchemeItem):
         if self._source is None or self._target is None:
             return
 
-        if self._source.dataType() != self._target.dataType():
+        if not convertible(self._source.dataType(), self._target.dataType()):
             raise ValueError(
-                "data types of connections (\"" +
-                str(self._source.dataType()) +
-                "\" and \"" +
-                str(self._target.dataType()) +
-                "\") are not compatible"
+                "data types of connections (\"{}\" and \"{}\") are not compatible".format(
+                    str(self._source.dataType()),
+                    str(self._target.dataType())
+                )
             )
 
     # Events ===========================================================================================================

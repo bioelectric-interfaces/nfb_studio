@@ -20,6 +20,8 @@ class LSLInput(SignalNode):
         LSLDataSource("Mitsar", 30, 250),
     ]
 
+    output_type = DataType(100)
+
     class Config(SignalNode.Config):
         """Config widget displayed for LSLInput."""
         def __init__(self, parent=None):
@@ -83,7 +85,7 @@ class LSLInput(SignalNode):
         super().__init__(parent=parent)
 
         self.setTitle("LSL Input")
-        self.addOutput(Output("LSL data stream", DataType.Unknown))
+        self.addOutput(Output("LSL data stream", self.output_type))
         
         self._data_source = self.data_sources[0].name
         self.updateView()
