@@ -25,9 +25,11 @@ class Standardise(SignalNode):
             # Add a new layout
             self.average = QDoubleSpinBox()
             self.average.setMaximum(sys.float_info.max)  # TODO: proper max
+            self.average.valueChanged.connect(self.updateModel)
 
             self.standard_deviation = QDoubleSpinBox()
             self.standard_deviation.setMaximum(sys.float_info.max)  # TODO: proper max
+            self.standard_deviation.valueChanged.connect(self.updateModel)
 
             layout = QFormLayout()
             self.setLayout(layout)
@@ -40,16 +42,25 @@ class Standardise(SignalNode):
             if n is None:
                 return
 
-            n._average = self.average.value()
-            n._standard_deviation = self.standard_deviation.value()
+            average = self.average.value()
+            standard_deviation = self.standard_deviation.value()
+
+            n.setAverage(average)
+            n.setStandardDeviation(standard_deviation)
         
         def updateView(self):
             n = self.node()
             if n is None:
                 return
             
+            self.average.blockSignals(True)
+            self.standard_deviation.blockSignals(True)
+
             self.average.setValue(n.average())
             self.standard_deviation.setValue(n.standardDeviation())
+
+            self.average.blockSignals(False)
+            self.standard_deviation.blockSignals(False)
 
     default_average = 0
     default_standard_deviation = 1
@@ -63,7 +74,7 @@ class Standardise(SignalNode):
 
         self._average = self.default_average
         self._standard_deviation = self.default_standard_deviation
-        self.updateView()
+        self._adjust()
     
     def average(self):
         return self._average
@@ -73,12 +84,24 @@ class Standardise(SignalNode):
     
     def setAverage(self, value, /):
         self._average = value
-        self.updateView()
+        self._adjust()
     
     def setStandardDeviation(self, value, /):
         self._standard_deviation = value
+        self._adjust()
+
+    def _adjust(self):
+        """Adjust visuals in response to changes."""
         self.updateView()
 
+        self.setDescription(
+            "Average: x{}\nStd. Dev.: {}".format(
+                self.average(),
+                self.standardDeviation()
+            )
+        )
+
+    # Serialization ====================================================================================================
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""
         signal["fAverage"] = self.average()

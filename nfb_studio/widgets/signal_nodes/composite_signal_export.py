@@ -30,16 +30,25 @@ class CompositeSignalExport(SignalNode):
             if n is None:
                 return
             
-            n._signal_name = self.signal_name.text()
-            n._expression = self.expression.text()
+            signal_name = self.signal_name.text()
+            expression = self.expression.text()
+
+            n.setSignalName(signal_name)
+            n.setExpression(expression)
 
         def updateView(self):
             n = self.node()
             if n is None:
                 return
 
+            self.signal_name.blockSignals(True)
+            self.expression.blockSignals(True)
+
             self.signal_name.setText(n.signalName())
             self.expression.setText(n.expression())
+
+            self.signal_name.blockSignals(False)
+            self.expression.blockSignals(False)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -51,7 +60,7 @@ class CompositeSignalExport(SignalNode):
 
         self._signal_name = "Signal"
         self._expression = ""
-        self.updateView()
+        self._adjust()
 
     def signalName(self) -> str:
         return self._signal_name
@@ -61,12 +70,23 @@ class CompositeSignalExport(SignalNode):
 
     def setSignalName(self, name: str, /):
         self._signal_name = name
-        self.updateView()
+        self._adjust()
     
     def setExpression(self, eq: str, /):
         self._expression = eq
+        self._adjust()
+
+    def _adjust(self):
+        """Adjust visuals in response to changes."""
         self.updateView()
 
+        self.setDescription("{} =\n{}".format(
+                self.signalName(),
+                self.expression(),
+            )
+        )
+
+    # Serialization ====================================================================================================
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""
         signal["sSignalName"] = self.signalName()

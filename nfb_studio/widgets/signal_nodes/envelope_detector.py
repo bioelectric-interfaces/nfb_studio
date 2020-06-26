@@ -21,12 +21,14 @@ class EnvelopeDetector(SignalNode):
             self.smoothing_factor.setMaximum(1)
             self.smoothing_factor.setSingleStep(0.1)
             self.smoothing_factor.setPrefix("x")
+            self.smoothing_factor.valueChanged.connect(self.updateModel)
 
             self.method = QComboBox()
             self.method.addItem("Rectification")
             self.method.addItem("Fourier Transform")
             self.method.addItem("Hilbert Transform")
             self.method.addItem("cFIR")
+            self.method.currentTextChanged.connect(self.updateModel)
 
             layout = QFormLayout()
             self.setLayout(layout)
@@ -39,18 +41,27 @@ class EnvelopeDetector(SignalNode):
             if n is None:
                 return
             
-            n._smoothing_factor = self.smoothing_factor.value()
-            n._method = self.method.currentText()
+            smoothing_factor = self.smoothing_factor.value()
+            method = self.method.currentText()
+
+            n.setSmoothingFactor(smoothing_factor)
+            n.setMethod(method)
         
         def updateView(self):
             n = self.node()
             if n is None:
                 return
             
+            self.smoothing_factor.blockSignals(True)
+            self.method.blockSignals(True)
+
             self.smoothing_factor.setValue(n.smoothingFactor())
             self.method.setCurrentText(n.method())
 
-    default_smoothing_factor = 0  # TODO: Is this the correct default value?
+            self.smoothing_factor.blockSignals(False)
+            self.method.blockSignals(False)
+
+    default_smoothing_factor = 0.0  # TODO: Is this the correct default value?
     default_method = "Rectification"
 
     def __init__(self, parent=None):
@@ -62,21 +73,34 @@ class EnvelopeDetector(SignalNode):
 
         self._smoothing_factor = self.default_smoothing_factor
         self._method = self.default_method
+        self._adjust()
 
     def smoothingFactor(self) -> float:
         return self._smoothing_factor
     
     def setSmoothingFactor(self, factor: float, /):
         self._smoothing_factor = factor
-        self.updateView()
+        self._adjust()
     
     def method(self) -> str:
         return self._method
     
     def setMethod(self, method: str, /):
         self._method = method
+        self._adjust()
+
+    def _adjust(self):
+        """Adjust visuals in response to changes."""
         self.updateView()
 
+        self.setDescription(
+            "Smoothing Factor: x{}\nMethod: {}".format(
+                self.smoothingFactor(),
+                self.method()
+            )
+        )
+
+    # Serialization ====================================================================================================
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""
         signal["fSmoothingFactor"] = self.smoothingFactor()

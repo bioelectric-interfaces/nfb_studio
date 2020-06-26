@@ -18,10 +18,10 @@ class BandpassFilter(SignalNode):
             # Upper bound ----------------------------------------------------------------------------------------------
             self.lower_bound_enable = QCheckBox()
             self.lower_bound_enable.setChecked(True)
-            self.lower_bound_enable.stateChanged.connect(self.adjust)
+            self.lower_bound_enable.stateChanged.connect(self.updateModel)
 
             self.lower_bound = QDoubleSpinBox()
-            self.lower_bound.valueChanged.connect(self.adjust)
+            self.lower_bound.valueChanged.connect(self.updateModel)
             self.lower_bound.setMinimum(0)
             self.lower_bound.setMaximum(250)
             self.lower_bound.setSuffix("Hz")
@@ -35,10 +35,10 @@ class BandpassFilter(SignalNode):
             # Lower bound ----------------------------------------------------------------------------------------------
             self.upper_bound_enable = QCheckBox()
             self.upper_bound_enable.setChecked(True)
-            self.upper_bound_enable.stateChanged.connect(self.adjust)
+            self.upper_bound_enable.stateChanged.connect(self.updateModel)
 
             self.upper_bound = QDoubleSpinBox()
-            self.upper_bound.valueChanged.connect(self.adjust)
+            self.upper_bound.valueChanged.connect(self.updateModel)
             self.lower_bound.setMinimum(0)
             self.upper_bound.setMaximum(250)
             self.upper_bound.setSuffix("Hz")
@@ -59,17 +59,19 @@ class BandpassFilter(SignalNode):
             n = self.node()
             if n is None:
                 return
-            
+
             if self.lower_bound_enable.isChecked():
-                # Value is set direcly to a private field to prevent updateView() from being called.
-                n._lower_bound = self.lower_bound.value()
+                lower_bound = self.lower_bound.value()
             else:
-                n._lower_bound = None
+                lower_bound = None
             
             if self.upper_bound_enable.isChecked():
-                n._upper_bound = self.upper_bound.value()
+                upper_bound = self.upper_bound.value()
             else:
-                n._upper_bound = None
+                upper_bound = None
+            
+            n.setLowerBound(lower_bound)
+            n.setUpperBound(upper_bound)
 
         def updateView(self):
             n = self.node()
@@ -95,13 +97,10 @@ class BandpassFilter(SignalNode):
             # Release the block and call adjust
             self.lower_bound.blockSignals(False)
             self.upper_bound.blockSignals(False)
-            self.adjust()
+            self._adjust()
 
-        def adjust(self):
-            """Adjust displayed values and limits in response to changes."""
-            # Propagate changes to the node
-            self.updateModel()
-            
+        def _adjust(self):
+            """Adjust displayed values and limits in response to changes."""            
             # Enable spinbox widgets based on their checkbox
             self.lower_bound.setEnabled(self.lower_bound_enable.isChecked())
             self.upper_bound.setEnabled(self.upper_bound_enable.isChecked())
@@ -129,7 +128,7 @@ class BandpassFilter(SignalNode):
 
         self._lower_bound = self.default_lower_bound
         self._upper_bound = self.default_upper_bound
-        self.updateView()
+        self._adjust()
     
     def lowerBound(self):
         return self._lower_bound
@@ -139,12 +138,29 @@ class BandpassFilter(SignalNode):
     
     def setLowerBound(self, value, /):
         self._lower_bound = value
-        self.updateView()
+        self._adjust()
     
     def setUpperBound(self, value, /):
         self._upper_bound = value
+        self._adjust()
+
+    def _adjust(self):
+        """Adjust visuals in response to changes."""
         self.updateView()
 
+        lower_bound = self.lowerBound()
+        if self.lowerBound() is None:
+            lower_bound = ""
+
+        upper_bound = self.upperBound()
+        if self.upperBound() is None:
+            upper_bound = ""
+
+        self.setDescription(
+            "Range: {}~{} Hz".format(lower_bound, upper_bound)
+        )
+
+    # Serialization ====================================================================================================
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""
         signal["fBandpassLowHz"] = self.lowerBound()

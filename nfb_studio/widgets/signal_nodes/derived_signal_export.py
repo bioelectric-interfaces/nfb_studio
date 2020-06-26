@@ -35,14 +35,16 @@ class DerivedSignalExport(SignalNode):
             if n is None:
                 return
             
-            n._signal_name = self.signal_name.text()
+            n.setSignalName(self.signal_name.text())
     
         def updateView(self):
             n = self.node()
             if n is None:
                 return
             
+            self.signal_name.blockSignals(True)
             self.signal_name.setText(n.signalName())
+            self.signal_name.blockSignals(False)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -52,15 +54,22 @@ class DerivedSignalExport(SignalNode):
         self.addOutput(Output("Output", self.output_type))
 
         self._signal_name = "Signal"
-        self.updateView()
+        self._adjust()
 
     def signalName(self) -> str:
         return self._signal_name
 
     def setSignalName(self, name: str, /):
         self._signal_name = name
+        self._adjust()
+
+    def _adjust(self):
+        """Adjust visuals in response to changes."""
         self.updateView()
 
+        self.setDescription(self.signalName())
+
+    # Serialization ====================================================================================================
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""
         signal["sSignalName"] = self.signalName()

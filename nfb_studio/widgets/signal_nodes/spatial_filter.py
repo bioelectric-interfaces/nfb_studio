@@ -16,6 +16,7 @@ class SpatialFilter(SignalNode):
             super().__init__(parent=parent)
 
             self.matrix_path = QLineEdit()
+            self.matrix_path.editingFinished.connect(self.updateModel)
 
             layout = QFormLayout()
             self.setLayout(layout)
@@ -27,14 +28,16 @@ class SpatialFilter(SignalNode):
             if n is None:
                 return
             
-            n._matrix_path = self.matrix_path.text()
+            n.setMatrixPath(self.matrix_path.text())
         
         def updateView(self):
             n = self.node()
             if n is None:
                 return
             
+            self.matrix_path.blockSignals(True)
             self.matrix_path.setText(n.matrixPath())
+            self.matrix_path.blockSignals(False)
 
     default_matrix_path = ""
 
@@ -46,15 +49,25 @@ class SpatialFilter(SignalNode):
         self.addOutput(Output("Output", self.output_type))
 
         self._matrix_path = self.default_matrix_path
-        self.updateView()
+        self._adjust()
 
     def matrixPath(self) -> str:
         return self._matrix_path
     
     def setMatrixPath(self, matrix_path: str, /):
         self._matrix_path = matrix_path
+        self._adjust()
+
+    def _adjust(self):
+        """Adjust visuals in response to changes."""
         self.updateView()
 
+        if self.matrixPath() == "":
+            self.setDescription("No Matrix")
+        else:
+            self.setDescription(self.matrixPath())
+
+    # Serialization ====================================================================================================
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""
         signal["SpatialFilterMatrix"] = self.matrixPath()
