@@ -95,4 +95,3 @@ class ItemDict(QObject, MutableMapping, metaclass=ItemDictMetaclass):
     
     def deserialize(self, data: dict):
         self._data = data["data"]
-        

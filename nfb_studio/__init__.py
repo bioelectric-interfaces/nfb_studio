@@ -1,5 +1,6 @@
 """NFB experiment designer."""
-from .serial import json, hooks
+from .experiment import Experiment, ExperimentView
+from .block import Block, BlockView
+from .group import Group, GroupView
 
-std_encoder = json.JSONEncoder(hooks=hooks.qt, indent='\t')
-std_decoder = json.JSONDecoder(hooks=hooks.qt)
+from .main_window import MainWindow

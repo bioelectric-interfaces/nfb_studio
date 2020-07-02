@@ -1,7 +1,6 @@
+"""Startup script for nfb_studio."""
 import sys
-
 from PySide2.QtWidgets import QApplication
-
 from .main_window import MainWindow
 
 def main():
