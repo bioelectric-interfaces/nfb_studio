@@ -61,18 +61,18 @@ class MainWindow(QMainWindow):
         self.experiment().view().updateModel()
         data = self.experiment().save()
         
-        file_path = QFileDialog.getSaveFileName(filter="Experiment Files (*.exp)")[0]
+        file_path = QFileDialog.getSaveFileName(filter="Experiment Files (*.nfbex)")[0]
         if file_path == "":
             return
 
         if os.path.splitext(file_path)[1] == "":  # No extension
-            file_path = file_path + ".exp"
+            file_path = file_path + ".nfbex"
 
         with open(file_path, "w") as file:
             file.write(data)
 
     def load(self):
-        file_path = QFileDialog.getOpenFileName(filter="Experiment Files (*.exp)")[0]
+        file_path = QFileDialog.getOpenFileName(filter="Experiment Files (*.nfbex)")[0]
         if file_path == "":
             return
 
