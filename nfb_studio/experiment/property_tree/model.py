@@ -28,9 +28,13 @@ class PropertyTree(QStandardItemModel):
         self.groups = QStandardItem("Block Groups")
         self.sequence = QStandardItem("Sequence")
 
-        self.general.setFlags(self.general.flags() | Qt.ItemNeverHasChildren)
-        self.signals.setFlags(self.signals.flags() | Qt.ItemNeverHasChildren)
-        self.sequence.setFlags(self.sequence.flags() | Qt.ItemNeverHasChildren)
+        flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
+
+        self.general.setFlags(flags | Qt.ItemNeverHasChildren)
+        self.signals.setFlags(flags | Qt.ItemNeverHasChildren)
+        self.blocks.setFlags(flags)
+        self.groups.setFlags(flags)
+        self.sequence.setFlags(flags | Qt.ItemNeverHasChildren)
 
         self.appendRow(self.general)
         self.appendRow(self.signals)

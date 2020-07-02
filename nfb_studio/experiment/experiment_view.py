@@ -174,7 +174,7 @@ class ExperimentView(QMainWindow):
         """Function that gets called when a new block has been added to the model."""
         # Add an item to the property tree
         tree_item = QStandardItem(name)
-        tree_item.setFlags(tree_item.flags() | Qt.ItemIsEditable)
+        tree_item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
         self.tree.blocks.appendRow(tree_item)
         
         # Add a view to the widget stack
@@ -194,7 +194,7 @@ class ExperimentView(QMainWindow):
         """Function that gets called when a new group has been added to the model."""
         # Add an item to the property tree
         tree_item = QStandardItem(name)
-        tree_item.setFlags(tree_item.flags() | Qt.ItemIsEditable)
+        tree_item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
         self.tree.groups.appendRow(tree_item)
 
         # Add a view to the widget stack
