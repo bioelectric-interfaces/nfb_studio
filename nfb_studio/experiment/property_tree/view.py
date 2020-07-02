@@ -1,11 +1,12 @@
-from PySide2.QtCore import Qt, QObject, QAbstractItemModel, QModelIndex, QPoint, Signal
-from PySide2.QtGui import QStandardItemModel, QStandardItem, QMouseEvent
-from PySide2.QtWidgets import QTreeView, QMenu, QAction, QTreeWidget, QTreeWidgetItem, QTreeView
+"""View widget for PropertyTree class."""
+from PySide2.QtCore import Qt, QModelIndex, QPoint, Signal
+from PySide2.QtWidgets import QTreeView, QMenu
 
 from .delegate import PropertyTreeDelegate
 
 
 class PropertyTreeView(QTreeView):
+    """View widget for PropertyTree class."""
     currentIndexChanged = Signal(object, object)
 
     def __init__(self, parent=None):

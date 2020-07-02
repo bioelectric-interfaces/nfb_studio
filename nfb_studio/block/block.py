@@ -1,7 +1,5 @@
 """NFB Experiment block."""
-from enum import Enum, auto
-
-from PySide2.QtCore import QObject, Signal
+from PySide2.QtCore import QObject
 
 
 class Block(QObject):

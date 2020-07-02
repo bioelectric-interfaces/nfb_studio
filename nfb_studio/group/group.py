@@ -6,7 +6,7 @@ from PySide2.QtCore import QObject
 
 
 class GroupMetaclass(type(QObject), type(MutableSequence)):
-    pass
+    """Metaclass for Group. Merges QObject and MutableSequence metaclasses."""
 
 
 class Group(QObject, MutableSequence, metaclass=GroupMetaclass):

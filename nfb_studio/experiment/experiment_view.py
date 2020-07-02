@@ -1,8 +1,7 @@
-import os
-
+"""View widget for Experiment class."""
 from PySide2.QtCore import Qt, QModelIndex
 from PySide2.QtGui import QStandardItem
-from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QAction, QFileDialog
+from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget
 
 from nfb_studio.block import Block, BlockView
 from nfb_studio.group import Group, GroupView
@@ -12,11 +11,11 @@ from nfb_studio.widgets.signal_nodes import *
 from nfb_studio.widgets.sequence_nodes import *
 
 from .general_view import GeneralView
-from .experiment import Experiment
 from .property_tree import PropertyTree
 
 
 class ExperimentView(QMainWindow):
+    """View widget for Experiment class."""
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -249,7 +248,7 @@ class ExperimentView(QMainWindow):
         # Rename in widget stack
         current_key = self.groups.currentKey()
 
-        w = self.groups.removeWidget(name)
+        w = self.groups.removeWidget(old_name)
         self.groups.addWidget(new_name, w)
 
         if current_key == old_name:

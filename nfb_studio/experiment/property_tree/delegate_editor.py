@@ -1,6 +1,6 @@
-from PySide2.QtCore import Qt, QModelIndex, QEvent, QRect, Signal
-from PySide2.QtGui import QKeyEvent
-from PySide2.QtWidgets import QWidget, QStyledItemDelegate, QVBoxLayout, QLineEdit, QLabel, QFrame
+"""Editor widget for renaming items in the PropertyTree."""
+from PySide2.QtCore import Qt, Signal
+from PySide2.QtWidgets import QVBoxLayout, QLineEdit, QLabel, QFrame
 
 
 class PropertyTreeDelegateEditor(QFrame):
@@ -52,7 +52,7 @@ class PropertyTreeDelegateEditor(QFrame):
         """Get the current text value of the editor widget.
         If editing has not been finished succesfully, returns fallbackText().
         """
-        (text_ok, reason) = self.experiment().checkName(self.line_edit.text())
+        (text_ok, _) = self.experiment().checkName(self.line_edit.text())
         if text_ok:
             return self.line_edit.text()
         else:

@@ -1,6 +1,6 @@
-from PySide2.QtCore import Qt, QObject, QAbstractItemModel, QModelIndex, QPoint, Signal
+"""Property tree model class, containing the data structure."""
+from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QStandardItemModel, QStandardItem
-from PySide2.QtWidgets import QTreeView, QMenu, QAction, QTreeWidget, QTreeWidgetItem, QTreeView
 
 from .view import PropertyTreeView
 

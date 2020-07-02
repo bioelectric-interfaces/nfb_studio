@@ -1,18 +1,18 @@
 """NFB Experiment."""
 import re
-from PySide2.QtCore import Qt, Signal, QObject, QAbstractItemModel, QModelIndex
-from PySide2.QtWidgets import QTreeView
-from sortedcontainers import SortedDict
 
 from nfb_studio.block import Block, BlockDict
 from nfb_studio.group import Group, GroupDict
 from nfb_studio.serial import json, xml, hooks
-from nfb_studio.widgets.scheme import SchemeEditor, Scheme
+from nfb_studio.widgets.scheme import Scheme
 from nfb_studio.widgets.signal_nodes import *
 from nfb_studio.widgets.sequence_nodes import *
 
 
 class Experiment:
+    """NFB Experiment: the main class of nfb_studio.
+    An instance of Experiment represents a collection
+    """
     inlet_type_export_values = {
         "LSL stream": "lsl",
         "LSL file stream": "lsl_from_file",
@@ -298,14 +298,14 @@ class Experiment:
         general.hostname_port.setText(self.hostname_port)
         general.dc.setChecked(self.dc)
 
-        if self.prefilter_band[0] == None:
+        if self.prefilter_band[0] is None:
             general.prefilterBandLow_enable.setChecked(False)
             general.prefilterBandLow_input.setValue(0)
         else:
             general.prefilterBandLow_enable.setChecked(True)
             general.prefilterBandLow_input.setValue(self.prefilter_band[0])
         
-        if self.prefilter_band[1] == None:
+        if self.prefilter_band[1] is None:
             general.prefilterBandHigh_enable.setChecked(False)
             general.prefilterBandHigh_input.setValue(0)
         else:
@@ -427,7 +427,7 @@ class Experiment:
         for name in self.groups:
             group = self.groups[name]
 
-            data["vProtocols"]["FeedbackProtocol"].append(block.nfb_export_data())  # Add other information
+            data["vProtocols"]["FeedbackProtocol"].append(group.nfb_export_data())  # Add other information
             data["vProtocols"]["FeedbackProtocol"][-1]["sName"] = name  # Add name
 
         # Derived Signals ----------------------------------------------------------------------------------------------
@@ -492,4 +492,3 @@ class Experiment:
         }
 
         return data
-        

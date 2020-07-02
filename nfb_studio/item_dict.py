@@ -6,7 +6,7 @@ from PySide2.QtCore import QObject, Signal
 
 
 class ItemDictMetaclass(type(QObject), type(MutableMapping)):
-    pass
+    """Metaclass for ItemDict. Merges QObject and MutableMapping metaclasses."""
 
 
 class ItemDict(QObject, MutableMapping, metaclass=ItemDictMetaclass):

@@ -1,12 +1,16 @@
+"""Main window of the UI application."""
 import os
 
-from PySide2.QtCore import Qt, QModelIndex
-from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QAction, QFileDialog
+from PySide2.QtWidgets import QMainWindow, QFileDialog
 
 from nfb_studio.experiment import Experiment, ExperimentView
 
 
 class MainWindow(QMainWindow):
+    """Main window of the UI application.
+    Main window contains the toolbars for manipulating experiment files, as well as ExperimentView as its central
+    widget.
+    """
     def __init__(self):
         super().__init__()
 
