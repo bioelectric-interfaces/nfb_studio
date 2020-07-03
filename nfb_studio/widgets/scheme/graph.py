@@ -177,17 +177,18 @@ class Graph(GraphicsItemGroup):
 
         return data
     
-    def deserialize(self, data: dict):
+    @classmethod
+    def deserialize(cls, data: dict):
         """Deserialize this object from a dict of data.
         
         Edges are not serialized as objects. Instead, only their connections are remembered and reconstructed during the
         deserialization.
         """
-        self.clear()
+        obj = cls()
 
         # Deserialize nodes --------------------------------------------------------------------------------------------
         for node in data["nodes"]:
-            self.add(node)
+            obj.add(node)
 
         # Deserialize edges --------------------------------------------------------------------------------------------
         for edge_data in data["edges"]:
@@ -197,4 +198,6 @@ class Graph(GraphicsItemGroup):
             source = source_node.outputs[edge_data["source"]["connection_index"]]
             target = target_node.inputs[edge_data["target"]["connection_index"]]
 
-            self.connect_nodes(source, target)
+            obj.connect_nodes(source, target)
+
+        return obj

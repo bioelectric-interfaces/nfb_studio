@@ -114,23 +114,28 @@ class Block(QObject):
             "update_statistics": self.update_statistics,
         }
 
-    def deserialize(self, data: dict):
-        self.duration = data["duration"]
-        self.feedback_source = data["feedback_source"]
-        self.feedback_type = data["feedback_type"]
-        self.random_bound = data["random_bound"]
-        self.video_path = data["video_path"]
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = cls()
 
-        self.mock_signal_path = data["mock_signal_path"]
-        self.mock_signal_dataset = data["mock_signal_dataset"]
-        self.mock_previous = data["mock_previous"]
-        self.mock_previous_reverse = data["mock_previous_reverse"]
-        self.mock_previous_random = data["mock_previous_random"]
+        obj.duration = data["duration"]
+        obj.feedback_source = data["feedback_source"]
+        obj.feedback_type = data["feedback_type"]
+        obj.random_bound = data["random_bound"]
+        obj.video_path = data["video_path"]
 
-        self.start_data_driven_filter_designer = data["start_data_driven_filter_designer"]
-        self.pause = data["pause"]
-        self.beep = data["beep"]
-        self.update_statistics = data["update_statistics"]
+        obj.mock_signal_path = data["mock_signal_path"]
+        obj.mock_signal_dataset = data["mock_signal_dataset"]
+        obj.mock_previous = data["mock_previous"]
+        obj.mock_previous_reverse = data["mock_previous_reverse"]
+        obj.mock_previous_random = data["mock_previous_random"]
+
+        obj.start_data_driven_filter_designer = data["start_data_driven_filter_designer"]
+        obj.pause = data["pause"]
+        obj.beep = data["beep"]
+        obj.update_statistics = data["update_statistics"]
+
+        return obj
 
     @classmethod
     def nfb_import_data(cls, data: dict):

@@ -105,5 +105,9 @@ class Toolbox(QAbstractListModel):
     def serialize(self) -> dict:
         return self._items
     
-    def deserialize(self, data: dict):
-        self._items = data
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = cls()
+        obj._items = data
+
+        return obj

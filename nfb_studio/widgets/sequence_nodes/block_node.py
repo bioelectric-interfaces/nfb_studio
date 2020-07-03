@@ -17,5 +17,6 @@ class BlockNode(Node):
     def serialize(self) -> dict:
         return super().serialize()
     
-    def deserialize(self, data: dict):
-        super().deserialize(data)
+    @classmethod
+    def deserialize(cls, data: dict):
+        return super().deserialize(data)

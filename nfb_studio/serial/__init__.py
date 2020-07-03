@@ -6,7 +6,9 @@ classes can be found in nested modules, such as `serial.json`.
 - If a class you want serialized is in your control, you can define these two member functions:
 ```python
 def serialize(self) -> dict:
-def deserialize(self, data: dict):
+
+@classmethod
+def deserialize(cls, data: dict) -> '''instance''':
 ```
 These functions return/accept a dictionary containing the data that is necessary to save and required to recreate the
 object during deserialization.
@@ -16,7 +18,7 @@ functions and pass them to the encoder you are using.
 ```python
 # Names here do not matter (these functions can even be lambdas).
 def serialize(obj) -> dict:
-def deserialize(obj, data: dict):
+def deserialize(data: dict) -> '''instance''':
 ```
 Put these functions in a dict that maps a type to a serialization function, and pass that dict as an argument to an
 encoder.
@@ -30,7 +32,7 @@ my_encoder = JSONEncoder(hooks=my_serialization_hooks)
 For convenience, you can store both serialization and deserialization hooks in one tuple or a `hooks.Hooks` object,
 and pass that around instead:
 ```python
-my_hooks = Hooks(my_serialization_hooks, my_deserialization_hooks)  # tuple works too
+my_hooks = Hooks(my_serialization_hooks, my_deserialization_hooks)  # a plain tuple works too
 my_encoder = JSONEncoder(hooks=my_hooks)
 ```
 This module supplies some commonly used hooks in the `serial.hooks` nested module. Hooks supplied manually take
@@ -55,10 +57,9 @@ class MyClass:
             "c": self.c
         }
 
-    def deserialize(self, data: dict):
-        self.a = data["a"]
-        self.b = data["b"]
-        self.c = data["c"]
+    @classmethod
+    def deserialize(cls, data: dict):
+        return cls(data["a"], data["b"], data["c"])
 
 # A class that cannot be modified in an invasive way.
 from PySide2.QtCore import QRect
@@ -70,11 +71,14 @@ def qrect_serialize(obj: QRect) -> dict:
         "height" = obj.height()
     }
 
-def qrect_deserialize(obj: QRect, data: dict):
+def qrect_deserialize(data: dict):
+    obj = QRect()
     obj.setX(data["x"])
     obj.setY(data["y"])
     obj.setWidth(data["width"])
     obj.setHeight(data["height"])
+
+    return obj
 
 encoder = JSONEncoder(hooks={QRect: qrect_serialize})
 decoder = JSONDecoder(hooks={QRect: qrect_deserialize})
@@ -88,7 +92,6 @@ In this example, the encoder and decoder will be able to serialize both `MyClass
 
 .. warning::
     In order for the decoder to know which dicts should be deserialized as which class instances, the encoder adds a
-    metadata field to the serialized dictionary called `__class__`. Do not write anything to that field - it will be
-    overwritten.
+    metadata field to the serialized dictionary called `__class__`. Therefore this dict key is reserved.
 """
 from .hooks import Hooks

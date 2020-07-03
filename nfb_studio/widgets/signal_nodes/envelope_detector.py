@@ -113,8 +113,10 @@ class EnvelopeDetector(SignalNode):
         data["method"] = self.method()
         return data
     
-    def deserialize(self, data: dict):
-        super().deserialize(data)
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = super().deserialize(data)
+        obj.setSmoothingFactor(data["smoothing_factor"])
+        obj.setMethod(data["method"])
 
-        self.setSmoothingFactor(data["smoothing_factor"])
-        self.setMethod(data["method"])
+        return obj

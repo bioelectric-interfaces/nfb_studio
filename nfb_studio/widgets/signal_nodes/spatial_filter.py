@@ -78,7 +78,9 @@ class SpatialFilter(SignalNode):
         data["matrix_path"] = self.matrixPath()
         return data
     
-    def deserialize(self, data: dict):
-        super().deserialize(data)
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = super().deserialize(data)
+        obj.setMatrixPath(data["matrix_path"])
 
-        self.setMatrixPath(data["matrix_path"])
+        return obj

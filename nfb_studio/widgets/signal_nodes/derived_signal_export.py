@@ -80,6 +80,9 @@ class DerivedSignalExport(SignalNode):
         data["signal_name"] = self.signalName()
         return data
     
-    def deserialize(self, data: dict):
-        super().deserialize(data)
-        self.setSignalName(data["signal_name"])
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = super().deserialize(data)
+        obj.setSignalName(data["signal_name"])
+
+        return obj

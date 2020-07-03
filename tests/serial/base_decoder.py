@@ -75,9 +75,11 @@ class TestBaseDecoder(TestCase):
         self.assertEqual(decoder.decode(self.source_data), expected_result)
     
     def test_decoder_hooks(self):
-        def hook(obj, data):
-            obj.deserialize(data)
+        def hook(data):
+            obj = ExampleClass.Nested.deserialize(data)
             obj.list_var.append('x')
+
+            return obj
         
         decoder = base.BaseDecoder(hooks={ExampleClass.Nested: hook})
 

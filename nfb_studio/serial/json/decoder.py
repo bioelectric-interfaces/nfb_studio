@@ -107,20 +107,15 @@ class JSONDecoder(json.JSONDecoder):
             if not isclass(cls):
                 raise TypeError("{}.{} is not a class".format(module_path, class_name))
 
-            # Default-construct an object of that class ----------------------------------------------------------------
-            obj = cls()
-
             # Load the json data into the object -----------------------------------------------------------------------
             if cls in self.hooks:
-                self.hooks[cls](obj, data)
-                return obj
-            elif hasattr(obj, "deserialize") and callable(obj.deserialize):
-                obj.deserialize(data)
-                return obj
-            else:
-                message = "an instance of {}.{} does not have a callable \"deserialize\" attribute" \
-                    .format(module_path, class_name)
-                raise AttributeError(message)
+                return self.hooks[cls](data)
+            if hasattr(cls, "deserialize") and callable(cls.deserialize):
+                return cls.deserialize(data)
+            
+            message = "an instance of {}.{} does not have a callable \"deserialize\" attribute" \
+                .format(module_path, class_name)
+            raise AttributeError(message)
 
         super().__init__(
             object_hook=object_hook,

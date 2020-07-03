@@ -362,28 +362,33 @@ class Experiment:
             "groups": self.groups,
         }
     
-    def deserialize(self, data: dict):
-        self.name = data["name"]
-        self.lsl_stream_name = data["lsl_stream_name"]
-        self.inlet = data["inlet"]
-        self.raw_data_path = data["raw_data_path"]
-        self.hostname_port = data["hostname_port"]
-        self.dc = data["dc"]
-        self.prefilter_band = (data["prefilter_band_lower_bound"], data["prefilter_band_upper_bound"])
-        self.plot_raw = data["plot_raw"]
-        self.plot_signals = data["plot_signals"]
-        self.show_subject_window = data["show_subject_window"]
-        self.discard_channels = data["discard_channels"]
-        self.reference_sub = data["reference_sub"]
-        self.show_proto_rectangle = data["show_proto_rectangle"]
-        self.show_notch_filters = data["show_notch_filters"]
-        self.signal_scheme = data["signal_scheme"]
-        self.sequence_scheme = data["sequence_scheme"]
-        self.blocks = data["blocks"]
-        self.groups = data["groups"]
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = cls()
 
-        self.blocks.setExperiment(self)
-        self.groups.setExperiment(self)
+        obj.name = data["name"]
+        obj.lsl_stream_name = data["lsl_stream_name"]
+        obj.inlet = data["inlet"]
+        obj.raw_data_path = data["raw_data_path"]
+        obj.hostname_port = data["hostname_port"]
+        obj.dc = data["dc"]
+        obj.prefilter_band = (data["prefilter_band_lower_bound"], data["prefilter_band_upper_bound"])
+        obj.plot_raw = data["plot_raw"]
+        obj.plot_signals = data["plot_signals"]
+        obj.show_subject_window = data["show_subject_window"]
+        obj.discard_channels = data["discard_channels"]
+        obj.reference_sub = data["reference_sub"]
+        obj.show_proto_rectangle = data["show_proto_rectangle"]
+        obj.show_notch_filters = data["show_notch_filters"]
+        obj.signal_scheme = data["signal_scheme"]
+        obj.sequence_scheme = data["sequence_scheme"]
+        obj.blocks = data["blocks"]
+        obj.groups = data["groups"]
+
+        obj.blocks.setExperiment(obj)
+        obj.groups.setExperiment(obj)
+
+        return obj
 
     def nfb_export_data(self) -> dict:
         """Export data in a dict format for encoding to XML and usage in NFBLab."""

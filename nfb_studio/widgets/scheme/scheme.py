@@ -363,16 +363,19 @@ class Scheme(QGraphicsScene):
     def serialize(self) -> dict:
         return self.graph.serialize()
 
-    def deserialize(self, data: dict):
+    @classmethod
+    def deserialize(cls, data: dict):
         """Deserialize this object from a dict of data."""
-        self.clear()
+        obj = cls()
 
-        # Deserialize as graph -----------------------------------------------------------------------------------------
-        self.graph.deserialize(data)
+        # Deserialize the graph ----------------------------------------------------------------------------------------
+        obj.graph = Graph.deserialize(data)
 
         # Bring the scene up to speed ----------------------------------------------------------------------------------
-        for node in self.graph.nodes:
-            super().addItem(node)
+        for node in obj.graph.nodes:
+            super(Scheme, obj).addItem(node)
 
-        for edge in self.graph.edges:
-            super().addItem(edge)
+        for edge in obj.graph.edges:
+            super(Scheme, obj).addItem(edge)
+        
+        return obj

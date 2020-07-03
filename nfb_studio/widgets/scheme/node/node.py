@@ -275,26 +275,29 @@ class Node(SchemeItem):
             "position": self.position()
         }
 
-    def deserialize(self, data: dict):
-        self.setTitle(data["title"])
-        self.setDescription(data["description"])
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = cls()
+        obj.setTitle(data["title"])
+        obj.setDescription(data["description"])
+        obj.setPosition(data["position"])
 
-        for i in range(len(self.inputs)):
-            self.removeInput(0)
+        for i in range(len(obj.inputs)):
+            obj.removeInput(0)
 
-        for i in range(len(self.outputs)):
-            self.removeOutput(0)
+        for i in range(len(obj.outputs)):
+            obj.removeOutput(0)
 
-        for i in range(len(self.messages)):
-            self.removeMessage(0)
+        for i in range(len(obj.messages)):
+            obj.removeMessage(0)
 
         for input in data["inputs"]:
-            self.addInput(input)
+            obj.addInput(input)
 
         for output in data["outputs"]:
-            self.addOutput(output)
+            obj.addOutput(output)
 
         for message in data["messages"]:
-            self.addMessage(message)
+            obj.addMessage(message)
 
-        self.setPosition(data["position"])
+        return obj

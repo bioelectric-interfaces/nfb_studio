@@ -22,10 +22,14 @@ class DataType:
             "convertible_to": self.convertible_to,
         }
 
-    def deserialize(self, data: dict):
-        self.data_id = data["data_id"]
-        self.convertible_from = data["convertible_from"]
-        self.convertible_to = data["convertible_to"]
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = cls()
+        obj.data_id = data["data_id"]
+        obj.convertible_from = data["convertible_from"]
+        obj.convertible_to = data["convertible_to"]
+
+        return obj
 
     def __repr__(self):
         return "DataType({})".format(self.data_id)

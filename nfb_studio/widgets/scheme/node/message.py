@@ -107,8 +107,12 @@ class Message(SchemeItem):
             "text": self.text()
         }
 
-    def deserialize(self, data: dict):
-        self.setText(data["text"])
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = cls()
+        obj.setText(data["text"])
+
+        return obj
 
 
 class InfoMessage(Message):

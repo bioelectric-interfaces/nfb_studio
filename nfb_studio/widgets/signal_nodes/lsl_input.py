@@ -124,7 +124,9 @@ class LSLInput(SignalNode):
         data["data_source"] = self.dataSource()
         return data
     
-    def deserialize(self, data: dict):
-        super().deserialize(data)
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = super().deserialize(data)
+        obj.setDataSource(data["data_source"])
 
-        self.setDataSource(data["data_source"])
+        return obj

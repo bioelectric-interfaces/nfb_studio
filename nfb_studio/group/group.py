@@ -76,9 +76,14 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
             "repeats": self.repeats,
         }
 
-    def deserialize(self, data: dict):
-        self.blocks = data["blocks"]
-        self.repeats = data["repeats"]
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = cls()
+
+        obj.blocks = data["blocks"]
+        obj.repeats = data["repeats"]
+
+        return obj
 
     # NFB Export =======================================================================================================
     def nfb_export_data(self) -> dict:

@@ -49,7 +49,6 @@ class JSONEncoder(json.JSONEncoder):
     .. warning::
         JSONEncoder adds a field to the dict, produced from the object, called `__class__`. This field is used in the
         JSONDecoder to create an instance of the class, where json data is then deserialized.
-        Do not write anything in this field yourself - it will be overwritten.
 
     See Also
     --------

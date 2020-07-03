@@ -93,5 +93,9 @@ class ItemDict(QObject, MutableMapping, metaclass=ItemDictMetaclass):
         
         return data
     
-    def deserialize(self, data: dict):
-        self._data = data["data"]
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = cls()
+        obj._data = data["data"]
+
+        return obj

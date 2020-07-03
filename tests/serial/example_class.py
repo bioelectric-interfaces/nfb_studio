@@ -26,17 +26,21 @@ class ExampleClass:
                 "none_var": self.none_var
             }
 
-        def deserialize(self, data):
-            self.int_var = data["int_var"]
-            self.float_var = data["float_var"]
-            self.string_var = data["string_var"]
-            self.list_var = data["list_var"]
-            self.tuple_var = tuple(data["tuple_var"])
-            self.dict_var = data["dict_var"]
-            self.set_var = set(data["set_var"])
-            self.bool_var1 = data["bool_var1"]
-            self.bool_var2 = data["bool_var2"]
-            self.none_var = data["none_var"]
+        @classmethod
+        def deserialize(cls, data):
+            obj = cls()
+            obj.int_var = data["int_var"]
+            obj.float_var = data["float_var"]
+            obj.string_var = data["string_var"]
+            obj.list_var = data["list_var"]
+            obj.tuple_var = tuple(data["tuple_var"])
+            obj.dict_var = data["dict_var"]
+            obj.set_var = set(data["set_var"])
+            obj.bool_var1 = data["bool_var1"]
+            obj.bool_var2 = data["bool_var2"]
+            obj.none_var = data["none_var"]
+
+            return obj
         
         def __eq__(self, other):
             return (
@@ -65,10 +69,14 @@ class ExampleClass:
             "list_var": self.list_var,
         }
     
-    def deserialize(self, data):
-        self.nested = data["nested"]
-        self.dict_var = data["dict_var"]
-        self.list_var = data["list_var"]
+    @classmethod
+    def deserialize(cls, data):
+        obj = cls()
+        obj.nested = data["nested"]
+        obj.dict_var = data["dict_var"]
+        obj.list_var = data["list_var"]
+
+        return obj
 
     def __eq__(self, other):
         return (

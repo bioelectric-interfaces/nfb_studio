@@ -99,7 +99,10 @@ class CompositeSignalExport(SignalNode):
         data["expression"] = self.expression()
         return data
     
-    def deserialize(self, data: dict):
-        super().deserialize(data)
-        self.setSignalName(data["signal_name"])
-        self.setExpression(data["expression"])
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = super().deserialize(data)
+        obj.setSignalName(data["signal_name"])
+        obj.setExpression(data["expression"])
+
+        return obj

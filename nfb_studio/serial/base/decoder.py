@@ -1,4 +1,4 @@
-from copy import deepcopy
+"""Backend class managing decoding raw dicts of objects to proper dicts of objects."""
 from typing import Union
 from importlib import import_module
 from inspect import isclass
@@ -13,6 +13,8 @@ def deepgetattr(obj, attr):
 
 
 class BaseDecoder:
+    """Backend class managing decoding raw dicts of objects to proper dicts of objects."""
+
     def __init__(self, *, hooks: Union[dict, tuple, Hooks] = None):
         self.hooks = hooks
 
@@ -62,18 +64,13 @@ class BaseDecoder:
         if not isclass(cls):
             raise TypeError("{}.{} is not a class".format(module_path, class_name))
 
-        # Default-construct an object of that class
-        obj = cls()
-
         # Load the json data into the object
         if cls in self.hooks:
-            self.hooks[cls](obj, data)
-            return obj
-        if hasattr(obj, "deserialize") and callable(obj.deserialize):
-            obj.deserialize(data)
-            return obj
+            return self.hooks[cls](data)
+        if hasattr(cls, "deserialize") and callable(cls.deserialize):
+            return cls.deserialize(data)
         
-        message = "an instance of {}.{} does not have a callable \"deserialize\" attribute" \
+        message = "{}.{} does not have a callable \"deserialize\" attribute" \
             .format(module_path, class_name)
         raise AttributeError(message)
 

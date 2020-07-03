@@ -173,10 +173,14 @@ class Connection(SchemeItem):
             "is_multiple": self.isMultiple(),
         }
 
-    def deserialize(self, data: dict):
-        self.setText(data["text"])
-        self.setDataType(data["datatype"])
-        self.setMultiple(data["is_multiple"])
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = cls()
+        obj.setText(data["text"])
+        obj.setDataType(data["datatype"])
+        obj.setMultiple(data["is_multiple"])
+
+        return obj
     
     # Drawing edges ====================================================================================================
     # The heavy lifting such as detecting when the edge started being drawn, mouse moving and data transfers are handled

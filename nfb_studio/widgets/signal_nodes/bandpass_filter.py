@@ -174,8 +174,10 @@ class BandpassFilter(SignalNode):
 
         return data
     
-    def deserialize(self, data: dict):
-        super().deserialize(data)
-        
-        self.setLowerBound(data["lower_bound"])
-        self.setUpperBound(data["upper_bound"])
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = super().deserialize(data)
+        obj.setLowerBound(data["lower_bound"])
+        obj.setUpperBound(data["upper_bound"])
+
+        return obj

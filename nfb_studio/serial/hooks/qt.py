@@ -17,13 +17,11 @@ def serialize_QSizeF(obj: QSizeF) -> dict:
 
 
 # Deserialize ==========================================================================================================
-def deserialize_QPointF(obj: QPointF, data: dict):
-    obj.setX(data["x"])
-    obj.setY(data["y"])
+def deserialize_QPointF(data: dict):
+    return QPointF(data["x"], data["y"])
 
-def deserialize_QSizeF(obj: QSizeF, data: dict):
-    obj.setWidth(data["width"])
-    obj.setHeight(data["height"])
+def deserialize_QSizeF(data: dict):
+    return QSizeF(data["width"], data["height"])
 
 
 # Hooks ================================================================================================================

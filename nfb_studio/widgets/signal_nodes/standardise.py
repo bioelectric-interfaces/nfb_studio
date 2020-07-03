@@ -114,8 +114,10 @@ class Standardise(SignalNode):
         data["standard_deviation"] = self.standardDeviation()
         return data
     
-    def deserialize(self, data: dict):
-        super().deserialize(data)
+    @classmethod
+    def deserialize(cls, data: dict):
+        obj = super().deserialize(data)
+        obj.setAverage(data["average"])
+        obj.setStandardDeviation(data["standard_deviation"])
 
-        self.setAverage(data["average"])
-        self.setStandardDeviation(data["standard_deviation"])
+        return obj
