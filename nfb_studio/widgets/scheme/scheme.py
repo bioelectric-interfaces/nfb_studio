@@ -312,7 +312,7 @@ class Scheme(QGraphicsScene):
     def dropEvent(self, event):
         package = event.mimeData()
 
-        for fmt, drop_event in self._custom_drop_events:
+        for fmt, drop_event in self._custom_drop_events.items():
             if package.hasFormat(fmt):
                 drop_event(scheme=self, event=event)
 
