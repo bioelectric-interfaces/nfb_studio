@@ -1,6 +1,4 @@
 """NFB main source signal."""
-from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit
-
 from ..scheme import Node, Input, Output, DataType
 
 
