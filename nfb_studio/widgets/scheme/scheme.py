@@ -1,11 +1,7 @@
 """A data model for the nfb experiment's system of signals and their components."""
-from typing import Union
-
 from PySide2.QtCore import Qt, QPointF, QMimeData, Signal
 from PySide2.QtGui import QPainter, QKeySequence
-from PySide2.QtWidgets import (
-    QGraphicsScene, QGraphicsView, QGraphicsItem, QGraphicsRectItem, QShortcut, QApplication, QSizePolicy
-)
+from PySide2.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QShortcut, QApplication
 
 from nfb_studio.serial import mime, hooks
 
@@ -23,7 +19,7 @@ class Scheme(QGraphicsScene):
     - QGraphicsView: a view of QGraphicsScene. Only one view is allowed - creating multiple views will make the program
     behave incorrectly.
 
-    The main components are available as self.graph, super() and self.view.
+    The main components are available as self.graph, super() and self.view().
 
     See Also
     --------
@@ -32,6 +28,8 @@ class Scheme(QGraphicsScene):
     nfb_studio.widgets.scheme.Graph : A collection of nodes and edges.
     """
     class View(QGraphicsView):
+        """Custom view widget for Scheme."""
+
         configRequested = Signal(object)
         """Emitted when a config of a node was requested. Sends the node."""
 
@@ -188,10 +186,6 @@ class Scheme(QGraphicsScene):
         super().clear()
         self.graph.clear()
 
-    # Observer methods =================================================================================================
-    def findNode(self, node_id: int) -> Union[Node, None]:  # FIXME: Where is this used? What is the node_id?
-        return self.graph.findNode(node_id)
-
     # Selection ========================================================================================================
     def selectAll(self):
         self.graph.selectAll()
@@ -310,17 +304,17 @@ class Scheme(QGraphicsScene):
         )
         
         # If any of the accepted_formats is present in package.formats(), accept the event.
-        for format in package.formats():
-            if format in accepted_formats:
+        for fmt in package.formats():
+            if fmt in accepted_formats:
                 event.accept()
                 break
     
     def dropEvent(self, event):
         package = event.mimeData()
 
-        for format in self._custom_drop_events.keys():
-            if package.hasFormat(format):
-                self._custom_drop_events[format](scheme=self, event=event)
+        for fmt, drop_event in self._custom_drop_events:
+            if package.hasFormat(fmt):
+                drop_event(scheme=self, event=event)
 
         super().dropEvent(event)
 
@@ -333,7 +327,7 @@ class Scheme(QGraphicsScene):
             else:
                 self._dragging_edge.setTargetPos(event.scenePos())
 
-    def setCustomDropEvent(self, format, event):
+    def setCustomDropEvent(self, fmt, event):
         """Set a custom drop event for a particular MIME type (format).
         Setting a custom event for a format will make this format get accepted by the scheme during drag and drop.
         If event is None, the format is instead removed from the list of accepted formats.
@@ -342,9 +336,9 @@ class Scheme(QGraphicsScene):
         - event, which will contain the event that is being dropped
         """
         if event is None:
-            self._custom_drop_events.pop(format)
+            self._custom_drop_events.pop(fmt)
         else:
-            self._custom_drop_events[format] = event
+            self._custom_drop_events[fmt] = event
 
     # Key presses ======================================================================================================
     def keyPressEvent(self, event):

@@ -1,3 +1,4 @@
+"""A simple collection of QGraphicsItems."""
 from collections.abc import MutableSet
 
 from PySide2.QtCore import QRectF, QPointF
@@ -5,7 +6,7 @@ from PySide2.QtWidgets import QGraphicsItem
 
 
 class GraphicsItemGroup(MutableSet):
-    """GraphicsItemGroup is a simple collection of QGraphicsItems.  
+    """A simple collection of QGraphicsItems.  
     Unlike a similarly named QGraphicsItemGroup from Qt, this class in not a QGraphicsItem. It has no position in the
     graphics scene, and items that it contains do not change their parent. This class is a convenient way of
     manipulating groups of items without disrupting the scene ownership tree.
