@@ -41,8 +41,7 @@ class Toolbox(QAbstractListModel):
         if role == Qt.DisplayRole:
             if orientation == Qt.Vertical:
                 return section
-            else:
-                return "Node toolbox"
+            return "Node toolbox"
         return None
 
     def addItem(self, name, item):
@@ -57,7 +56,7 @@ class Toolbox(QAbstractListModel):
         If an item with such a name does not exist, does nothing.
         """
         if name not in self._items:
-            return
+            return None
         
         i = self._items.index(name)
 
