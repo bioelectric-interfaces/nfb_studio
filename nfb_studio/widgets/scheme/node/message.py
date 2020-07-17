@@ -6,11 +6,11 @@ from PySide2.QtGui import QPainter, QFontMetricsF
 from PySide2.QtWidgets import QGraphicsItem
 from PySide2.QtSvg import QGraphicsSvgItem, QSvgRenderer
 
+import nfb_studio
 from ..text_line_item import TextLineItem
 from ..scheme_item import SchemeItem
 from ..style import Style
 
-this_dir = os.path.dirname(__file__)
 
 @lru_cache(maxsize=16)
 def _svgRenderer(filename) -> QSvgRenderer:
@@ -123,7 +123,7 @@ class InfoMessage(Message):
         """
         super(InfoMessage, self).__init__(
             text=text or "Info message",
-            icon_filename=this_dir+"/icons/info.svg",
+            icon_filename=nfb_studio.icons+"/info.svg",
             parent=parent
         )
 
@@ -140,7 +140,7 @@ class WarningMessage(Message):
         """
         super(WarningMessage, self).__init__(
             text=text or "Warning message",
-            icon_filename=this_dir+"/icons/warning.svg",
+            icon_filename=nfb_studio.icons+"/warning.svg",
             parent=parent
         )
 
@@ -157,7 +157,7 @@ class ErrorMessage(Message):
         """
         super(ErrorMessage, self).__init__(
             text=text or "Error message",
-            icon_filename=this_dir+"/icons/error.svg",
+            icon_filename=nfb_studio.icons+"/error.svg",
             parent=parent
         )
 
