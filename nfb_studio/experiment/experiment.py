@@ -479,18 +479,22 @@ class Experiment:
         data["vSignals"]["CompositeSignal"] = signals
 
         # Experiment sequence ------------------------------------------------------------------------------------------
-        sequence = []
-        
-        # Determine the start node of the sequence and put it in `n`
-        n = next(iter(self.sequence_scheme.graph.nodes))
-        while len(n.inputs[0].edges) > 0:
+        sequence_nodes = []
+
+        # Build a list of lists of nodes (e.g. list of sequences)
+        for n in self.sequence_scheme.graph.nodes:
+            if isinstance(n, SequenceExport):
+                break
+
+        while True:
+            if len(n.inputs[0].edges) == 0:
+                break
+
             n = list(n.inputs[0].edges)[0].sourceNode()
-        
-        # For each node in sequence, append it's title as next item in sequence
-        sequence.append(n.title())
-        while len(n.outputs[0].edges) > 0:
-            n = list(n.outputs[0].edges)[0].targetNode()
-            sequence.append(n.title())
+            sequence_nodes.insert(0, n)
+
+        # Convert a sequence of nodes to a sequence of block names
+        sequence = [n.title() for n in sequence_nodes]
 
         data["vPSequence"] = {
             "s": sequence
