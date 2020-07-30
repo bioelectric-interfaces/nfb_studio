@@ -5,7 +5,7 @@ from pathlib import Path
 from PySide2.QtGui import QKeySequence
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 
-from nfb_studio.experiment import Experiment, ExperimentView
+from nfb_studio.experiment import Experiment, ExperimentView, ExportDialog
 
 
 class MainWindow(QMainWindow):
@@ -74,6 +74,10 @@ class MainWindow(QMainWindow):
         return True
 
     def actionExport(self) -> bool:
+        dialog = ExportDialog(self)
+        dialog.setSequenceScheme(self.experiment().sequence_scheme)
+        dialog.exec_()
+        
         self.experiment().view().updateModel()
         data = self.experiment().export()
 

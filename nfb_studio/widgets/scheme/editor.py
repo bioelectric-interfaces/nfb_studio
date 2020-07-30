@@ -15,6 +15,7 @@ class SchemeEditor(QMainWindow):
         super().__init__(parent)
 
         self._scheme = None
+        self._scheme_view = None
         self._toolbox = None
 
         self.toolbox_dock = QDockWidget("Node toolbox", self)
@@ -31,17 +32,19 @@ class SchemeEditor(QMainWindow):
     def setScheme(self, scheme: Scheme):
         if self._scheme is not None:
             self.setCentralWidget(QWidget())
-            self._scheme.view().configRequested.disconnect(self.showConfigWidget)
+            self._scheme_view.configRequested.disconnect(self.showConfigWidget)
             self._scheme.setCustomDropEvent(self.toolbox.DragMimeType, None)
 
         self._scheme = scheme
 
         if self._scheme is not None:
+            self._scheme_view = self._scheme.getView()
+
             # Set the scheme as the central widget
-            self.setCentralWidget(self._scheme.view())
+            self.setCentralWidget(self._scheme_view)
 
             # Conect the signal for config widget
-            self._scheme.view().configRequested.connect(self.showConfigWidget)
+            self._scheme_view.configRequested.connect(self.showConfigWidget)
 
             # Add a custom drop event for the scheme from the toolbox
             self._scheme.setCustomDropEvent(self.toolbox().DragMimeType, self.toolbox().schemeDropEvent)

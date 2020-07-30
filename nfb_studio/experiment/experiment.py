@@ -391,6 +391,17 @@ class Experiment:
         return obj
 
     def nfb_export_data(self) -> dict:
+        print("?")
+        print(list(self.sequence_scheme.graph.sequences()))
+        for seq in self.sequence_scheme.graph.sequences():
+            node = [n for n in seq.nodes if len(n.inputs) == 0 or len(list(n.inputs[0].edges)) == 0][0]
+            # while True:
+            #     print(node.title(), end=" ")
+            #     if len(node.outputs) == 0 or len(list(node.outputs[0].edges)) == 0:
+            #         break
+            #     node = list(node.outputs[0].edges)[0].targetNode()
+            # print("")
+
         """Export data in a dict format for encoding to XML and usage in NFBLab."""
         data = {}
 
