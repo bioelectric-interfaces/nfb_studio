@@ -12,7 +12,6 @@ from nfb_studio.widgets.sequence_nodes import *
 
 from .general_view import GeneralView
 from .property_tree import PropertyTree
-# from .problem_list import ProblemList
 
 
 class ExperimentView(QMainWindow):
@@ -40,17 +39,6 @@ class ExperimentView(QMainWindow):
         self.property_tree_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.property_tree_dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.property_tree_dock)
-
-        # # Problems -----------------------------------------------------------------------------------------------------
-        # self.problems = ProblemList()
-        # self.problems_view = self.problems.getView()
-
-        # # Problems dock widget -----------------------------------------------------------------------------------------
-        # self.problems_dock = QDockWidget("Problems", self)
-        # self.problems_dock.setWidget(self.problems_view)
-        # self.problems_dock.setAllowedAreas(Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea)
-        # self.problems_dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        # self.addDockWidget(Qt.BottomDockWidgetArea, self.problems_dock)
 
         # Editing widgets ----------------------------------------------------------------------------------------------
         self.general_view = GeneralView()
@@ -89,7 +77,6 @@ class ExperimentView(QMainWindow):
         self.signal_editor.setScheme(model.signal_scheme)
 
         self.sequence_editor.setScheme(model.sequence_scheme)
-        self.sequence_editor.scheme().addItem(SequenceExport())
 
         model.blocks.itemAdded.connect(self._onBlockAdded)
         model.blocks.itemRenamed.connect(self._onBlockRenamed)
