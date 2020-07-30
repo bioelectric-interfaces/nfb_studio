@@ -128,8 +128,6 @@ class Scheme(QGraphicsScene):
         super().__init__(parent)
         self.graph = Graph()
 
-        self._view = None
-
         self._custom_drop_events = {}
         """A dict mapping MIME types to custom functions to be executed when drag and drop operation finishes.  
         Users of this scheme can set their own drop event for a particular MIME type. MIME types that are present in
@@ -152,16 +150,12 @@ class Scheme(QGraphicsScene):
         self.paletteChange()
 
     # Viewing ==========================================================================================================
-    def view(self):
-        """Return a Scheme.View, suitable for displaying contents of the scheme.
-        Note that only one view can exist for a given scheme. This function will construct the widget when it's first
-        called, and always return this widget.
-        """
-        if self._view is None:
-            self._view = self.View()
-            self._view.setScene(self)
+    def getView(self):
+        """Return a Scheme.View, suitable for displaying contents of the scheme."""
+        v = self.View()
+        v.setScene(self)
 
-        return self._view
+        return v
 
     # Element manipulation =============================================================================================
     def addItem(self, item: QGraphicsItem):
