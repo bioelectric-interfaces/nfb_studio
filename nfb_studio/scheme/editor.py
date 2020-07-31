@@ -33,7 +33,7 @@ class SchemeEditor(QMainWindow):
         if self._scheme is not None:
             self.setCentralWidget(QWidget())
             self._scheme_view.configRequested.disconnect(self.showConfigWidget)
-            self._scheme.setCustomDropEvent(self.toolbox.DragMimeType, None)
+            self._scheme.setCustomDropEvent(self.toolbox().DragMimeType, None)
 
         self._scheme = scheme
 

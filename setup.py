@@ -20,7 +20,7 @@ setup(
     license="MIT",
     install_requires=install_requires,
     package_data={
-        "nfb_studio": ["*.svg"]
+        "nfb_studio": ["assets/*"]
     },
     extras_require=extras_require
 )

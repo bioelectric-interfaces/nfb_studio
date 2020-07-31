@@ -1,12 +1,13 @@
 """Startup script for nfb_studio."""
 import sys
 from PySide2.QtWidgets import QApplication
-from nfb_studio.main_window import MainWindow
+
+from .experiment_view import ExperimentView
 
 def main():
     app = QApplication(sys.argv)
 
-    main_window = MainWindow()
+    main_window = ExperimentView()
     main_window.show()
 
     # If a file was passed as a command-line argument, load it

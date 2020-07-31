@@ -123,7 +123,7 @@ class InfoMessage(Message):
         """
         super(InfoMessage, self).__init__(
             text=text or "Info message",
-            icon_filename=nfb_studio.icons+"/info.svg",
+            icon_filename=nfb_studio.assets+"/info.svg",
             parent=parent
         )
 
@@ -140,7 +140,7 @@ class WarningMessage(Message):
         """
         super(WarningMessage, self).__init__(
             text=text or "Warning message",
-            icon_filename=nfb_studio.icons+"/warning.svg",
+            icon_filename=nfb_studio.assets+"/warning.svg",
             parent=parent
         )
 
@@ -157,7 +157,7 @@ class ErrorMessage(Message):
         """
         super(ErrorMessage, self).__init__(
             text=text or "Error message",
-            icon_filename=nfb_studio.icons+"/error.svg",
+            icon_filename=nfb_studio.assets+"/error.svg",
             parent=parent
         )
 

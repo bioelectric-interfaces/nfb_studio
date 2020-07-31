@@ -1,12 +1,12 @@
 """NFB Experiment."""
 import re
 
-from nfb_studio.block import Block, BlockDict
-from nfb_studio.group import Group, GroupDict
-from nfb_studio.serial import json, xml, hooks
-from nfb_studio.widgets.scheme import Scheme
-from nfb_studio.widgets.signal_nodes import *
-from nfb_studio.widgets.sequence_nodes import *
+from .block import Block, BlockDict
+from .group import Group, GroupDict
+from .serial import json, xml, hooks
+from .scheme import Scheme
+from .signal_nodes import *
+from .sequence_nodes import *
 
 
 class Experiment:

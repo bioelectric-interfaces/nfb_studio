@@ -2,6 +2,9 @@
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QStandardItemModel, QStandardItem
 
+from ..block import Block
+from ..group import Group
+
 from .view import PropertyTreeView
 
 
@@ -55,3 +58,46 @@ class PropertyTree(QStandardItemModel):
         v.setModel(self)
 
         return v
+    
+    def addNewBlock(self):
+        """Add a new block into the experiment."""
+        ex = self.experiment()
+        if ex is None:
+            return
+
+        ex.blocks[ex.blocks.getName()] = Block()
+    
+    def addNewGroup(self):
+        ex = self.experiment()
+        if ex is None:
+            return
+
+        ex.groups[ex.groups.getName()] = Group()
+    
+    def renameBlock(self, old_name, new_name):
+        ex = self.experiment()
+        if ex is None:
+            return
+        
+        ex.blocks.rename(old_name, new_name)
+    
+    def renameGroup(self, old_name, new_name):
+        ex = self.experiment()
+        if ex is None:
+            return
+        
+        ex.groups.rename(old_name, new_name)
+
+    def removeBlock(self, name):
+        ex = self.experiment()
+        if ex is None:
+            return
+        
+        ex.blocks.pop(name)
+    
+    def removeGroup(self, name):
+        ex = self.experiment()
+        if ex is None:
+            return
+        
+        ex.groups.pop(name)

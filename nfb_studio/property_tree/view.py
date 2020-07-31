@@ -45,27 +45,27 @@ class PropertyTreeView(QTreeView):
             # Menu for "Blocks" item -----------------------------------------------------------------------------------
             menu = QMenu()
             add = menu.addAction("New Block")
-            add.triggered.connect(lambda: model.addBlockTriggered.emit())
+            add.triggered.connect(lambda: model.addNewBlock())
 
             menu.exec_(global_point)
         elif item is model.groups:
             # Menu for "Groups" item -----------------------------------------------------------------------------------
             menu = QMenu()
             add = menu.addAction("New Group")
-            add.triggered.connect(lambda: model.addGroupTriggered.emit())
+            add.triggered.connect(lambda: model.addNewGroup())
 
             menu.exec_(global_point)
         elif item.parent() is model.blocks:
             # Menu for an individual block -----------------------------------------------------------------------------
             menu = QMenu()
             delete = menu.addAction("Delete")
-            delete.triggered.connect(lambda: model.removeBlockTriggered.emit(item))
+            delete.triggered.connect(lambda: model.removeBlock(item.text()))
 
             menu.exec_(global_point)
         elif item.parent() is model.groups:
             # Menu for an individual group -----------------------------------------------------------------------------
             menu = QMenu()
             delete = menu.addAction("Delete")
-            delete.triggered.connect(lambda: model.removeGroupTriggered.emit(item))
+            delete.triggered.connect(lambda: model.removeBlock(item.text()))
 
             menu.exec_(global_point)

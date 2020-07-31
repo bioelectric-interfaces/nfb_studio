@@ -1,1 +1,0 @@
-"""nfb_studio.widgets"""

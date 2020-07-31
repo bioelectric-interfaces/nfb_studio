@@ -27,9 +27,9 @@ class PropertyTreeDelegate(QStyledItemDelegate):
         item = model.itemFromIndex(index)
 
         if item.parent() is model.blocks:
-            model.renameBlockTriggered.emit(item, editor.text())
+            model.renameBlock(item.text(), editor.text())
         elif item.parent() is model.groups:
-            model.renameGroupTriggered.emit(item, editor.text())
+            model.renameGroup(item.text(), editor.text())
 
     def updateEditorGeometry(self, editor, option, index):
         # This is an undocumented property. Why?
