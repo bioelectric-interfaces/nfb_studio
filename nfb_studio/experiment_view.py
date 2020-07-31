@@ -5,12 +5,12 @@ from pathlib import Path
 
 from PySide2.QtCore import Qt, QModelIndex
 from PySide2.QtGui import QStandardItem, QKeySequence
-from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QFileDialog, QMessageBox
+from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QFileDialog, QMessageBox, QScrollArea
 
 from .experiment import Experiment
 
-from .block import Block, BlockView
-from .group import Group, GroupView
+from .block import BlockView
+from .group import GroupView
 from .util import StackedDictWidget
 from .general_view import GeneralView
 from .property_tree import PropertyTree
@@ -84,7 +84,10 @@ class ExperimentView(QMainWindow):
         # Central widget -----------------------------------------------------------------------------------------------
         self.central_widget = QStackedWidget()
         self.setCentralWidget(self.central_widget)
-        self.central_widget.addWidget(self.general_view)
+
+        scrollarea = QScrollArea()
+        scrollarea.setWidget(self.general_view)
+        self.central_widget.addWidget(scrollarea)
         self.central_widget.addWidget(self.signal_editor)
         self.central_widget.addWidget(self.blocks)
         self.central_widget.addWidget(self.groups)
@@ -158,7 +161,9 @@ class ExperimentView(QMainWindow):
         # Add a view to the widget stack
         block_view = BlockView()
         block_view.setModel(self.model().blocks[name])
-        self.blocks.addWidget(name, block_view)
+        scrollarea = QScrollArea()
+        scrollarea.setWidget(block_view)
+        self.blocks.addWidget(name, scrollarea)
 
         # Add a node to draw the sequence
         node = BlockNode()
@@ -178,7 +183,9 @@ class ExperimentView(QMainWindow):
         # Add a view to the widget stack
         group_view = GroupView()
         group_view.setModel(self.model().groups[name])
-        self.groups.addWidget(name, group_view)
+        scrollarea = QScrollArea()
+        scrollarea.setWidget(group_view)
+        self.groups.addWidget(name, scrollarea)
 
         # Add a node to draw the sequence
         node = GroupNode()
@@ -273,7 +280,9 @@ class ExperimentView(QMainWindow):
 
         if item is self.tree.general:
             # General
-            self.central_widget.setCurrentWidget(self.general_view)
+            scrollarea = self.general_view.parent().parent()
+            assert type(scrollarea) == QScrollArea
+            self.central_widget.setCurrentWidget(scrollarea)
         elif item is self.tree.signals:
             # Signal editor
             self.central_widget.setCurrentWidget(self.signal_editor)
