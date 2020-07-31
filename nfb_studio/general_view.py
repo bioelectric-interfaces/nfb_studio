@@ -1,5 +1,5 @@
 """Config widget for general properties of an experiment."""
-from PySide2.QtWidgets import QWidget, QFormLayout, QLabel, QComboBox, QLineEdit, QHBoxLayout, QCheckBox, QDoubleSpinBox
+from PySide2.QtWidgets import QWidget, QFormLayout, QComboBox, QLineEdit, QHBoxLayout, QCheckBox, QDoubleSpinBox
 from nfb_studio.util import StackedDictWidget
 
 
@@ -24,45 +24,41 @@ class GeneralView(QWidget):
 
         self.name = QLineEdit()
 
-        # prefilterBandLow ---------------------------------------------------------------------------------------------
-        self.prefilterBandLow_enable = QCheckBox()
-        self.prefilterBandLow_enable.stateChanged.connect(self.on_prefilterBandLow_toggled)
+        # prefilter_lower_bound ---------------------------------------------------------------------------------------------
+        self.prefilter_lower_bound_enable = QCheckBox()
+        self.prefilter_lower_bound_enable.stateChanged.connect(self._adjust)
 
-        self.prefilterBandLow_label = QLabel("Prefilter band from")
+        self.prefilter_lower_bound = QDoubleSpinBox()
+        self.prefilter_lower_bound.setEnabled(False)
+        self.prefilter_lower_bound.valueChanged.connect(self._adjust)
+        self.prefilter_lower_bound.setMinimum(0)
+        self.prefilter_lower_bound.setMaximum(0)  # TODO: add proper value
+        self.prefilter_lower_bound.setValue(0)    # TODO: add proper value
 
-        self.prefilterBandLow_input = QDoubleSpinBox()
-        self.prefilterBandLow_input.setEnabled(False)
-        self.prefilterBandLow_input.valueChanged.connect(self.on_prefilterBandLow_changed)
-        self.prefilterBandLow_input.setMinimum(0)
-        self.prefilterBandLow_input.setMaximum(0)  # TODO: add proper value
-        self.prefilterBandLow_input.setValue(0)    # TODO: add proper value
+        prefilter_lower_bound_widget = QWidget()
+        prefilter_lower_bound_widget.setContentsMargins(0, 0, 0, 0)
+        prefilter_lower_bound_widget.setLayout(QHBoxLayout())
+        prefilter_lower_bound_widget.layout().setContentsMargins(0, 0, 0, 0)
+        prefilter_lower_bound_widget.layout().addWidget(self.prefilter_lower_bound_enable)
+        prefilter_lower_bound_widget.layout().addWidget(self.prefilter_lower_bound)
 
-        self.prefilterBandLow_rwidget = QWidget()
-        self.prefilterBandLow_rwidget.setContentsMargins(0, 0, 0, 0)
-        self.prefilterBandLow_rwidget.setLayout(QHBoxLayout())
-        self.prefilterBandLow_rwidget.layout().setContentsMargins(0, 0, 0, 0)
-        self.prefilterBandLow_rwidget.layout().addWidget(self.prefilterBandLow_enable)
-        self.prefilterBandLow_rwidget.layout().addWidget(self.prefilterBandLow_input)
+        # prefilter_upper_bound --------------------------------------------------------------------------------------------
+        self.prefilter_upper_bound_enable = QCheckBox()
+        self.prefilter_upper_bound_enable.stateChanged.connect(self._adjust)
 
-        # prefilterBandHigh --------------------------------------------------------------------------------------------
-        self.prefilterBandHigh_enable = QCheckBox()
-        self.prefilterBandHigh_enable.stateChanged.connect(self.on_prefilterBandHigh_toggled)
+        self.prefilter_upper_bound = QDoubleSpinBox()
+        self.prefilter_upper_bound.setEnabled(False)
+        self.prefilter_upper_bound.valueChanged.connect(self._adjust)
+        self.prefilter_upper_bound.setMinimum(self.prefilter_lower_bound.value())
+        self.prefilter_upper_bound.setMaximum(10000)  # TODO: add proper value
+        self.prefilter_upper_bound.setValue(0)        # TODO: add proper value
 
-        self.prefilterBandHigh_label = QLabel("Prefilter band to")
-
-        self.prefilterBandHigh_input = QDoubleSpinBox()
-        self.prefilterBandHigh_input.setEnabled(False)
-        self.prefilterBandHigh_input.valueChanged.connect(self.on_prefilterBandHigh_changed)
-        self.prefilterBandHigh_input.setMinimum(self.prefilterBandLow_input.value())
-        self.prefilterBandHigh_input.setMaximum(10000)  # TODO: add proper value
-        self.prefilterBandHigh_input.setValue(0)        # TODO: add proper value
-
-        self.prefilterBandHigh_rwidget = QWidget()
-        self.prefilterBandHigh_rwidget.setContentsMargins(0, 0, 0, 0)
-        self.prefilterBandHigh_rwidget.setLayout(QHBoxLayout())
-        self.prefilterBandHigh_rwidget.layout().setContentsMargins(0, 0, 0, 0)
-        self.prefilterBandHigh_rwidget.layout().addWidget(self.prefilterBandHigh_enable)
-        self.prefilterBandHigh_rwidget.layout().addWidget(self.prefilterBandHigh_input)
+        prefilter_upper_bound_widget = QWidget()
+        prefilter_upper_bound_widget.setContentsMargins(0, 0, 0, 0)
+        prefilter_upper_bound_widget.setLayout(QHBoxLayout())
+        prefilter_upper_bound_widget.layout().setContentsMargins(0, 0, 0, 0)
+        prefilter_upper_bound_widget.layout().addWidget(self.prefilter_upper_bound_enable)
+        prefilter_upper_bound_widget.layout().addWidget(self.prefilter_upper_bound)
 
         # Inlet selection ----------------------------------------------------------------------------------------------
         self.inlet_type = QComboBox()
@@ -116,8 +112,8 @@ class GeneralView(QWidget):
         layout.addRow("Name", self.name)
         layout.addRow("Inlet", self.inlet_config)
         layout.addRow("dc", self.dc)
-        layout.addRow("Prefilter band from", self.prefilterBandLow_rwidget)
-        layout.addRow("Prefilter band to", self.prefilterBandHigh_rwidget)
+        layout.addRow("Prefilter band from", prefilter_lower_bound_widget)
+        layout.addRow("Prefilter band to", prefilter_upper_bound_widget)
         layout.addRow("Plot raw", self.plot_raw)
         layout.addRow("Plot signals", self.plot_signals)
         layout.addRow("Show subject window", self.show_subject_window)
@@ -134,17 +130,17 @@ class GeneralView(QWidget):
         ex.hostname_port = self.hostname_port.text()
         ex.dc = self.dc.isChecked()
         
-        if self.prefilterBandLow_enable.isChecked():
-            prefilterBandLow = self.prefilterBandLow_input.value()
+        if self.prefilter_lower_bound_enable.isChecked():
+            prefilter_lower_bound = self.prefilter_lower_bound.value()
         else:
-            prefilterBandLow = None
+            prefilter_lower_bound = None
         
-        if self.prefilterBandHigh_enable.isChecked():
-            prefilterBandHigh = self.prefilterBandHigh_input.value()
+        if self.prefilter_upper_bound_enable.isChecked():
+            prefilter_upper_bound = self.prefilter_upper_bound.value()
         else:
-            prefilterBandHigh = None
+            prefilter_upper_bound = None
         
-        ex.prefilter_band = (prefilterBandLow, prefilterBandHigh)
+        ex.prefilter_band = (prefilter_lower_bound, prefilter_upper_bound)
         ex.plot_raw = self.plot_raw.isChecked()
         ex.plot_signals = self.plot_signals.isChecked()
         ex.show_subject_window = self.show_subject_window.isChecked()
@@ -153,34 +149,17 @@ class GeneralView(QWidget):
         ex.show_proto_rectangle = self.show_proto_rectangle.isChecked()
         ex.show_notch_filters = self.show_notch_filters.isChecked()
 
-    def on_prefilterBandLow_toggled(self):
-        if self.prefilterBandLow_enable.isChecked():
-            self.prefilterBandLow_input.setEnabled(True)
-
-            # Update limits
-            self.prefilterBandHigh_input.setMinimum(self.prefilterBandLow_input.value())
+    def _adjust(self):
+        if self.prefilter_lower_bound_enable.isChecked():
+            self.prefilter_lower_bound.setEnabled(True)
+            self.prefilter_upper_bound.setMinimum(self.prefilter_lower_bound.value())
         else:
-            self.prefilterBandLow_input.setEnabled(False)
-
-            # Update limits
-            self.prefilterBandHigh_input.setMinimum(0)
-
-    def on_prefilterBandHigh_toggled(self):
-        if self.prefilterBandHigh_enable.isChecked():
-            self.prefilterBandHigh_input.setEnabled(True)
-
-            # Update limits
-            self.prefilterBandLow_input.setMaximum(self.prefilterBandHigh_input.value())
+            self.prefilter_lower_bound.setEnabled(False)
+            self.prefilter_upper_bound.setMinimum(0)
+        
+        if self.prefilter_upper_bound_enable.isChecked():
+            self.prefilter_upper_bound.setEnabled(True)
+            self.prefilter_lower_bound.setMaximum(self.prefilter_upper_bound.value())
         else:
-            self.prefilterBandHigh_input.setEnabled(False)
-
-            # Update limits
-            self.prefilterBandLow_input.setMaximum(10000)  # TODO: add proper value
-
-    def on_prefilterBandLow_changed(self):
-        # Update limits
-        self.prefilterBandHigh_input.setMinimum(self.prefilterBandLow_input.value())
-
-    def on_prefilterBandHigh_changed(self):
-        # Update limits
-        self.prefilterBandLow_input.setMaximum(self.prefilterBandHigh_input.value())
+            self.prefilter_upper_bound.setEnabled(False)
+            self.prefilter_lower_bound.setMaximum(10000)  # TODO: add proper value

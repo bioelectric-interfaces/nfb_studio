@@ -12,13 +12,6 @@ class PropertyTree(QStandardItemModel):
     """An item model displaying experiment properties inside the ExperimentView.
     Both this class and PropertyTreeView (the view widget)
     """
-    addBlockTriggered = Signal()
-    addGroupTriggered = Signal()
-    renameBlockTriggered = Signal(QStandardItem, str)
-    renameGroupTriggered = Signal(QStandardItem, str)
-    removeBlockTriggered = Signal(QStandardItem)
-    removeGroupTriggered = Signal(QStandardItem)
-
     View = PropertyTreeView
 
     def __init__(self, parent=None):

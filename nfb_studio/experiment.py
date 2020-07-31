@@ -299,18 +299,18 @@ class Experiment:
         general.dc.setChecked(self.dc)
 
         if self.prefilter_band[0] is None:
-            general.prefilterBandLow_enable.setChecked(False)
-            general.prefilterBandLow_input.setValue(0)
+            general.prefilter_lower_bound_enable.setChecked(False)
+            general.prefilter_lower_bound.setValue(0)
         else:
-            general.prefilterBandLow_enable.setChecked(True)
-            general.prefilterBandLow_input.setValue(self.prefilter_band[0])
+            general.prefilter_lower_bound_enable.setChecked(True)
+            general.prefilter_lower_bound.setValue(self.prefilter_band[0])
         
         if self.prefilter_band[1] is None:
-            general.prefilterBandHigh_enable.setChecked(False)
-            general.prefilterBandHigh_input.setValue(0)
+            general.prefilter_upper_bound_enable.setChecked(False)
+            general.prefilter_upper_bound.setValue(0)
         else:
-            general.prefilterBandHigh_enable.setChecked(True)
-            general.prefilterBandHigh_input.setValue(self.prefilter_band[1])
+            general.prefilter_upper_bound_enable.setChecked(True)
+            general.prefilter_upper_bound.setValue(self.prefilter_band[1])
         
         general.plot_raw.setChecked(self.plot_raw)
         general.plot_signals.setChecked(self.plot_signals)
