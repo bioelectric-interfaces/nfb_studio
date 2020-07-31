@@ -74,11 +74,11 @@ class Experiment:
         view.setModel(self)
     
     # Serialization ====================================================================================================
-    def export(self) -> str:
+    def export(self, sequence) -> str:
         data = {"NeurofeedbackSignalSpecs": self}
 
         enc_hooks = {
-            Experiment: Experiment.nfb_export_data,
+            Experiment: lambda e: e.nfb_export_data(sequence),
             Block: Block.nfb_export_data,
             Group: Group.nfb_export_data,
             bool: lambda x: int(x)
@@ -390,18 +390,7 @@ class Experiment:
 
         return obj
 
-    def nfb_export_data(self) -> dict:
-        print("?")
-        print(list(self.sequence_scheme.graph.sequences()))
-        for seq in self.sequence_scheme.graph.sequences():
-            node = [n for n in seq.nodes if len(n.inputs) == 0 or len(list(n.inputs[0].edges)) == 0][0]
-            # while True:
-            #     print(node.title(), end=" ")
-            #     if len(node.outputs) == 0 or len(list(node.outputs[0].edges)) == 0:
-            #         break
-            #     node = list(node.outputs[0].edges)[0].targetNode()
-            # print("")
-
+    def nfb_export_data(self, sequence) -> dict:
         """Export data in a dict format for encoding to XML and usage in NFBLab."""
         data = {}
 
@@ -490,25 +479,25 @@ class Experiment:
         data["vSignals"]["CompositeSignal"] = signals
 
         # Experiment sequence ------------------------------------------------------------------------------------------
-        sequence_nodes = []
+        sequence_names = []
 
-        # Build a list of lists of nodes (e.g. list of sequences)
-        for n in self.sequence_scheme.graph.nodes:
-            if isinstance(n, SequenceExport):
+        # Find starting node in sequence
+        node = None
+        for node in sequence.nodes:
+            if len(node.inputs[0].edges) == 0:
                 break
-
-        while True:
-            if len(n.inputs[0].edges) == 0:
-                break
-
-            n = list(n.inputs[0].edges)[0].sourceNode()
-            sequence_nodes.insert(0, n)
-
-        # Convert a sequence of nodes to a sequence of block names
-        sequence = [n.title() for n in sequence_nodes]
+        
+        sequence_names.append(node.title())
+        # Go to next node in this sequence
+        while len(node.outputs[0].edges) != 0:
+            for edge in node.outputs[0].edges:
+                if edge.targetNode() in sequence.nodes:
+                    node = edge.targetNode()
+                    sequence_names.append(node.title())
+                    break
 
         data["vPSequence"] = {
-            "s": sequence
+            "s": sequence_names
         }
 
         return data

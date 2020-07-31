@@ -140,12 +140,12 @@ class ExperimentView(QMainWindow):
         
         # For each block, write it's data to the experiment
         for name in self.blocks.keys():
-            block_view: BlockView = self.blocks.widget(name)
+            block_view: BlockView = self.blocks.widget(name).widget()
             block_view.updateModel()
         
         # For each group, write its data to the experiment
         for name in self.groups.keys():
-            group_view: GroupView = self.groups.widget(name)
+            group_view: GroupView = self.groups.widget(name).widget()
             group_view.updateModel()
 
         # Write general experiment data
@@ -311,19 +311,20 @@ class ExperimentView(QMainWindow):
     def actionExport(self) -> bool:        
         self.updateModel()
         
+        if (len(self.model().sequence_scheme.graph.nodes) == 0):
+            # No nodes in sequence scheme, cancel operation
+            # TODO: A better way to signal to the user that he needs to create a sequence?
+            self.central_widget.setCurrentWidget(self.sequence_editor)
+            return
+
         wiz = ExportWizard(self, self.model())
-        wiz.exec_()
+        ok = wiz.exec_()
         
-        data = self.model().export()
+        if not ok:
+            return  # User cancelled operation
 
-        file_path = QFileDialog.getSaveFileName(filter="XML Files (*.xml)")[0]
-        if file_path == "":
-            return False  # Action was cancelled
-
-        if os.path.splitext(file_path)[1] == "":  # No extension
-            file_path = file_path + ".xml"
-
-        with open(file_path, "w") as file:
+        data = self.model().export(wiz.sequence())
+        with open(wiz.savePath(), "w") as file:
             file.write(data)
         return True
 

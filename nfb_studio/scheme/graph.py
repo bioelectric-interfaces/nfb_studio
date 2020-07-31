@@ -87,18 +87,15 @@ class Graph(GraphicsItemGroup):
 
                     n = node
                     while True:
-                        print(n.title(), end=" ")
                         if len(n.outputs) == 0 or len(list(n.outputs[0].edges)) == 0:
                             break
                         n = list(n.outputs[0].edges)[0].targetNode()
-                    print("")
                     yield sequence
                     has_sequences = True
         
         if not has_sequences:
             result = Graph()
             result.add(node)
-            print("Final:", node.title())
             yield result
     
     def sequences(self):
@@ -110,7 +107,6 @@ class Graph(GraphicsItemGroup):
             if len(node.inputs) == 0 or len(list(node.inputs[0].edges)) == 0:
                 for sequence in self.sequences_from(node):
                     yield sequence
-                    print("===============================")
 
     # Selection ========================================================================================================
     def selectAll(self):

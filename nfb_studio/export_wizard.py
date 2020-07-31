@@ -1,9 +1,11 @@
-from PySide2.QtWidgets import QWizard, QWizardPage, QButtonGroup, QVBoxLayout, QRadioButton
+from PySide2.QtWidgets import QWizard, QWizardPage, QButtonGroup, QVBoxLayout, QRadioButton, QFileDialog, QLabel
+
+from .util import FileSelect
 
 
 class SelectSequencePage(QWizardPage):
-    def __init__(self, parent, scheme):
-        super().__init__(parent)
+    def __init__(self, scheme):
+        super().__init__()
         self.sequence = None
 
         self.setLayout(QVBoxLayout())
@@ -48,13 +50,45 @@ class SelectSequencePage(QWizardPage):
         self.layout().addWidget(scheme.getView())
 
 
+class FilePage(QWizardPage):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        self.file_select = FileSelect()
+        dialog = QFileDialog()
+        dialog.setDefaultSuffix(".xml")
+        dialog.setAcceptMode(dialog.AcceptSave)
+        dialog.setWindowTitle("Save exported experiment")
+        dialog.setNameFilter("XML Files (*.xml)")
+        self.file_select.setDialog(dialog)
+
+        layout.addWidget(QLabel("Location of exported experiment file:"))
+        layout.addWidget(self.file_select)
+
+
 class ExportWizard(QWizard):
     """A wizard responsible for guiding the user through the process of exporting an experiment."""
     def __init__(self, parent, experiment):
         super().__init__(parent)
         self.setWindowTitle("Experiment Export")
-        self.sequence_page = SelectSequencePage(self, experiment.sequence_scheme)
-        self.addPage(self.sequence_page)
+        self.sequence_page = None
+        self.file_page = FilePage()
+
+        self.preselected_sequence = None
+        sequences = list(experiment.sequence_scheme.graph.sequences())
+        if len(sequences) == 1:
+            # If only one sequence is possible, skip the sequence select window.
+            self.preselected_sequence = next(iter(sequences))
+        else:
+            self.sequence_page = SelectSequencePage(experiment.sequence_scheme)
+            self.addPage(self.sequence_page)
+
+        self.addPage(self.file_page)
 
     def sequence(self):
-        return self.sequence_page.sequence
+        return self.preselected_sequence or self.sequence_page.sequence
+
+    def savePath(self):
+        return self.file_page.file_select.text()

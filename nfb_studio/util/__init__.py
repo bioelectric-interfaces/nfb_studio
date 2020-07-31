@@ -2,3 +2,4 @@
 from .enum_manip import import_enum
 from .expose_property import expose_property
 from .stacked_dict_widget import StackedDictWidget
+from .file_select import FileSelect
