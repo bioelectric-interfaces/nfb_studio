@@ -40,6 +40,7 @@ class BlockView(QWidget):
         self.random_bound.addItem("Bar")
 
         self.video_path = QLineEdit()
+        self.message = QLineEdit()
 
         # Grouped properties -------------------------------------------------------------------------------------------
         # Mock signal
@@ -67,6 +68,7 @@ class BlockView(QWidget):
         layout.addRow("FB Type", self.feedback_type)
         layout.addRow("Random bound", self.random_bound)
         layout.addRow("Video path", self.video_path)
+        layout.addRow("Message for test subject", self.message)
         layout.addRow(mock_signal_groupbox)
         layout.addRow(after_block_groupbox)
 
@@ -95,6 +97,7 @@ class BlockView(QWidget):
         block.feedback_type = self.feedback_type.currentText()
         block.random_bound = self.random_bound.currentText()
         block.video_path = self.video_path.text()
+        block.message = self.message.text()
         block.mock_signal_path = self.mock_signal_path.text()
         block.mock_signal_dataset = self.mock_signal_dataset.text()
         block.mock_previous = self.mock_previous.value()
