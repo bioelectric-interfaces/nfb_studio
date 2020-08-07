@@ -235,6 +235,9 @@ class Experiment:
 
         # Add composite signals separately
         for comp_data in data["vSignals"]["CompositeSignal"]:
+            if comp_data is None:
+                continue
+
             n = CompositeSignalExport()
             n.setSignalName(comp_data["sSignalName"])
             n.setExpression(comp_data["sExpression"])
@@ -426,14 +429,14 @@ class Experiment:
 
         # Groups -------------------------------------------------------------------------------------------------------
         data["vPGroups"] = {
-            "PGroup": list(self.groups)
+            "PGroup": []
         }
 
         for name in self.groups:
             group = self.groups[name]
 
-            data["vProtocols"]["FeedbackProtocol"].append(group.nfb_export_data())  # Add other information
-            data["vProtocols"]["FeedbackProtocol"][-1]["sName"] = name  # Add name
+            data["vPGroups"]["PGroup"].append(group.nfb_export_data())  # Add other information
+            data["vPGroups"]["PGroup"][-1]["sName"] = name  # Add name
 
         # Derived Signals ----------------------------------------------------------------------------------------------
         signals = []
