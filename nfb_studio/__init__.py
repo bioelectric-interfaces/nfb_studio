@@ -1,8 +1,6 @@
 """NFB experiment designer."""
 import os
 
-assets = os.path.dirname(__file__) + "/assets"
-
 from .block import Block, BlockView
 from .group import Group, GroupView
 
