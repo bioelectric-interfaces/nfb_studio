@@ -1,5 +1,6 @@
 """View widget for Experiment class and the main window of this application."""
 import os
+import subprocess
 from typing import Optional
 from pathlib import Path
 
@@ -7,8 +8,9 @@ from PySide2.QtCore import Qt, QModelIndex
 from PySide2.QtGui import QStandardItem, QKeySequence
 from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QFileDialog, QMessageBox, QScrollArea
 
-from .experiment import Experiment
+import nfb_studio
 
+from .experiment import Experiment
 from .block import BlockView
 from .group import GroupView
 from .util import StackedDictWidget
@@ -50,6 +52,12 @@ class ExperimentView(QMainWindow):
 
         action_import = filemenu.addAction("Import")
         action_import.triggered.connect(self.actionImport)
+
+        runmenu = menubar.addMenu("Run")
+
+        action_start_ex = runmenu.addAction("Start Experiment")
+        action_start_ex.triggered.connect(self.actionStartExperiment)
+        action_start_ex.setShortcut("F9")
 
         # Property tree ------------------------------------------------------------------------------------------------
         self.tree = PropertyTree()
@@ -387,6 +395,28 @@ class ExperimentView(QMainWindow):
         ex = Experiment.import_xml(data)
         self.setModel(ex)
         return True
+
+    def actionStartExperiment(self):
+        self.updateModel()
+        
+        if (len(self.model().sequence_scheme.graph.nodes) == 0):
+            # No nodes in sequence scheme, cancel operation
+            # TODO: A better way to signal to the user that he needs to create a sequence?
+            self.central_widget.setCurrentWidget(self.sequence_editor)
+            return
+
+        wiz = ExportWizard(self, self.model())
+        ok = wiz.exec_()
+        
+        if not ok:
+            return  # User cancelled operation
+
+        data = self.model().export(wiz.sequence())
+        with open(wiz.savePath(), "w") as file:
+            file.write(data)
+        
+        pynfb_path = os.path.dirname(nfb_studio.__file__) + "/bin/pynfb.exe"
+        subprocess.run([pynfb_path, "-x", wiz.savePath()])
 
     def promptSaveChanges(self) -> bool:
         """Prompt the user to save changes to current project.
