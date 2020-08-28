@@ -122,6 +122,12 @@ class Scheme(QGraphicsScene):
             self.setSceneRect(rect.adjusted(-wsize.width(), -wsize.height(), wsize.width(), wsize.height()))
 
     ClipboardMimeType = "application/x-nfb_studio-graph"
+    """MIME type that this scene uses in copy-paste events."""
+    
+    graphChanged = Signal(object)
+    """Emitted when the graph inside the scene is changed in any way. Sends the object (Node or Edge) that was
+    added or removed.
+    """
 
     def __init__(self, parent=None):
         """Constructs a Scheme with an optional `parent` parameter that is passed to the super()."""
@@ -165,6 +171,7 @@ class Scheme(QGraphicsScene):
         """
         self.graph.add(item)
         super().addItem(item)
+        self.graphChanged.emit(item)
 
     def removeItem(self, item: QGraphicsItem):
         """Add an item to the scene.
@@ -185,6 +192,7 @@ class Scheme(QGraphicsScene):
                 self.removeItem(edge)
         
         self.graph.remove(item)
+        self.graphChanged.emit(item)
 
     def connect_nodes(self, source: Output, target: Input):
         """Connect an Output connection to an Input connection with an edge.
@@ -193,6 +201,7 @@ class Scheme(QGraphicsScene):
         """
         edge = self.graph.connect_nodes(source, target)
         super().addItem(edge)
+        self.graphChanged.emit(edge)
 
         return edge
 
@@ -205,6 +214,8 @@ class Scheme(QGraphicsScene):
         edge = self.graph.disconnect_nodes(source, target)
         if edge is not None:
             super().removeItem(edge)
+            self.graphChanged.emit(edge)
+
         return edge
 
     def extract(self, other: Graph):
@@ -217,15 +228,6 @@ class Scheme(QGraphicsScene):
 
         for node in other.nodes:
             self.removeItem(node)
-
-    def merge(self, other: Graph):
-        """Update the scheme, adding elements from a graph."""
-        self.graph.merge(other)
-
-        for node in other.nodes:
-            super().addItem(node)
-        for edge in other.edges:
-            super().addItem(edge)
 
     def clear(self):
         """Clear the scheme."""
@@ -273,7 +275,11 @@ class Scheme(QGraphicsScene):
 
         if package.hasFormat(self.ClipboardMimeType):
             graph = mime.load(package, self.ClipboardMimeType, hooks=hooks.qt)
-            self.merge(graph)
+            
+            for node in graph.nodes:
+                self.addItem(node)
+            for edge in graph.edges:
+                self.addItem(edge)           
 
             self.clearSelection()  # Clear old selection
             graph.selectAll()  # Create new selection (pasted items)
@@ -333,6 +339,7 @@ class Scheme(QGraphicsScene):
         """Triggers an end of an edge drawing mode.  
         Cleans up by removing the fake edge. This function is called regardless of whether edge drag resulted in a
         successful connection.
+        If the dragging was succesful, then the edgeDragDrop method in the target node will add a real edge.
         """
         super().removeItem(self._dragging_edge)
 

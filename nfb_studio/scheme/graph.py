@@ -70,44 +70,6 @@ class Graph(GraphicsItemGroup):
                 return edge
         return None
 
-    # Observer methods =================================================================================================
-    def sequences_from(self, node):
-        """Return an iterable of all sequences inside a graph, starting from a particular node.
-        A sequence is a subgraph, where all nodes form a connected chain. Sequences from this function guarantee that
-        the last node does not have any outputs.
-        """
-        has_sequences = False
-
-        for out in node.outputs:
-            for edge in out.edges:
-                connected = edge.targetNode()
-                for sequence in self.sequences_from(connected):
-                    sequence.add(node)
-                    sequence.add(edge)
-
-                    n = node
-                    while True:
-                        if len(n.outputs) == 0 or len(list(n.outputs[0].edges)) == 0:
-                            break
-                        n = list(n.outputs[0].edges)[0].targetNode()
-                    yield sequence
-                    has_sequences = True
-        
-        if not has_sequences:
-            result = Graph()
-            result.add(node)
-            yield result
-    
-    def sequences(self):
-        """Return an iterable of all sequences inside a graph.
-        A sequence is a subgraph, where all nodes form a connected chain. Sequences from this function guarantee that
-        the first node does not have any inputs, the last one does not have any outputs.
-        """
-        for node in self.nodes:
-            if len(node.inputs) == 0 or len(list(node.inputs[0].edges)) == 0:
-                for sequence in self.sequences_from(node):
-                    yield sequence
-
     # Selection ========================================================================================================
     def selectAll(self):
         """Select the whole graph."""

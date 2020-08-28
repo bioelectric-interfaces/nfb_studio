@@ -15,8 +15,10 @@ class SchemeEditor(QMainWindow):
         super().__init__(parent)
 
         self._scheme = None
-        self._scheme_view = None
+        self._scheme_view = Scheme.View()
         self._toolbox = None
+
+        self.setCentralWidget(self._scheme_view)
 
         self.toolbox_dock = QDockWidget("Node toolbox", self)
         self.toolbox_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
@@ -29,19 +31,27 @@ class SchemeEditor(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.config_widget_dock)
         self.config_widget_dock.hide()
 
+    def scheme(self):
+        return self._scheme
+
+    def toolbox(self):
+        return self._toolbox
+
+    def schemeView(self):
+        return self._scheme_view
+    
+    def toolboxView(self):
+        return self.toolbox_dock.widget()
+
     def setScheme(self, scheme: Scheme):
         if self._scheme is not None:
-            self.setCentralWidget(QWidget())
             self._scheme_view.configRequested.disconnect(self.showConfigWidget)
             self._scheme.setCustomDropEvent(self.toolbox().DragMimeType, None)
 
         self._scheme = scheme
 
         if self._scheme is not None:
-            self._scheme_view = self._scheme.getView()
-
-            # Set the scheme as the central widget
-            self.setCentralWidget(self._scheme_view)
+            self._scheme_view.setScene(self._scheme)
 
             # Conect the signal for config widget
             self._scheme_view.configRequested.connect(self.showConfigWidget)
@@ -49,16 +59,10 @@ class SchemeEditor(QMainWindow):
             # Add a custom drop event for the scheme from the toolbox
             self._scheme.setCustomDropEvent(self.toolbox().DragMimeType, self.toolbox().schemeDropEvent)
 
-    def scheme(self):
-        return self._scheme
-
     def setToolbox(self, toolbox):
         self._toolbox = toolbox
 
         self.toolbox_dock.setWidget(self._toolbox.getView())
-
-    def toolbox(self):
-        return self._toolbox
 
     def showConfigWidget(self, node):
         """Show config widget for a node.

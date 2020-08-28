@@ -39,13 +39,14 @@ class Experiment:
 
         self.signal_scheme = Scheme()
         self.sequence_scheme = Scheme()
+        self.sequence = []
+        """A list of nodes that is the subset of scheme to be exported."""
+
         self.blocks = BlockDict()
         self.groups = GroupDict()
 
         self.blocks.setExperiment(self)
         self.groups.setExperiment(self)
-
-        self._view = None
     
     def checkName(self, name: str):
         """Check if a name is appropriate for adding a new block or group.
@@ -65,20 +66,13 @@ class Experiment:
             return (False, "Name already in use.")
         
         return (True, None)
-
-    # Access functions =================================================================================================
-    def view(self):
-        return self._view
-    
-    def setView(self, view, /):
-        view.setModel(self)
     
     # Serialization ====================================================================================================
-    def export(self, sequence) -> str:
+    def export(self) -> str:
         data = {"NeurofeedbackSignalSpecs": self}
 
         enc_hooks = {
-            Experiment: lambda e: e.nfb_export_data(sequence),
+            Experiment: Experiment.nfb_export_data,
             Block: Block.nfb_export_data,
             Group: Group.nfb_export_data,
             bool: lambda x: int(x)
@@ -160,8 +154,8 @@ class Experiment:
 
         # Decode signals -----------------------------------------------------------------------------------------------
         node_pos = [0, 0]
-        node_xdiff = -100  # TODO: Change to a size dependent on node default width
-        node_ydiff = 100
+        node_xdiff = -250  # TODO: Change to a size dependent on node default width
+        node_ydiff = 250
 
         for signal_data in data["vSignals"]["DerivedSignal"]:
             # Assemble the signal front to back, starting with the signal name.
@@ -262,11 +256,13 @@ class Experiment:
             ex.groups[name] = group
         
         # Decode sequence ----------------------------------------------------------------------------------------------
+        ex.sequence = data["vPSequence"]["s"]
+
         node = None
         node_pos = [0, 0]
-        node_xdiff = 100
+        node_xdiff = 250
 
-        for name in data["vPSequence"]["s"]:
+        for name in ex.sequence:
             last = node
 
             if name in ex.blocks:
@@ -285,62 +281,6 @@ class Experiment:
 
         # --------------------------------------------------------------------------------------------------------------
         return ex
-
-    def updateView(self):
-        view = self.view()
-        if view is None:
-            return
-
-        # General properties -------------------------------------------------------------------------------------------
-        general = view.general_view
-        
-        general.name.setText(self.name)
-        general.inlet_type.setCurrentText(general.inlet_type_import_values[self.inlet])
-        general.lsl_stream_name.setCurrentText(self.lsl_stream_name)
-        general.lsl_filename.setText(self.raw_data_path)
-        general.hostname_port.setText(self.hostname_port)
-        general.dc.setChecked(self.dc)
-
-        if self.prefilter_band[0] is None:
-            general.prefilter_lower_bound_enable.setChecked(False)
-            general.prefilter_lower_bound.setValue(0)
-        else:
-            general.prefilter_lower_bound_enable.setChecked(True)
-            general.prefilter_lower_bound.setValue(self.prefilter_band[0])
-        
-        if self.prefilter_band[1] is None:
-            general.prefilter_upper_bound_enable.setChecked(False)
-            general.prefilter_upper_bound.setValue(0)
-        else:
-            general.prefilter_upper_bound_enable.setChecked(True)
-            general.prefilter_upper_bound.setValue(self.prefilter_band[1])
-        
-        general.plot_raw.setChecked(self.plot_raw)
-        general.plot_signals.setChecked(self.plot_signals)
-        general.show_subject_window.setChecked(self.show_subject_window)
-        general.discard_channels.setText(self.discard_channels)
-        general.reference_sub.setText(self.reference_sub)
-        general.show_proto_rectangle.setChecked(self.show_proto_rectangle)
-        general.show_notch_filters.setChecked(self.show_notch_filters)
-
-        # Blocks and groups --------------------------------------------------------------------------------------------
-        while view.tree.blocks.rowCount() > 0:
-            name = view.tree.blocks.child(0).text(0)
-            view.tree.blocks.takeChild(0)
-            view.blocks.removeWidget(name)
-            view.sequence_editor.toolbox().removeItem(name)
-        
-        while view.tree.groups.rowCount() > 0:
-            name = view.tree.groups.child(0).text(0)
-            view.tree.groups.takeChild(0)
-            view.groups.removeWidget(name)
-            view.sequence_editor.toolbox().removeItem(name)
-
-        for name in self.blocks:
-            self.blocks.itemAdded.emit(name)
-        
-        for name in self.groups:
-            self.groups.itemAdded.emit(name)
 
     def serialize(self) -> dict:
         return {
@@ -363,6 +303,7 @@ class Experiment:
             "sequence_scheme": self.sequence_scheme,
             "blocks": self.blocks,
             "groups": self.groups,
+            "sequence": self.sequence
         }
     
     @classmethod
@@ -387,13 +328,14 @@ class Experiment:
         obj.sequence_scheme = data["sequence_scheme"]
         obj.blocks = data["blocks"]
         obj.groups = data["groups"]
+        obj.sequence = data["sequence"]
 
         obj.blocks.setExperiment(obj)
         obj.groups.setExperiment(obj)
 
         return obj
 
-    def nfb_export_data(self, sequence) -> dict:
+    def nfb_export_data(self) -> dict:
         """Export data in a dict format for encoding to XML and usage in NFBLab."""
         data = {}
 
@@ -482,25 +424,8 @@ class Experiment:
         data["vSignals"]["CompositeSignal"] = signals
 
         # Experiment sequence ------------------------------------------------------------------------------------------
-        sequence_names = []
-
-        # Find starting node in sequence
-        node = None
-        for node in sequence.nodes:
-            if len(node.inputs[0].edges) == 0:
-                break
-        
-        sequence_names.append(node.title())
-        # Go to next node in this sequence
-        while len(node.outputs[0].edges) != 0:
-            for edge in node.outputs[0].edges:
-                if edge.targetNode() in sequence.nodes:
-                    node = edge.targetNode()
-                    sequence_names.append(node.title())
-                    break
-
         data["vPSequence"] = {
-            "s": sequence_names
+            "s": self.sequence
         }
 
         return data

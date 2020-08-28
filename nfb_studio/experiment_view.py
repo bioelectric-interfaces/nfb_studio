@@ -1,10 +1,11 @@
 """View widget for Experiment class and the main window of this application."""
 import os
 import subprocess
+from datetime import datetime
 from typing import Optional
 from pathlib import Path
 
-from PySide2.QtCore import Qt, QModelIndex
+from PySide2.QtCore import Qt, QModelIndex, QDir
 from PySide2.QtGui import QStandardItem, QKeySequence
 from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QFileDialog, QMessageBox, QScrollArea
 
@@ -16,8 +17,8 @@ from .group import GroupView
 from .util import StackedDictWidget
 from .general_view import GeneralView
 from .property_tree import PropertyTree
-from .export_wizard import ExportWizard
 from .scheme import SchemeEditor
+from .sequence_editor import SequenceEditor
 from .signal_nodes import *
 from .sequence_nodes import *
 
@@ -87,7 +88,7 @@ class ExperimentView(QMainWindow):
         self.groups = StackedDictWidget()
 
         # Sequence editor ----------------------------------------------------------------------------------------------
-        self.sequence_editor = SchemeEditor()
+        self.sequence_editor = SequenceEditor()
 
         # Central widget -----------------------------------------------------------------------------------------------
         self.central_widget = QStackedWidget()
@@ -104,9 +105,11 @@ class ExperimentView(QMainWindow):
         # New experiment view is created with a new experiment ---------------------------------------------------------
         self.actionNew()
 
+        #self.sequence_editor.schemeView().setWidget(QLabel("Hello!"))
+
     # Get/Set methods ==================================================================================================
     def model(self) -> Optional[Experiment]:
-        """Return the experiment, assosiated with this view."""
+        """Return the experiment assosiated with this view."""
         return self._model
     
     def projectTitle(self) -> str:
@@ -136,8 +139,7 @@ class ExperimentView(QMainWindow):
         ex.groups.itemRenamed.connect(self._onGroupRenamed)
         ex.groups.itemRemoved.connect(self._onGroupRemoved)
 
-        ex._view = self
-        ex.updateView()
+        self.updateView()
 
     # Experiment syncronization ========================================================================================
     def updateModel(self):
@@ -158,6 +160,71 @@ class ExperimentView(QMainWindow):
 
         # Write general experiment data
         self.general_view.updateModel(ex)
+
+        # Write the selected sequence
+        ex.sequence = [node.title() for node in self.sequence_editor.selectedSequence()[1]]
+
+    def updateView(self):
+        ex = self.model()
+        if ex is None:
+            return
+
+        # General properties -------------------------------------------------------------------------------------------
+        general = self.general_view
+        
+        general.name.setText(ex.name)
+        general.inlet_type.setCurrentText(general.inlet_type_import_values[ex.inlet])
+        general.lsl_stream_name.setCurrentText(ex.lsl_stream_name)
+        general.lsl_filename.setText(ex.raw_data_path)
+        general.hostname_port.setText(ex.hostname_port)
+        general.dc.setChecked(ex.dc)
+
+        if ex.prefilter_band[0] is None:
+            general.prefilter_lower_bound_enable.setChecked(False)
+            general.prefilter_lower_bound.setValue(0)
+        else:
+            general.prefilter_lower_bound_enable.setChecked(True)
+            general.prefilter_lower_bound.setValue(ex.prefilter_band[0])
+        
+        if ex.prefilter_band[1] is None:
+            general.prefilter_upper_bound_enable.setChecked(False)
+            general.prefilter_upper_bound.setValue(0)
+        else:
+            general.prefilter_upper_bound_enable.setChecked(True)
+            general.prefilter_upper_bound.setValue(ex.prefilter_band[1])
+        
+        general.plot_raw.setChecked(ex.plot_raw)
+        general.plot_signals.setChecked(ex.plot_signals)
+        general.show_subject_window.setChecked(ex.show_subject_window)
+        general.discard_channels.setText(ex.discard_channels)
+        general.reference_sub.setText(ex.reference_sub)
+        general.show_proto_rectangle.setChecked(ex.show_proto_rectangle)
+        general.show_notch_filters.setChecked(ex.show_notch_filters)
+
+        # Blocks and groups --------------------------------------------------------------------------------------------
+        while self.tree.blocks.rowCount() > 0:
+            name = self.tree.blocks.child(0).text()
+            self.tree.blocks.takeChild(0)
+            self.blocks.removeWidget(name)
+            self.sequence_editor.toolbox().removeItem(name)
+        
+        while self.tree.groups.rowCount() > 0:
+            name = self.tree.groups.child(0).text()
+            self.tree.groups.takeChild(0)
+            self.groups.removeWidget(name)
+            self.sequence_editor.toolbox().removeItem(name)
+
+        for name in ex.blocks:
+            ex.blocks.itemAdded.emit(name)
+        
+        for name in ex.groups:
+            ex.groups.itemAdded.emit(name)
+        
+        # Sequence -----------------------------------------------------------------------------------------------------
+        for sgraph, slist, button in self.sequence_editor.sequences():
+            if ex.sequence == [node.title() for node in slist]:
+                button.setChecked(True)
+                break
 
     def _onBlockAdded(self, name):
         """Function that gets called when a new block has been added to the experiment."""
@@ -323,16 +390,18 @@ class ExperimentView(QMainWindow):
             # No nodes in sequence scheme, cancel operation
             # TODO: A better way to signal to the user that he needs to create a sequence?
             self.central_widget.setCurrentWidget(self.sequence_editor)
-            return
+            return False
 
-        wiz = ExportWizard(self, self.model())
-        ok = wiz.exec_()
-        
-        if not ok:
-            return  # User cancelled operation
+        data = self.model().export()
 
-        data = self.model().export(wiz.sequence())
-        with open(wiz.savePath(), "w") as file:
+        file_path = QFileDialog.getSaveFileName(filter="XML Files (*.xml)")[0]
+        if file_path == "":
+            return False  # Action was cancelled
+
+        if os.path.splitext(file_path)[1] == "":  # No extension
+            file_path = file_path + ".xml"
+
+        with open(file_path, "w") as file:
             file.write(data)
         return True
 
@@ -405,18 +474,34 @@ class ExperimentView(QMainWindow):
             self.central_widget.setCurrentWidget(self.sequence_editor)
             return
 
-        wiz = ExportWizard(self, self.model())
-        ok = wiz.exec_()
-        
-        if not ok:
-            return  # User cancelled operation
+        results_path = QFileDialog.getExistingDirectory(
+            caption="Select a folder to save experiment results",
+            options=QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks
+        )
+        if results_path == "":
+            return False  # Action was cancelled
 
-        data = self.model().export(wiz.sequence())
-        with open(wiz.savePath(), "w") as file:
+        data = self.model().export()
+
+        temp_dir = QDir.tempPath() + "/nfb_studio"
+        os.makedirs(temp_dir, exist_ok=True)
+
+        timestamp = datetime.now()
+        file_path = "{}/experiment ({:04d}-{:02d}-{:02d} {:02d}-{:02d}-{:02d}).xml".format(
+            temp_dir,
+            timestamp.year,
+            timestamp.month,
+            timestamp.day,
+            timestamp.hour,
+            timestamp.minute,
+            timestamp.second
+        )
+
+        with open(file_path, "w") as file:
             file.write(data)
         
         pynfb_path = os.path.dirname(nfb_studio.__file__) + "/bin/pynfb.exe"
-        subprocess.run([pynfb_path, "-x", wiz.savePath()])
+        subprocess.run([pynfb_path, "-x", file_path], cwd=results_path)
 
     def promptSaveChanges(self) -> bool:
         """Prompt the user to save changes to current project.
@@ -454,7 +539,7 @@ class ExperimentView(QMainWindow):
         self._save_path = path
 
     def fileSave(self, path):
-        self.model().view().updateModel()
+        self.updateModel()
         data = self.model().save()
 
         with open(path, "w") as file:
