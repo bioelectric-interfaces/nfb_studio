@@ -13,15 +13,12 @@ class SequenceEditor(SchemeEditor):
         self.selector_placeholder = QLabel("(none)")
         self.selector_placeholder.setAlignment(Qt.AlignCenter)
 
-        self.selector = QScrollArea()
-        self.selector.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-        layout = QVBoxLayout()
-        layout.addWidget(self.selector_placeholder)
-        self.selector.setLayout(layout)
-        self.selector_button_group = QButtonGroup()
+        self.selector = None
+        self.selector_button_group = None
 
+        self.selector_scroll_area = QScrollArea()
         self.selector_dock = QDockWidget("Active Sequence", self)
-        self.selector_dock.setWidget(self.selector)
+        self.selector_dock.setWidget(self.selector_scroll_area)
         self.selector_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.selector_dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.selector_dock)
@@ -48,14 +45,14 @@ class SequenceEditor(SchemeEditor):
         sequences = list(self._possibleSequences())
         
         # Build a new widget with all the new options
-        new_selector = QScrollArea()
-        new_selector.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        selector = QWidget()
         layout = QVBoxLayout()
+        layout.setSizeConstraint(layout.SetMinAndMaxSize)
         layout.addWidget(self.selector_placeholder)
-        new_selector.setLayout(layout)
+        selector.setLayout(layout)
+        self.selector_scroll_area.setWidget(selector)
         self.selector_button_group = QButtonGroup()
-        self.selector_dock.setWidget(new_selector)
-        self.selector = new_selector
+        self.selector = selector
         
         if len(sequences) == 0:
             self.selector_placeholder.show()
