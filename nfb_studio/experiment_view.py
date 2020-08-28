@@ -290,11 +290,18 @@ class ExperimentView(QMainWindow):
 
         # Rename in the sequence editor
         node = self.sequence_editor.toolbox().removeItem(old_name)
+        node.setTitle(new_name)
         self.sequence_editor.toolbox().addItem(new_name, node)
 
         for node in self.sequence_editor.scheme().graph.nodes:
             if node.title() == old_name:
                 node.setTitle(new_name)
+        
+        # Rename it in the sequence editor's current sequence widget
+        for _1, _2, button in self.sequence_editor.sequences():
+            label = button.text()
+            new_label = " → ".join([new_name if x == old_name else x for x in label.split(" → ")])
+            button.setText(new_label)
 
     def _onGroupRenamed(self, old_name, new_name):
         """Function that gets called when a group has been renamed."""
@@ -316,11 +323,18 @@ class ExperimentView(QMainWindow):
 
         # Rename in the sequence editor
         node = self.sequence_editor.toolbox().removeItem(old_name)
+        node.setTitle(new_name)
         self.sequence_editor.toolbox().addItem(new_name, node)
 
         for node in self.sequence_editor.scheme().graph.nodes:
             if node.title() == old_name:
                 node.setTitle(new_name)
+        
+        # Rename it in the sequence editor's current sequence widget
+        for _1, _2, button in self.sequence_editor.sequences():
+            label = button.text()
+            new_label = " → ".join([new_name if x == old_name else x for x in label.split(" → ")])
+            button.setText(new_label)
 
     def _onBlockRemoved(self, name):
         """Function that gets called when a block has been removed from the experiment."""
