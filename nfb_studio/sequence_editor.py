@@ -28,7 +28,7 @@ class SequenceEditor(SchemeEditor):
 
     def setScheme(self, scheme):
         super().setScheme(scheme)
-        self.scheme().graphChanged.connect(lambda item: self._updateSelector(item))
+        self.scheme().graphChanged.connect(self._updateSelector)
         self._updateSelector()
 
     def sequences(self):
