@@ -11,6 +11,7 @@ from ..text_line_item import TextLineItem
 from ..scheme_item import SchemeItem
 from ..style import Style
 
+nfb_studio_dir = os.path.dirname(nfb_studio.__file__)
 
 @lru_cache(maxsize=16)
 def _svgRenderer(filename) -> QSvgRenderer:
@@ -123,7 +124,7 @@ class InfoMessage(Message):
         """
         super(InfoMessage, self).__init__(
             text=text or "Info message",
-            icon_filename=nfb_studio.assets+"/info.svg",
+            icon_filename=nfb_studio_dir+"/assets/icons/info.svg",
             parent=parent
         )
 
@@ -140,7 +141,7 @@ class WarningMessage(Message):
         """
         super(WarningMessage, self).__init__(
             text=text or "Warning message",
-            icon_filename=nfb_studio.assets+"/warning.svg",
+            icon_filename=nfb_studio_dir+"/assets/icons/warning.svg",
             parent=parent
         )
 
@@ -157,7 +158,7 @@ class ErrorMessage(Message):
         """
         super(ErrorMessage, self).__init__(
             text=text or "Error message",
-            icon_filename=nfb_studio.assets+"/error.svg",
+            icon_filename=nfb_studio_dir+"/assets/icons/error.svg",
             parent=parent
         )
 
