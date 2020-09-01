@@ -514,8 +514,7 @@ class ExperimentView(QMainWindow):
         with open(file_path, "w") as file:
             file.write(data)
         
-        pynfb_path = os.path.dirname(nfb_studio.__file__) + "/bin/pynfb.exe"
-        subprocess.run([pynfb_path, "-x", file_path], cwd=results_path)
+        subprocess.run(["pynfb", "-x", file_path], cwd=results_path)
 
     def promptSaveChanges(self) -> bool:
         """Prompt the user to save changes to current project.

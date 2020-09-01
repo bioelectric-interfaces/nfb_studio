@@ -5,6 +5,7 @@ install_requires = [
     "PySide2",
     "sortedcontainers",
     "xmltodict",
+    "pynfb @ https://github.com/andreasxp/nfb/archive/c2854cc530a634bd446984ab55c7802e84faaf59.zip",
 ]
 
 extras_require = {
