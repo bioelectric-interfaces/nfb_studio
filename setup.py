@@ -1,5 +1,5 @@
 """Install script for nfb_studio."""
-from setuptools import setup
+from setuptools import setup, find_packages
 
 install_requires = [
     "PySide2",
@@ -20,6 +20,7 @@ setup(
     author_email="andres.zhukov@gmail.com",
     license="MIT",
     install_requires=install_requires,
+    packages=find_packages(),
     package_data={
         "nfb_studio": ["assets/*"]
     },
