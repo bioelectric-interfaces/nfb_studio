@@ -2,7 +2,9 @@
 import sys
 from PySide2.QtWidgets import QApplication
 
-from .experiment_view import ExperimentView
+from nfb_studio.experiment_view import ExperimentView
+# Note: When using relative import in __main__.py, frozen executable fails to start with error:
+# ImportError: attempted relative import with no known parent package
 
 def main():
     app = QApplication(sys.argv)

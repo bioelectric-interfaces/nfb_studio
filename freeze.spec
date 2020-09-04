@@ -5,7 +5,7 @@ block_cipher = None
 
 a = Analysis(
     ["nfb_studio/__main__.py"],
-    pathex=[SPECPATH],
+    pathex=[],
     binaries=[],
     datas=[],
     hiddenimports=[],
