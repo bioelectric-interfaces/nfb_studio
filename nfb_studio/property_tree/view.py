@@ -25,13 +25,6 @@ class PropertyTreeView(QTreeView):
         super().currentChanged(current, previous)
         self.currentIndexChanged.emit(current, previous)
 
-    def editItem(self, item, column):
-        """Called when by some action user wants to edit the item.
-        Reimplements base class function to silence the warning when double-clicking non-editable items.
-        """
-        if item.flags() & Qt.ItemIsEditable:
-            super().editItem(item, column)
-
     def showContextMenu(self, point: QPoint):
         model = self.model()
         if model is None:
@@ -58,6 +51,10 @@ class PropertyTreeView(QTreeView):
         elif item.parent() is model.blocks:
             # Menu for an individual block -----------------------------------------------------------------------------
             menu = QMenu()
+
+            rename = menu.addAction("Rename")
+            rename.triggered.connect(lambda: self.edit(index))
+
             delete = menu.addAction("Delete")
             delete.triggered.connect(lambda: model.removeBlock(item.text()))
 
@@ -65,6 +62,10 @@ class PropertyTreeView(QTreeView):
         elif item.parent() is model.groups:
             # Menu for an individual group -----------------------------------------------------------------------------
             menu = QMenu()
+
+            rename = menu.addAction("Rename")
+            rename.triggered.connect(lambda: self.edit(index))
+
             delete = menu.addAction("Delete")
             delete.triggered.connect(lambda: model.removeBlock(item.text()))
 
