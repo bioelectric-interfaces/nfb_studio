@@ -1,6 +1,6 @@
 """View widget for Experiment class and the main window of this application."""
 import os
-import subprocess
+from subprocess import Popen
 from datetime import datetime
 from typing import Optional
 from pathlib import Path
@@ -31,6 +31,9 @@ class ExperimentView(QMainWindow):
         self._model = None
         self._save_path = None
         """Save path of the experiment that is being edited."""
+
+        self._processes = []
+        """Process handles for experiments that were started."""
 
         # Menu bar -----------------------------------------------------------------------------------------------------
         menubar = self.menuBar()
@@ -104,8 +107,6 @@ class ExperimentView(QMainWindow):
 
         # New experiment view is created with a new experiment ---------------------------------------------------------
         self.actionNew()
-
-        #self.sequence_editor.schemeView().setWidget(QLabel("Hello!"))
 
     # Get/Set methods ==================================================================================================
     def model(self) -> Optional[Experiment]:
@@ -514,7 +515,8 @@ class ExperimentView(QMainWindow):
         with open(file_path, "w") as file:
             file.write(data)
         
-        subprocess.run(["pynfb", "-x", file_path], cwd=results_path, check=True)
+        proc = Popen(["pynfb", "-x", file_path], cwd=results_path)
+        self._processes.append(proc)
 
     def promptSaveChanges(self) -> bool:
         """Prompt the user to save changes to current project.
