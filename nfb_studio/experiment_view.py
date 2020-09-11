@@ -39,9 +39,18 @@ class ExperimentView(QMainWindow):
         menubar = self.menuBar()
         filemenu = menubar.addMenu("File")
 
+        action_new = filemenu.addAction("New")
+        action_new.triggered.connect(self.actionNew)
+        action_new.setShortcut(QKeySequence.New)
+
         action_open = filemenu.addAction("Open")
         action_open.triggered.connect(self.actionOpen)
         action_open.setShortcut(QKeySequence.Open)
+
+        action_import = filemenu.addAction("Import")
+        action_import.triggered.connect(self.actionImport)
+
+        filemenu.addSeparator()
 
         action_save = filemenu.addAction("Save")
         action_save.triggered.connect(self.actionSave)
@@ -54,8 +63,10 @@ class ExperimentView(QMainWindow):
         action_export = filemenu.addAction("Export...")
         action_export.triggered.connect(self.actionExport)
 
-        action_import = filemenu.addAction("Import")
-        action_import.triggered.connect(self.actionImport)
+        filemenu.addSeparator()
+
+        action_exit = filemenu.addAction("Exit")
+        action_exit.triggered.connect(self.close)
 
         runmenu = menubar.addMenu("Run")
 
@@ -205,13 +216,13 @@ class ExperimentView(QMainWindow):
         # Blocks and groups --------------------------------------------------------------------------------------------
         while self.tree.blocks.rowCount() > 0:
             name = self.tree.blocks.child(0).text()
-            self.tree.blocks.takeChild(0)
+            self.tree.blocks.removeRow(0)
             self.blocks.removeWidget(name)
             self.sequence_editor.toolbox().removeItem(name)
         
         while self.tree.groups.rowCount() > 0:
             name = self.tree.groups.child(0).text()
-            self.tree.groups.takeChild(0)
+            self.tree.groups.removeRow(0)
             self.groups.removeWidget(name)
             self.sequence_editor.toolbox().removeItem(name)
 
