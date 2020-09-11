@@ -20,7 +20,7 @@ class SchemeEditor(QMainWindow):
 
         self.setCentralWidget(self._scheme_view)
 
-        self.toolbox_dock = QDockWidget("Node toolbox", self)
+        self.toolbox_dock = QDockWidget("Node Toolbox", self)
         self.toolbox_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.toolbox_dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.toolbox_dock)
