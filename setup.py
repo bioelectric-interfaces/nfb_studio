@@ -5,13 +5,12 @@ install_requires = [
     "PySide2",
     "sortedcontainers",
     "xmltodict",
-    "pynfb @ https://github.com/andreasxp/nfb/archive/c2854cc530a634bd446984ab55c7802e84faaf59.zip",
+    "pynfb @ https://github.com/andreasxp/nfb/archive/1438515613edac94feb7e2927e6bd5a07f649e18.zip",
 ]
 
 extras_require = {
     "docs": ["pdoc3"],
     "freeze": [
-        "pyinstaller-hooks-contrib @ https://github.com/pyinstaller/pyinstaller-hooks-contrib/archive/465a2caccb5913ebfc64561e8055e81d73188736.zip",
         "pyinstaller",
     ]
 }

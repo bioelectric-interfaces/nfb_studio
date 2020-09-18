@@ -1,14 +1,39 @@
 # -*- mode: python ; coding: utf-8 -*-
+import sys
+import os
+from importlib.util import find_spec
 
 block_cipher = None
+sys.setrecursionlimit(5000)
+
+
+def module_dir(module_name):
+    """Return module's root directory.
+    If the module does not have a directory (it is a single file) then return None.
+    """
+    module_origin = find_spec(module_name).origin
+    if os.path.basename(module_origin) == "__init__.py":
+        return os.path.dirname(module_origin)
+    return None
 
 
 a = Analysis(
     ["nfb_studio/__main__.py"],
     pathex=[],
     binaries=[],
-    datas=[],
-    hiddenimports=[],
+    datas=[
+        (module_dir("pylsl") + "/lib", "pylsl/lib"),
+        (module_dir("mne") + "/channels/data", "mne/channels/data"),
+        (module_dir("matplotlib") + "/mpl-data", "matplotlib/mpl-data"),
+        (module_dir("pynfb") + "/static/imag", "pynfb/static/imag"),
+    ],
+    hiddenimports=[
+        "scipy.special.cython_special",
+        "sklearn.neighbors._typedefs",
+        "sklearn.neighbors._quad_tree",
+        "sklearn.utils._cython_blas",
+        "sklearn.tree._utils"
+    ],
     hookspath=[],
     runtime_hooks=[],
     excludes=[],
