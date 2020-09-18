@@ -1,13 +1,14 @@
 """View widget for Experiment class and the main window of this application."""
 import os
-from subprocess import Popen
 from datetime import datetime
 from typing import Optional
 from pathlib import Path
+from multiprocessing import Process
 
 from PySide2.QtCore import Qt, QModelIndex, QDir
 from PySide2.QtGui import QStandardItem, QKeySequence
 from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QFileDialog, QMessageBox, QScrollArea
+from pynfb.main import run as run_experiment
 
 import nfb_studio
 
@@ -21,6 +22,11 @@ from .scheme import SchemeEditor
 from .sequence_editor import SequenceEditor
 from .signal_nodes import *
 from .sequence_nodes import *
+
+
+def run(file_path, results_path):
+    os.chdir(results_path)
+    run_experiment(file_path)
 
 
 class ExperimentView(QMainWindow):
@@ -526,7 +532,9 @@ class ExperimentView(QMainWindow):
         with open(file_path, "w") as file:
             file.write(data)
         
-        proc = Popen(["pynfb", "-x", file_path], cwd=results_path)
+        proc = Process(target=run, args=(file_path, results_path))
+        proc.start()
+
         self._processes.append(proc)
 
     def promptSaveChanges(self) -> bool:

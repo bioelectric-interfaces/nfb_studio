@@ -1,5 +1,6 @@
 """Startup script for nfb_studio."""
 import sys
+import multiprocessing
 from PySide2.QtWidgets import QApplication
 
 from nfb_studio.experiment_view import ExperimentView
@@ -19,4 +20,5 @@ def main():
     return app.exec_()
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     sys.exit(main())
