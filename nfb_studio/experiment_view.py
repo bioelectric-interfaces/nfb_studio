@@ -433,7 +433,7 @@ class ExperimentView(QMainWindow):
         if os.path.splitext(file_path)[1] == "":  # No extension
             file_path = file_path + ".xml"
 
-        with open(file_path, "w") as file:
+        with open(file_path, "w", encoding="utf-8") as file:
             file.write(data)
         return True
 
@@ -490,7 +490,7 @@ class ExperimentView(QMainWindow):
         if file_path == "":
             return False
 
-        with open(file_path) as file:
+        with open(file_path, encoding="utf-8") as file:
             data = file.read()
         
         ex = Experiment.import_xml(data)
@@ -529,7 +529,7 @@ class ExperimentView(QMainWindow):
             timestamp.second
         )
 
-        with open(file_path, "w") as file:
+        with open(file_path, "w", encoding="utf-8") as file:
             file.write(data)
         
         proc = Process(target=run, args=(file_path, results_path))
@@ -565,7 +565,7 @@ class ExperimentView(QMainWindow):
 
     # File operations ==================================================================================================
     def fileOpen(self, path):
-        with open(path) as file:
+        with open(path, encoding="utf-8") as file:
             data = file.read()
         
         ex = Experiment.load(data)
@@ -576,5 +576,5 @@ class ExperimentView(QMainWindow):
         self.updateModel()
         data = self.model().save()
 
-        with open(path, "w") as file:
+        with open(path, "w", encoding="utf-8") as file:
             file.write(data)
