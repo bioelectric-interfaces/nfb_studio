@@ -1,35 +1,17 @@
-from PySide2.QtCore import QPointF
+"""A QGraphicsItem that has a style and a palette."""
 from PySide2.QtWidgets import QGraphicsItem
-
-from .unitconv import inches_to_pixels, pixels_to_inches
 
 from .style import Style
 from .palette import Palette
 
 class SchemeItem(QGraphicsItem):
-    """An item that supports measurements in inches."""
+    """A QGraphicsItem that has a style and a palette."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self._style = Style()
         self._palette = Palette()
-
-    def setPosition(self, *args, **kwargs):
-        """Set node's position in inches.
-
-        Does the same thing as setPos, except the arguments must be passed in inches.
-        """
-        point = QPointF(*args, **kwargs)
-
-        self.setPos(inches_to_pixels(point))
-
-    def position(self):
-        """Returns node's position in inches.
-        
-        Does the same thing as setPos, except the return value is converted to inches.
-        """
-        return pixels_to_inches(self.pos())
 
     def setStyle(self, style: Style):
         self._style = style
@@ -53,9 +35,9 @@ class SchemeItem(QGraphicsItem):
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value):
         if change == QGraphicsItem.ItemSelectedHasChanged:
-            if value == True:
+            if value:
                 self._palette.setCurrentColorGroup(Palette.Selected)
-            if value == False:
+            else:
                 self._palette.setCurrentColorGroup(Palette.Active)
             self.paletteChange()
 

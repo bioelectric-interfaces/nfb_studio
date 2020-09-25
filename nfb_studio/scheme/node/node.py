@@ -5,7 +5,7 @@ from sortedcontainers import SortedList
 
 from ..text_line_item import TextLineItem
 from ..text_rect_item import TextRectItem
-from ..unitconv import inches_to_pixels as px
+from ..unitconv import inches_to_pixels as px, pixels_to_inches as inch
 from ..scheme_item import SchemeItem
 from ..style import Style
 from .connection import Input, Output
@@ -272,7 +272,7 @@ class Node(SchemeItem):
             "inputs": self.inputs,
             "outputs": self.outputs,
             "messages": list(self.messages),
-            "position": self.position()
+            "position": inch(self.pos())
         }
 
     @classmethod
@@ -280,7 +280,7 @@ class Node(SchemeItem):
         obj = cls()
         obj.setTitle(data["title"])
         obj.setDescription(data["description"])
-        obj.setPosition(data["position"])
+        obj.setPos(px(data["position"]))
 
         for i in range(len(obj.inputs)):
             obj.removeInput(0)
