@@ -18,6 +18,7 @@ class Block(QObject):
         self.random_bound = "SimCircle"
         self.video_path = ""
         self.message = ""
+        self.voiceover = False
 
         # Mock signal --------------------------------------------------------------------------------------------------
         self.mock_signal_path = ""
@@ -62,6 +63,7 @@ class Block(QObject):
         view.random_bound.setCurrentText(self.random_bound)
         view.video_path.setText(self.video_path)
         view.message.setText(self.message)
+        view.voiceover.setChecked(self.voiceover)
 
     def nfb_export_data(self) -> dict:
         """Export this block into a dict to be encoded as XML for NFBLab.
@@ -76,6 +78,7 @@ class Block(QObject):
         data["fbSource"] = self.feedback_source
         data["sFb_type"] = self.feedback_type
         data["cString"] = self.message
+        data["bVoiceover"] = self.voiceover
         data["bUseExtraMessage"] = 0
         data["cString2"] = ""
         data["fBlinkDurationMs"] = 50
@@ -104,6 +107,7 @@ class Block(QObject):
             "random_bound": self.random_bound,
             "video_path": self.video_path,
             "message": self.message,
+            "voiceover": self.voiceover,
 
             "mock_signal_path": self.mock_signal_path,
             "mock_signal_dataset": self.mock_signal_dataset,
@@ -127,6 +131,7 @@ class Block(QObject):
         obj.random_bound = data["random_bound"]
         obj.video_path = data["video_path"]
         obj.message = data["message"]
+        obj.voiceover = data["voiceover"]
 
         obj.mock_signal_path = data["mock_signal_path"]
         obj.mock_signal_dataset = data["mock_signal_dataset"]
@@ -164,5 +169,6 @@ class Block(QObject):
         b.random_bound = b.random_bound_types[int(float(data["iRandomBound"]))]
         b.video_path = data["sVideoPath"]
         b.message = data["cString"]
+        b.voiceover = bool(float(data["bVoiceover"]))
 
         return b
