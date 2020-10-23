@@ -83,6 +83,6 @@ class BaseDecoder:
         if isinstance(value, dict):
             self._hooks = value
         elif isinstance(value, tuple):  # hooks.Hooks is also a tuple
-            self._hooks = value[0]  # Only serialization functions
+            self._hooks = value[1]  # Only deserialization functions
         else:
             self._hooks = {}
