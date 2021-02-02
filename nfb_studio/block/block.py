@@ -131,7 +131,7 @@ class Block(QObject):
         obj.random_bound = data["random_bound"]
         obj.video_path = data["video_path"]
         obj.message = data["message"]
-        obj.voiceover = data["voiceover"]
+        obj.voiceover = data.get("voiceover", False)
 
         obj.mock_signal_path = data["mock_signal_path"]
         obj.mock_signal_dataset = data["mock_signal_dataset"]
@@ -169,6 +169,6 @@ class Block(QObject):
         b.random_bound = b.random_bound_types[int(float(data["iRandomBound"]))]
         b.video_path = data["sVideoPath"]
         b.message = data["cString"]
-        b.voiceover = bool(float(data["bVoiceover"]))
+        b.voiceover = bool(float(data.get("bVoiceover", 0)))
 
         return b
