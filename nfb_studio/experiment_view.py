@@ -481,7 +481,7 @@ class ExperimentView(QMainWindow):
 
     def actionImport(self) -> bool:
         """User action "Import". Promts user to import a file.
-        Returns True if file was imported, and False if action was cancelled.
+        Returns True if file was imported, and False if action was cancelled or failed.
         """
         if self.model() and not self.promptSaveChanges():
             return False  # Action cancelled during prompt
@@ -490,8 +490,20 @@ class ExperimentView(QMainWindow):
         if file_path == "":
             return False
 
-        with open(file_path, encoding="utf-8") as file:
-            data = file.read()
+        try:
+            with open(file_path, encoding="utf-8") as file:
+                data = file.read()
+        except UnicodeDecodeError:
+            try:
+                with open(file_path, encoding="cp1251") as file:
+                    data = file.read()
+            except:
+                QMessageBox.critical(
+                    title="Unable to read the file",
+                    text="NFB Studio was unable to read this file."
+                )
+                return False
+
         
         ex = Experiment.import_xml(data)
         self.setModel(ex)
