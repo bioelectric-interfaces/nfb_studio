@@ -1,90 +1,86 @@
 """NFB main source signal."""
-from PySide2.QtWidgets import QWidget, QFormLayout, QLineEdit
+from PySide2.QtWidgets import QFormLayout, QSpinBox
 
 from ..scheme import Node, Input, Output, DataType
 from .signal_node import SignalNode
-from .spatial_filter import SpatialFilter
-from .bandpass_filter import BandpassFilter
 from .envelope_detector import EnvelopeDetector
-from .standardise import Standardise
-from .artificial_delay import ArtificialDelay
 
 
-class DerivedSignalExport(SignalNode):
-    input_type = DataType(107, convertible_from=[
-        SpatialFilter.output_type,
-        BandpassFilter.output_type,
-        EnvelopeDetector.output_type,
-        Standardise.output_type,
-        ArtificialDelay.output_type
-    ])
-    output_type = DataType(108)
+class ArtificialDelay(SignalNode):
+    input_type = EnvelopeDetector.output_type
+    output_type = DataType(109)
 
     class Config(SignalNode.Config):
-        """Config widget displayed for LSLInput."""
+        """Config widget displayed for ArtificialDelay."""
         def __init__(self, parent=None):
             super().__init__(parent=parent)
 
-            self.signal_name = QLineEdit("Signal")
-            self.signal_name.editingFinished.connect(self.updateModel)
+            self.delay = QSpinBox()
+            self.delay.setSuffix(" ms")
+            self.delay.setMinimum(0)
+            self.delay.setMaximum(1000000)
+            self.delay.valueChanged.connect(self.updateModel)
 
             layout = QFormLayout()
             self.setLayout(layout)
-            layout.addRow("Signal name", self.signal_name)
+
+            layout.addRow("Delay:", self.delay)
         
         def updateModel(self):
             n = self.node()
             if n is None:
                 return
             
-            n.setSignalName(self.signal_name.text())
-    
+            n.setDelay(self.delay.value())
+        
         def updateView(self):
             n = self.node()
             if n is None:
                 return
             
-            self.signal_name.blockSignals(True)
-            self.signal_name.setText(n.signalName())
-            self.signal_name.blockSignals(False)
+            self.delay.blockSignals(True)
+            self.delay.setValue(n.delay())
+            self.delay.blockSignals(False)
+
+    default_delay = 1000
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self.setTitle("Derived Signal Export")
+        self.setTitle("Artificial Delay")
         self.addInput(Input("Input", self.input_type))
         self.addOutput(Output("Output", self.output_type))
 
-        self._signal_name = "Signal"
+        self._delay = self.default_delay
         self._adjust()
 
-    def signalName(self) -> str:
-        return self._signal_name
-
-    def setSignalName(self, name: str, /):
-        self._signal_name = name
+    def delay(self) -> int:
+        return self._delay
+    
+    def setDelay(self, delay: int, /):
+        self._delay = delay
         self._adjust()
 
     def _adjust(self):
         """Adjust visuals in response to changes."""
         self.updateView()
 
-        self.setDescription(self.signalName())
+        self.setDescription(f"{self.delay()} ms")
 
     # Serialization ====================================================================================================
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""
-        signal["sSignalName"] = self.signalName()
+        signal["iDelayMs"] = self.delay()
     
     def serialize(self) -> dict:
         data = super().serialize()
 
-        data["signal_name"] = self.signalName()
+        data["delay"] = self.delay()
         return data
     
     @classmethod
     def deserialize(cls, data: dict):
         obj = super().deserialize(data)
-        obj.setSignalName(data["signal_name"])
+        obj.setDelay(data["delay"])
 
         return obj

@@ -20,7 +20,7 @@ from .general_view import GeneralView
 from .property_tree import PropertyTree
 from .scheme import SchemeEditor
 from .sequence_editor import SequenceEditor
-from .signal_nodes import *
+from .signal_nodes import node_types
 from .sequence_nodes import *
 
 
@@ -96,13 +96,9 @@ class ExperimentView(QMainWindow):
         self.general_view = GeneralView()
         
         self.signal_editor = SchemeEditor()
-        self.signal_editor.toolbox().addItem("LSL Input", LSLInput())
-        self.signal_editor.toolbox().addItem("Spatial Filter", SpatialFilter())
-        self.signal_editor.toolbox().addItem("Bandpass Filter", BandpassFilter())
-        self.signal_editor.toolbox().addItem("Envelope Detector", EnvelopeDetector())
-        self.signal_editor.toolbox().addItem("Standardise", Standardise())
-        self.signal_editor.toolbox().addItem("Signal Export", DerivedSignalExport())
-        self.signal_editor.toolbox().addItem("Composite Signal Export", CompositeSignalExport())
+
+        for name in node_types:
+            self.signal_editor.toolbox().addItem(name, node_types[name]())
 
         self.blocks = StackedDictWidget()
         self.groups = StackedDictWidget()
