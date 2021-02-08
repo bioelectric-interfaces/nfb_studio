@@ -1,5 +1,7 @@
 """View widget for Experiment class and the main window of this application."""
 import os
+import sys
+import traceback
 from datetime import datetime
 from typing import Optional
 from pathlib import Path
@@ -7,7 +9,7 @@ from multiprocessing import Process
 
 from PySide2.QtCore import Qt, QModelIndex, QDir
 from PySide2.QtGui import QStandardItem, QKeySequence
-from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QFileDialog, QMessageBox, QScrollArea
+from PySide2.QtWidgets import QMainWindow, QDockWidget, QStackedWidget, QFileDialog, QMessageBox, QScrollArea, QTextEdit
 from pynfb.main import run as run_experiment
 
 import nfb_studio
@@ -40,6 +42,10 @@ class ExperimentView(QMainWindow):
 
         self._processes = []
         """Process handles for experiments that were started."""
+
+        # Exceptions ---------------------------------------------------------------------------------------------------
+        self.__excepthook__ = sys.excepthook
+        sys.excepthook = self.excepthook
 
         # Menu bar -----------------------------------------------------------------------------------------------------
         menubar = self.menuBar()
@@ -586,3 +592,21 @@ class ExperimentView(QMainWindow):
 
         with open(path, "w", encoding="utf-8") as file:
             file.write(data)
+
+    # Exception handling ===============================================================================================
+    def excepthook(self, etype, value, tb):
+        message = QMessageBox(self)
+        message.setWindowTitle("Critical Error")
+        message.setText(
+            "An unknown critical error occured. It is recommended to save your work and restart NFB Studio.\n\n"
+            "Please inform the developer, describing what you were doing before the error, and attach the text below."
+        )
+        message.setIcon(message.Icon.Critical)
+
+        exception_field = QTextEdit()
+        exception_field.setText("".join(traceback.format_exception(etype, value, tb)))
+        exception_field.setReadOnly(True)
+        message.layout().addWidget(exception_field, 1, 0, 1, -1)
+        message.exec_()
+
+        self.__excepthook__(etype, value, tb)
