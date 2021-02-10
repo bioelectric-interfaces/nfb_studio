@@ -1,5 +1,5 @@
 """NFB experiment designer."""
-# Big Sur workaround
+# Big Sur OpenGL bug workaround (https://bugs.python.org/issue41100) ---------------------------------------------------
 try:
     import OpenGL as ogl
     try:
@@ -14,6 +14,7 @@ try:
         util.find_library = new_util_find_library
 except ImportError:
     pass
+# ----------------------------------------------------------------------------------------------------------------------
 
 import os
 
