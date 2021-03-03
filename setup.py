@@ -15,6 +15,11 @@ extras_require = {
     ]
 }
 
+entry_points = {
+    "gui_scripts": ["nfb-studio = nfb_studio.__main__:main"],
+    "console_scripts": ["nfb-studio-d = nfb_studio.__main__:main"],
+}
+
 setup(
     name="nfb_studio",
     version="0.1",
@@ -27,5 +32,6 @@ setup(
     package_data={
         "nfb_studio": ["assets/*"]
     },
-    extras_require=extras_require
+    extras_require=extras_require,
+    entry_points=entry_points
 )

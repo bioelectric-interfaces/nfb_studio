@@ -24,6 +24,7 @@ from nfb_studio.experiment_view import ExperimentView
 # ImportError: attempted relative import with no known parent package
 
 def main():
+    multiprocessing.freeze_support()
     app = QApplication(sys.argv)
 
     main_window = ExperimentView()
@@ -36,5 +37,4 @@ def main():
     return app.exec_()
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support()
     sys.exit(main())
