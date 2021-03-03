@@ -251,6 +251,8 @@ class Experiment:
         
         # Decode groups ------------------------------------------------------------------------------------------------
         for group_data in data["vPGroups"]["PGroup"]:
+            if group_data is None:  # For some reason NFB sometimes exports a null group
+                continue
             group = Group.nfb_import_data(group_data)
             name = group_data["sName"]
             ex.groups[name] = group
