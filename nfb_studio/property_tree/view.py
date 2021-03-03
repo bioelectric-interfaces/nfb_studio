@@ -67,6 +67,6 @@ class PropertyTreeView(QTreeView):
             rename.triggered.connect(lambda: self.edit(index))
 
             delete = menu.addAction("Delete")
-            delete.triggered.connect(lambda: model.removeBlock(item.text()))
+            delete.triggered.connect(lambda: model.removeGroup(item.text()))
 
             menu.exec_(global_point)
