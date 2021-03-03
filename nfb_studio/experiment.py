@@ -381,6 +381,10 @@ class Experiment:
 
             data["vPGroups"]["PGroup"].append(group.nfb_export_data())  # Add other information
             data["vPGroups"]["PGroup"][-1]["sName"] = name  # Add name
+        
+        if len(self.groups) == 0:
+            # Append a null group as a nfb bug workaround
+            data["vPGroups"]["PGroup"].append(None)
 
         # Derived Signals ----------------------------------------------------------------------------------------------
         signals = []
