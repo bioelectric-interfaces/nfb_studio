@@ -30,11 +30,17 @@ class EnvelopeDetector(SignalNode):
             self.method.addItem("cFIR")
             self.method.currentTextChanged.connect(self.updateModel)
 
+            self.smoother_type = QComboBox()
+            for name in EnvelopeDetector.smoother_name_to_type:
+                self.smoother_type.addItem(name)
+            self.smoother_type.currentTextChanged.connect(self.updateModel)
+
             layout = QFormLayout()
             self.setLayout(layout)
 
             layout.addRow("Smoothing factor", self.smoothing_factor)
             layout.addRow("Method", self.method)
+            layout.addRow("Smoother type", self.smoother_type)
 
         def updateModel(self):
             n = self.node()
@@ -43,9 +49,11 @@ class EnvelopeDetector(SignalNode):
             
             smoothing_factor = self.smoothing_factor.value()
             method = self.method.currentText()
+            smoother_type = n.smoother_name_to_type[self.smoother_type.currentText()]
 
             n.setSmoothingFactor(smoothing_factor)
             n.setMethod(method)
+            n.setSmootherType(smoother_type)
         
         def updateView(self):
             n = self.node()
@@ -54,15 +62,25 @@ class EnvelopeDetector(SignalNode):
             
             self.smoothing_factor.blockSignals(True)
             self.method.blockSignals(True)
+            self.smoother_type.blockSignals(True)
 
             self.smoothing_factor.setValue(n.smoothingFactor())
             self.method.setCurrentText(n.method())
+            self.smoother_type.setCurrentText(n.smoother_type_to_name[n.smootherType()])
 
             self.smoothing_factor.blockSignals(False)
             self.method.blockSignals(False)
+            self.smoother_type.blockSignals(False)
 
     default_smoothing_factor = 0.0  # TODO: Is this the correct default value?
     default_method = "Rectification"
+    default_smoother_type = "exp"
+
+    smoother_type_to_name = {
+        "exp": "Exponential",
+        "savgol": "Savitzky-Golay"
+    }
+    smoother_name_to_type = {v: k for k, v in smoother_type_to_name.items()}
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -73,6 +91,7 @@ class EnvelopeDetector(SignalNode):
 
         self._smoothing_factor = self.default_smoothing_factor
         self._method = self.default_method
+        self._smoother_type = self.default_smoother_type
         self._adjust()
 
     def smoothingFactor(self) -> float:
@@ -89,15 +108,21 @@ class EnvelopeDetector(SignalNode):
         self._method = method
         self._adjust()
 
+    def smootherType(self):
+        return self._smoother_type
+    
+    def setSmootherType(self, value, /):
+        self._smoother_type = value
+        self._adjust()
+
     def _adjust(self):
         """Adjust visuals in response to changes."""
         self.updateView()
 
         self.setDescription(
-            "Smoothing Factor: x{}\nMethod: {}".format(
-                self.smoothingFactor(),
-                self.method()
-            )
+            f"Smoothing Factor: x{self.smoothingFactor()}\n"
+            f"Method: {self.method()}\n"
+            f"Smoother type: {self.smoother_type_to_name[self.smootherType()]}"
         )
 
     # Serialization ====================================================================================================
@@ -105,12 +130,14 @@ class EnvelopeDetector(SignalNode):
         """Add this node's data to the dict representation of the signal."""
         signal["fSmoothingFactor"] = self.smoothingFactor()
         signal["method"] = self.method()
+        signal["sTemporalSmootherType"] = self.smootherType()
     
     def serialize(self) -> dict:
         data = super().serialize()
 
         data["smoothing_factor"] = self.smoothingFactor()
         data["method"] = self.method()
+        data["smoother_type"] = self.smootherType()
         return data
     
     @classmethod
@@ -118,5 +145,6 @@ class EnvelopeDetector(SignalNode):
         obj = super().deserialize(data)
         obj.setSmoothingFactor(data["smoothing_factor"])
         obj.setMethod(data["method"])
+        obj.setSmootherType(data["smoother_type"])
 
         return obj
