@@ -13,6 +13,7 @@ class Block(QObject):
         
         # General ------------------------------------------------------------------------------------------------------
         self.duration = 10.0
+        self.duration_deviation = 0.0
         self.feedback_source = "All"
         self.feedback_type = "Baseline"
         self.random_bound = "SimCircle"
@@ -45,6 +46,7 @@ class Block(QObject):
         data["iDropOutliers"] = 0
         data["bSSDInTheEnd"] = self.start_data_driven_filter_designer
         data["fDuration"] = self.duration
+        data["fRandomOverTime"] = self.duration_deviation
         data["fbSource"] = self.feedback_source
         data["sFb_type"] = self.feedback_type
         data["cString"] = self.message
@@ -73,6 +75,7 @@ class Block(QObject):
     def serialize(self) -> dict:
         return {
             "duration": self.duration,
+            "duration_deviation": self.duration_deviation,
             "feedback_source": self.feedback_source,
             "feedback_type": self.feedback_type,
             "random_bound": self.random_bound,
@@ -98,6 +101,7 @@ class Block(QObject):
         obj = cls()
 
         obj.duration = data["duration"]
+        obj.duration_deviation = data["duration_deviation"]
         obj.feedback_source = data["feedback_source"]
         obj.feedback_type = data["feedback_type"]
         obj.random_bound = data["random_bound"]
@@ -130,6 +134,7 @@ class Block(QObject):
         b.update_statistics = bool(float(data["bUpdateStatistics"]))
         b.start_data_driven_filter_designer = bool(float(data["bSSDInTheEnd"]))
         b.duration = float(data["fDuration"])
+        b.duration_deviation = float(data["fRandomOverTime"])
         b.feedback_source = data["fbSource"]
         b.feedback_type = data["sFb_type"]
         b.mock_signal_path = data["sMockSignalFilePath"]

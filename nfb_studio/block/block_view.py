@@ -1,5 +1,7 @@
 """Config widget for a single experiment block."""
-from PySide2.QtWidgets import QWidget, QFormLayout, QDoubleSpinBox, QSpinBox, QComboBox, QLineEdit, QCheckBox, QGroupBox
+from PySide2.QtWidgets import (
+    QWidget, QFormLayout, QDoubleSpinBox, QSpinBox, QComboBox, QLineEdit, QCheckBox, QGroupBox, QHBoxLayout, QLabel
+)
 
 
 class BlockView(QWidget):
@@ -20,9 +22,26 @@ class BlockView(QWidget):
         self._model = None
 
         # Block properties ---------------------------------------------------------------------------------------------
-        self.duration = QDoubleSpinBox()
-        self.duration.setValue(10)
-        self.duration.setSuffix("s")
+        self.duration = QWidget()
+        self.duration.setContentsMargins(0, 0, 0, 0)
+        ly = QHBoxLayout()
+        ly.setContentsMargins(0, 0, 0, 0)
+        self.duration.setLayout(ly)
+
+        self.duration_base = QDoubleSpinBox()
+        self.duration_base.setRange(0, 1000)
+        self.duration_base.setValue(10)
+
+        self.duration_deviation = QDoubleSpinBox()
+        self.duration_deviation.setRange(0, 10)
+        self.duration_deviation.setValue(0)
+        self.duration_deviation.setSingleStep(0.1)
+        self.duration_deviation.setSuffix(" s")
+        self.duration_base.valueChanged.connect(self.duration_deviation.setMaximum)
+
+        ly.addWidget(self.duration_base)
+        ly.addWidget(QLabel("±"))
+        ly.addWidget(self.duration_deviation)
 
         self.feedback_source = QLineEdit("All")
 
@@ -104,7 +123,8 @@ class BlockView(QWidget):
         if model is None:
             return
         
-        model.duration = self.duration.value()
+        model.duration = self.duration_base.value()
+        model.duration_deviation = self.duration_deviation.value()
         model.feedback_source = self.feedback_source.text()
         model.feedback_type = self.feedback_type.currentText()
         model.random_bound = self.random_bound.currentText()
@@ -127,7 +147,8 @@ class BlockView(QWidget):
         if model is None:
             return
         
-        self.duration.setValue(model.duration)
+        self.duration_base.setValue(model.duration)
+        self.duration_deviation.setValue(model.duration_deviation)
         self.feedback_source.setText(model.feedback_source)
         self.feedback_type.setCurrentText(model.feedback_type)
         self.mock_signal_path.setText(model.mock_signal_path)
