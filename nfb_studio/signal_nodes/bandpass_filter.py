@@ -65,11 +65,16 @@ class BandpassFilter(SignalNode):
             self.filter_length.setValue(1000)
             self.filter_length.valueChanged.connect(self.updateModel)
 
+            self.filter_order = QSpinBox()
+            self.filter_order.setRange(1, 4)
+            self.filter_order.valueChanged.connect(self.updateModel)
+
             # ----------------------------------------------------------------------------------------------------------
             layout = QFormLayout()
             layout.addRow("Lower bound:", lower_bound_widget)
             layout.addRow("Upper bound:", upper_bound_widget)
             layout.addRow("Filter type:", self.filter_type)
+            layout.addRow("Filter order:", self.filter_order)
             layout.addRow("Filter length:", self.filter_length)
             self.setLayout(layout)
 
@@ -90,11 +95,13 @@ class BandpassFilter(SignalNode):
             
             filter_type = n.filter_name_to_type[self.filter_type.currentText()]
             filter_length = self.filter_length.value()
+            filter_order = self.filter_order.value()
 
             n.setLowerBound(lower_bound)
             n.setUpperBound(upper_bound)
             n.setFilterType(filter_type)
             n.setFilterLength(filter_length)
+            n.setFilterOrder(filter_order)
 
         def updateView(self):
             n = self.node()
@@ -106,6 +113,7 @@ class BandpassFilter(SignalNode):
             self.upper_bound.blockSignals(True)
             self.filter_type.blockSignals(True)
             self.filter_length.blockSignals(True)
+            self.filter_order.blockSignals(True)
 
             if n.upperBound() is None:
                 self.upper_bound_enable.setChecked(False)
@@ -121,12 +129,14 @@ class BandpassFilter(SignalNode):
             
             self.filter_type.setCurrentText(n.filter_type_to_name[n.filterType()])
             self.filter_length.setValue(n.filterLength())
+            self.filter_order.setValue(n.filterOrder())
             
             # Release the block and call adjust
             self.lower_bound.blockSignals(False)
             self.upper_bound.blockSignals(False)
             self.filter_type.blockSignals(False)
             self.filter_length.blockSignals(False)
+            self.filter_order.blockSignals(False)
             self._adjust()
 
         def _adjust(self):
@@ -145,11 +155,17 @@ class BandpassFilter(SignalNode):
                 self.lower_bound.setMaximum(self.upper_bound.value())
             else:
                 self.lower_bound.setMaximum(250)
+            
+            if self.filter_type.currentText() == "Butterworth":
+                self.filter_order.setEnabled(True)
+            else:
+                self.filter_order.setEnabled(False)
 
     default_lower_bound = 0.0
     default_upper_bound = 250.0
     default_filter_type = "butter"
     default_filter_length = 1000
+    default_filter_order = 2
 
     filter_type_to_name = {
         "butter": "Butterworth",
@@ -168,6 +184,7 @@ class BandpassFilter(SignalNode):
         self._upper_bound = self.default_upper_bound
         self._filter_type = self.default_filter_type
         self._filter_length = self.default_filter_length
+        self._filter_order = self.default_filter_order
         self._adjust()
     
     def lowerBound(self):
@@ -182,12 +199,19 @@ class BandpassFilter(SignalNode):
     def filterLength(self):
         return self._filter_length
     
+    def filterOrder(self):
+        return self._filter_order
+    
     def setFilterType(self, value, /):
         self._filter_type = value
         self._adjust()
 
     def setFilterLength(self, value, /):
         self._filter_length = value
+        self._adjust()
+    
+    def setFilterOrder(self, value, /):
+        self._filter_order = value
         self._adjust()
 
     def setLowerBound(self, value, /):
@@ -210,9 +234,15 @@ class BandpassFilter(SignalNode):
         if self.upperBound() is None:
             upper_bound = ""
 
+        # Description
+        if self.filterType() == "butter":
+            filter_desc = f"Filter: {self.filter_type_to_name[self.filterType()]} (#{self.filterOrder()})\n"
+        else:
+            filter_desc = f"Filter: {self.filter_type_to_name[self.filterType()]}\n"
+
         self.setDescription(
-            f"Range: {lower_bound}~{upper_bound} Hz\n"
-            f"Filter: {self.filter_type_to_name[self.filterType()]}\n"
+            f"Range: {lower_bound}~{upper_bound} Hz\n" +
+            filter_desc +
             f"Length: {self.filterLength()}"
         )
 
@@ -223,6 +253,7 @@ class BandpassFilter(SignalNode):
         signal["fBandpassHighHz"] = self.upperBound()
         signal["fFFTWindowSize"] = float(self.filterLength())
         signal["sTemporalFilterType"] = self.filterType()
+        signal["fTemporalFilterButterOrder"] = self.filterOrder()
     
     def serialize(self) -> dict:
         data = super().serialize()
@@ -231,6 +262,7 @@ class BandpassFilter(SignalNode):
         data["upper_bound"] = self.upperBound()
         data["filter_type"] = self.filterType()
         data["filter_length"] = self.filterLength()
+        data["filter_order"] = self.filterOrder()
 
         return data
     
@@ -241,5 +273,6 @@ class BandpassFilter(SignalNode):
         obj.setUpperBound(data["upper_bound"])
         obj.setFilterType(data["filter_type"])
         obj.setFilterLength(data["filter_length"])
+        obj.setFilterOrder(data["filter_order"])
 
         return obj
