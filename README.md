@@ -11,17 +11,23 @@ conda activate nfb_studio
 
 Regardless of whether you are using a virtual environment, clone this repository and install the package in editable mode by running:
 ```
-git clone https://github.com/andreasxp/nfb_studio
+git clone https://github.com/bioelectric-interfaces/nfb_studio
 cd nfb_studio
 pip install -e .
 ```
 
 ## Running the experiment designer
+After installation, NFB Studio can be run by using the following command:
 ```
-python -m nfb_studio
+nfb-studio
 ```
-
 NFB Studio will also open an experiment right away if you specify the path in the command line:
 ```
-python -m nfb_studio experiment-file.nfbex
+nfb-studio experiment-file.nfbex
+```
+If you are experiencing sudden crashes, you may want to run NFB Studio in debug mode:
+```
+# Either one works
+nfb-studio-d
+python -m nfb_studio
 ```
