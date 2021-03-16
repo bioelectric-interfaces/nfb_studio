@@ -32,38 +32,8 @@ class Block(QObject):
         self.pause = False
         self.beep = False
         self.update_statistics = False
+        self.statistics_type = "meanstd"
 
-        # --------------------------------------------------------------------------------------------------------------
-        self._view = None
-    
-    def view(self):
-        """Return the view (config widget) for this block."""
-        return self._view
-
-    def setView(self, view, /):
-        view.setModel(self)
-
-    def updateView(self):
-        view = self.view()
-        if view is None:
-            return
-        
-        view.duration.setValue(self.duration)
-        view.feedback_source.setText(self.feedback_source)
-        view.feedback_type.setCurrentText(self.feedback_type)
-        view.mock_signal_path.setText(self.mock_signal_path)
-        view.mock_signal_dataset.setText(self.mock_signal_dataset)
-        view.mock_previous.setValue(self.mock_previous)
-        view.mock_previous_reverse.setChecked(self.mock_previous_reverse)
-        view.mock_previous_random.setChecked(self.mock_previous_random)
-        view.pause.setChecked(self.pause)
-        view.beep.setChecked(self.beep)
-        view.start_data_driven_filter_designer.setChecked(self.start_data_driven_filter_designer)
-        view.update_statistics.setChecked(self.update_statistics)
-        view.random_bound.setCurrentText(self.random_bound)
-        view.video_path.setText(self.video_path)
-        view.message.setText(self.message)
-        view.voiceover.setChecked(self.voiceover)
 
     def nfb_export_data(self) -> dict:
         """Export this block into a dict to be encoded as XML for NFBLab.
@@ -94,6 +64,7 @@ class Block(QObject):
         data["bBeepAfter"] = self.beep
         data["iRandomBound"] = self.random_bound_types.index(self.random_bound)
         data["sVideoPath"] = self.video_path
+        data["sStatisticsType"] = self.statistics_type
         data["sMSignal"] = "None"
         data["fMSignalThreshold"] = 1
 
@@ -119,6 +90,7 @@ class Block(QObject):
             "pause": self.pause,
             "beep": self.beep,
             "update_statistics": self.update_statistics,
+            "statistics_type": self.statistics_type,
         }
 
     @classmethod
@@ -143,6 +115,7 @@ class Block(QObject):
         obj.pause = data["pause"]
         obj.beep = data["beep"]
         obj.update_statistics = data["update_statistics"]
+        obj.statistics_type = data["statistics_type"]
 
         return obj
 
@@ -170,5 +143,6 @@ class Block(QObject):
         b.video_path = data["sVideoPath"]
         b.message = data["cString"]
         b.voiceover = bool(float(data.get("bVoiceover", 0)))
+        b.statistics_type = data["sStatisticsType"]
 
         return b

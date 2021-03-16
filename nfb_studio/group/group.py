@@ -26,24 +26,6 @@ class Group(QObject, MutableSequence, metaclass=GroupMetaclass):
 
         self.random_order = False
 
-        self._view = None
-
-    def view(self):
-        """Return the view (config widget) for this group."""
-        return self._view
-    
-    def setView(self, view, /):
-        view.setModel(self)
-    
-    def updateView(self):
-        view = self.view()
-        if view is None:
-            return
-        
-        view.blocks.setText(" ".join(self.blocks))
-        view.repeats.setText(" ".join([str(x) for x in self.repeats]))
-        view.random_order.setChecked(self.random_order)
-
     # MutableSequence method implementations ===========================================================================
     def __getitem__(self, index):
         return (self.blocks[index], self.repeats[index])

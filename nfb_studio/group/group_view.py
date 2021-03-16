@@ -25,20 +25,28 @@ class GroupView(QWidget):
     
     def setModel(self, group, /):
         self._model = group
-        group._view = self
-        self._model.updateView()
+        self.updateView()
 
     def updateModel(self):
         """Copy data from this view to the group model.
         A similarly named function in the group copies data the opposite way. Use one or the other depending on where
         data was changed.
         """
-        group = self.model()
+        model = self.model()
 
-        group.random_order = self.random_order.isChecked()
+        model.random_order = self.random_order.isChecked()
         if self.blocks.text() == "":
-            group.blocks = []
-            group.repeats = []
+            model.blocks = []
+            model.repeats = []
         else:
-            group.blocks = self.blocks.text().split(" ")
-            group.repeats = [int(number) for number in self.repeats.text().split(" ")]
+            model.blocks = self.blocks.text().split(" ")
+            model.repeats = [int(number) for number in self.repeats.text().split(" ")]
+
+    def updateView(self):
+        model = self.model()
+        if model is None:
+            return
+        
+        self.blocks.setText(" ".join(model.blocks))
+        self.repeats.setText(" ".join([str(x) for x in model.repeats]))
+        self.random_order.setChecked(model.random_order)
