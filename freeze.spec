@@ -32,6 +32,7 @@ a = Analysis(
         "sklearn.neighbors._typedefs",
         "sklearn.neighbors._quad_tree",
         "sklearn.utils._cython_blas",
+        "sklearn.utils._weight_vector",
         "sklearn.tree._utils"
     ],
     hookspath=[],
@@ -56,7 +57,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name="nfb_studio",
+    name="nfb-studio",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
