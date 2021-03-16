@@ -412,6 +412,13 @@ class Experiment:
             for node in signals[i]:
                 node.add_nfb_export_data(signal)
             
+            if isinstance(signals[i][-2], EnvelopeDetector):
+                signal["sTemporalType"] = "envdetector"
+            elif isinstance(signals[i][-2], BandpassFilter):
+                signal["sTemporalType"] = "filter"
+            else:
+                signal["sTemporalType"] = "identity"
+            
             signals[i] = signal
 
         data["vSignals"] = {
