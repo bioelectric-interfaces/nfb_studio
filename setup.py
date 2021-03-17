@@ -5,7 +5,7 @@ install_requires = [
     "PySide2",
     "sortedcontainers",
     "xmltodict",
-    "pynfb @ https://github.com/bioelectric-interfaces/nfb/archive/1.0.0.zip",
+    "pynfb @ https://github.com/bioelectric-interfaces/nfb/archive/0.1.0.zip",
 ]
 
 extras_require = {
