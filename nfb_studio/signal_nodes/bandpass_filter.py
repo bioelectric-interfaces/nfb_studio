@@ -164,7 +164,7 @@ class BandpassFilter(SignalNode):
     default_lower_bound = 0.0
     default_upper_bound = 250.0
     default_filter_type = "butter"
-    default_filter_length = 1000
+    default_filter_length = 1000.0
     default_filter_order = 2
 
     filter_type_to_name = {

@@ -185,6 +185,7 @@ class Experiment:
                 last = n
                 n = EnvelopeDetector()
                 n.setSmoothingFactor(float(signal_data.get("fSmoothingFactor", n.default_smoothing_factor)))
+                n.setSmootherType(signal_data.get("sTemporalSmootherType", n.default_smoother_type))
                 n.setMethod(signal_data.get("method", n.default_method))
 
                 n.setPos(*node_pos)
@@ -206,6 +207,9 @@ class Experiment:
 
                 n.setLowerBound(lower_bound)
                 n.setUpperBound(upper_bound)
+                n.setFilterLength(float(signal_data.get("fFFTWindowSize", n.default_filter_length)))
+                n.setFilterType(signal_data.get("sTemporalFilterType", n.default_filter_type))
+                n.setFilterOrder(float(signal_data.get("fTemporalFilterButterOrder", n.default_filter_order)))
 
                 n.setPos(*node_pos)
                 node_pos[0] += node_xdiff
@@ -421,9 +425,9 @@ class Experiment:
             for node in signals[i]:
                 node.add_nfb_export_data(signal)
             
-            if isinstance(signals[i][-2], EnvelopeDetector):
+            if isinstance(signals[i][1], EnvelopeDetector):
                 signal["sTemporalType"] = "envdetector"
-            elif isinstance(signals[i][-2], BandpassFilter):
+            elif isinstance(signals[i][1], BandpassFilter):
                 signal["sTemporalType"] = "filter"
             else:
                 signal["sTemporalType"] = "identity"
