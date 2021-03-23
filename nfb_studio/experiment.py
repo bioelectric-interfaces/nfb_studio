@@ -195,8 +195,17 @@ class Experiment:
             if ("fBandpassLowHz" in signal_data) or ("fBandpassHighHz" in signal_data):
                 last = n
                 n = BandpassFilter()
-                n.setLowerBound(float(signal_data.get("fBandpassLowHz", n.default_lower_bound)))
-                n.setUpperBound(float(signal_data.get("fBandpassHighHz", n.default_upper_bound)))
+
+                lower_bound = signal_data.get("fBandpassLowHz", n.default_lower_bound)
+                upper_bound = signal_data.get("fBandpassHighHz", n.default_upper_bound)
+
+                if lower_bound is not None:
+                    lower_bound = float(lower_bound)
+                if upper_bound is not None:
+                    upper_bound = float(upper_bound)
+
+                n.setLowerBound(lower_bound)
+                n.setUpperBound(upper_bound)
 
                 n.setPos(*node_pos)
                 node_pos[0] += node_xdiff
