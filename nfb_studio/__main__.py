@@ -17,7 +17,7 @@ except ImportError:
 
 import sys
 import multiprocessing
-from PySide2.QtWidgets import QApplication
+from PySide2.QtWidgets import QApplication, QStyleFactory
 
 from nfb_studio.experiment_view import ExperimentView
 # Note: When using relative import in __main__.py, frozen executable fails to start with error:
@@ -26,6 +26,9 @@ from nfb_studio.experiment_view import ExperimentView
 def main():
     multiprocessing.freeze_support()
     app = QApplication(sys.argv)
+    app.setApplicationName("nfb-studio")
+    app.setApplicationDisplayName("NFB Studio")
+    app.setStyle(QStyleFactory.create("fusion"))
 
     main_window = ExperimentView()
     main_window.show()
