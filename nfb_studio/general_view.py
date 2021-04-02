@@ -1,6 +1,9 @@
 """Config widget for general properties of an experiment."""
-from PySide2.QtWidgets import QWidget, QFormLayout, QComboBox, QLineEdit, QHBoxLayout, QCheckBox, QDoubleSpinBox
+from PySide2.QtWidgets import (
+    QWidget, QFormLayout, QComboBox, QLineEdit, QHBoxLayout, QCheckBox, QDoubleSpinBox, QFileDialog
+)
 from nfb_studio.util import StackedDictWidget
+from nfb_studio.pathedit import PathEdit
 
 
 class GeneralView(QWidget):
@@ -71,7 +74,10 @@ class GeneralView(QWidget):
         self.lsl_stream_name.addItem("NVX136_Data")
         self.lsl_stream_name.addItem("Mitsar")
 
-        self.lsl_filename = QLineEdit()
+        self.lsl_filename = PathEdit()
+        dialog = QFileDialog(self, "Open")
+        dialog.setFileMode(dialog.AnyFile)
+        self.lsl_filename.setDialog(dialog)
         self.hostname_port = QLineEdit("localhost:1972")
 
         self.inlet_params = StackedDictWidget()
