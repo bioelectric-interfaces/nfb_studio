@@ -17,6 +17,9 @@ except ImportError:
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
+from pathlib import Path
+
+dir = Path(__file__).parent
 
 from .block import Block, BlockView
 from .group import Group, GroupView

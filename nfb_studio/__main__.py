@@ -16,10 +16,13 @@ except ImportError:
     pass
 
 import sys
+import platform
 import multiprocessing
+from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QApplication, QStyleFactory
 
 from nfb_studio.experiment_view import ExperimentView
+import nfb_studio as package
 # Note: When using relative import in __main__.py, frozen executable fails to start with error:
 # ImportError: attempted relative import with no known parent package
 
@@ -29,6 +32,16 @@ def main():
     app.setApplicationName("nfb-studio")
     app.setApplicationDisplayName("NFB Studio")
     app.setStyle(QStyleFactory.create("fusion"))
+
+    if platform.system() == "Darwin":
+        icon_dir = package.dir / "assets/window-icon/macos"
+    else:
+        icon_dir = package.dir / "assets/window-icon/generic"
+        
+    icon = QIcon()
+    for file in icon_dir.glob("*"):
+        icon.addFile(str(file))
+    app.setWindowIcon(icon)
 
     main_window = ExperimentView()
     main_window.show()
