@@ -133,8 +133,14 @@ class Block(QObject):
 
         b.update_statistics = bool(float(data["bUpdateStatistics"]))
         b.start_data_driven_filter_designer = bool(float(data["bSSDInTheEnd"]))
-        b.duration = float(data["fDuration"]) + float(data["fRandomOverTime"]) / 2
-        b.duration_deviation = float(data["fRandomOverTime"]) / 2
+
+        if data.get("fRandomOverTime", None) is None:
+            b.duration = float(data["fDuration"])
+            b.duration_deviation = 0.0
+        else:
+            b.duration = float(data["fDuration"]) + float(data["fRandomOverTime"]) / 2
+            b.duration_deviation = float(data["fRandomOverTime"]) / 2
+        
         b.feedback_source = data["fbSource"]
         b.feedback_type = data["sFb_type"]
         b.mock_signal_path = data["sMockSignalFilePath"]
