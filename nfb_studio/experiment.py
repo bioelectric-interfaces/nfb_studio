@@ -219,7 +219,11 @@ class Experiment:
             if "SpatialFilterMatrix" in signal_data:
                 last = n
                 n = SpatialFilter()
-                n.setMatrixPath(signal_data["SpatialFilterMatrix"])
+
+                if "=" in signal_data["SpatialFilterMatrix"]:
+                    n.setVector(signal_data["SpatialFilterMatrix"])
+                else:
+                    n.setVectorPath(signal_data["SpatialFilterMatrix"])
 
                 n.setPos(*node_pos)
                 node_pos[0] += node_xdiff

@@ -1,5 +1,5 @@
 """NFB main source signal."""
-from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit
+from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit, QRadioButton 
 
 from ..scheme import Node, Input, Output, DataType
 from .signal_node import SignalNode
@@ -15,31 +15,61 @@ class SpatialFilter(SignalNode):
         def __init__(self, parent=None):
             super().__init__(parent=parent)
 
-            self.matrix_path = QLineEdit()
-            self.matrix_path.editingFinished.connect(self.updateModel)
-
             layout = QFormLayout()
             self.setLayout(layout)
 
-            layout.addRow("Matrix path", self.matrix_path)
+            self.vector = QLineEdit()
+            self.vector.editingFinished.connect(self.updateModel)
+
+            self.vector_path = QLineEdit()
+            self.vector_path.editingFinished.connect(self.updateModel)
+
+            # Vector data can be contained in a file or inputted directly from a file
+            self.vector_radio_button = QRadioButton("Filter vector")
+            self.vector_radio_button.toggled.connect(self.vector.setEnabled)
+            self.vector_radio_button.clicked.connect(self.updateModel)
+            self.vector_path_radio_button = QRadioButton("Filter vector file")
+            self.vector_path_radio_button.toggled.connect(self.vector_path.setEnabled)
+            self.vector_path_radio_button.clicked.connect(self.updateModel)
+
+            layout.addRow(self.vector_radio_button, self.vector)
+            layout.addRow(self.vector_path_radio_button, self.vector_path)
+
+            self.vector_radio_button.setChecked(True)
+            self.vector_path.setEnabled(False)
         
         def updateModel(self):
             n = self.node()
             if n is None:
                 return
             
-            n.setMatrixPath(self.matrix_path.text())
+            if self.vector.isEnabled():
+                n.setVector(self.vector.text())
+                n.setVectorPath(None)
+            else:
+                n.setVectorPath(self.vector_path.text())
+                n.setVector(None)
         
         def updateView(self):
             n = self.node()
             if n is None:
                 return
             
-            self.matrix_path.blockSignals(True)
-            self.matrix_path.setText(n.matrixPath())
-            self.matrix_path.blockSignals(False)
+            self.vector.blockSignals(True)
+            self.vector_path.blockSignals(True)
 
-    default_matrix_path = ""
+            if n.vector() is not None:
+                self.vector.setText(n.vector())
+                self.vector_radio_button.setChecked(True)
+            else:
+                self.vector_path.setText(n.vectorPath())
+                self.vector_path_radio_button.setChecked(True)
+
+            self.vector.blockSignals(False)
+            self.vector_path.blockSignals(False)
+
+    default_vector = ""
+    default_vector_path = None
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -48,39 +78,61 @@ class SpatialFilter(SignalNode):
         self.addInput(Input("Input", self.input_type))
         self.addOutput(Output("Output", self.output_type))
 
-        self._matrix_path = self.default_matrix_path
+        self._vector = self.default_vector
+        self._vector_path = self.default_vector_path
         self._adjust()
 
-    def matrixPath(self) -> str:
-        return self._matrix_path
+    def vector(self) -> str:
+        return self._vector
     
-    def setMatrixPath(self, matrix_path: str, /):
-        self._matrix_path = matrix_path
+    def vectorPath(self) -> str:
+        return self._vector_path
+    
+    def setVector(self, vector: str, /):
+        self._vector = vector
+        self._vector_path = None
+        self._adjust()
+
+    def setVectorPath(self, vector_path: str, /):
+        self._vector_path = vector_path
+        self._vector = None
         self._adjust()
 
     def _adjust(self):
         """Adjust visuals in response to changes."""
         self.updateView()
 
-        if self.matrixPath() == "":
-            self.setDescription("No Matrix")
+        if self.vector() is not None:
+            if self.vector() == "":
+                self.setDescription("No Matrix")
+            else:
+                self.setDescription(self.vector())
         else:
-            self.setDescription(self.matrixPath())
+            if self.vectorPath() == "":
+                self.setDescription("No Matrix")
+            else:
+                self.setDescription(self.vectorPath())
+
 
     # Serialization ====================================================================================================
     def add_nfb_export_data(self, signal: dict):
         """Add this node's data to the dict representation of the signal."""
-        signal["SpatialFilterMatrix"] = self.matrixPath()
+        if self.vector() is not None:
+            signal["SpatialFilterMatrix"] = self.vector()
+        else:
+            signal["SpatialFilterMatrix"] = self.vectorPath()
     
     def serialize(self) -> dict:
         data = super().serialize()
 
-        data["matrix_path"] = self.matrixPath()
+        data["vector"] = self.vector()
+        data["vector_path"] = self.vectorPath()
         return data
     
     @classmethod
     def deserialize(cls, data: dict):
         obj = super().deserialize(data)
-        obj.setMatrixPath(data["matrix_path"])
+        obj.setVector(data["vector"])
+        obj.setVectorPath(data["vector_path"])
 
         return obj
