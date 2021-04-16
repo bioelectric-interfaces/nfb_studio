@@ -58,7 +58,9 @@ class BlockView(QWidget):
         self.beep = QCheckBox()
         self.start_data_driven_filter_designer = QCheckBox()
         self.update_statistics = QCheckBox()
+        self.update_statistics.stateChanged.connect(lambda state: self.statistics_type.setEnabled(bool(state)))
         self.statistics_type = QComboBox()
+        self.statistics_type.setEnabled(False)
         for name in self.statistics_name_to_type:
             self.statistics_type.addItem(name)
         self.statistics_type.setCurrentText("Standardise")
