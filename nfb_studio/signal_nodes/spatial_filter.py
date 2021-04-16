@@ -1,9 +1,10 @@
 """NFB main source signal."""
-from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit, QRadioButton 
+from PySide2.QtWidgets import QWidget, QComboBox, QLabel, QFormLayout, QLineEdit, QRadioButton, QFileDialog
 
 from ..scheme import Node, Input, Output, DataType
 from .signal_node import SignalNode
 from .lsl_input import LSLInput
+from nfb_studio.pathedit import PathEdit
 
 
 class SpatialFilter(SignalNode):
@@ -19,10 +20,14 @@ class SpatialFilter(SignalNode):
             self.setLayout(layout)
 
             self.vector = QLineEdit()
+            self.vector.setPlaceholderText("Fp1=1;Cz=-1;...")
             self.vector.editingFinished.connect(self.updateModel)
 
-            self.vector_path = QLineEdit()
-            self.vector_path.editingFinished.connect(self.updateModel)
+            self.vector_path = PathEdit()
+            dialog = QFileDialog(self, "Open")
+            dialog.setFileMode(dialog.AnyFile)
+            self.vector_path.setDialog(dialog)
+            self.vector_path.pathChanged.connect(self.updateModel)
 
             # Vector data can be contained in a file or inputted directly from a file
             self.vector_radio_button = QRadioButton("Filter vector")
@@ -45,10 +50,8 @@ class SpatialFilter(SignalNode):
             
             if self.vector.isEnabled():
                 n.setVector(self.vector.text())
-                n.setVectorPath(None)
             else:
                 n.setVectorPath(self.vector_path.text())
-                n.setVector(None)
         
         def updateView(self):
             n = self.node()
@@ -132,7 +135,9 @@ class SpatialFilter(SignalNode):
     @classmethod
     def deserialize(cls, data: dict):
         obj = super().deserialize(data)
-        obj.setVector(data["vector"])
-        obj.setVectorPath(data["vector_path"])
+        if data["vector"] is not None:
+            obj.setVector(data["vector"])
+        else:
+            obj.setVectorPath(data["vector_path"])
 
         return obj

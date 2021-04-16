@@ -1,7 +1,10 @@
+from PySide2.QtCore import Signal
 from PySide2.QtWidgets import QWidget, QLineEdit, QPushButton, QHBoxLayout, QFileDialog
 
 
 class PathEdit(QWidget):
+    pathChanged = Signal(str)
+
     def __init__(self, path="", parent=None):
         super().__init__(parent)
 
@@ -14,6 +17,8 @@ class PathEdit(QWidget):
         self._line_edit = QLineEdit(path)
         self._button = QPushButton("Browse...")
         self._dialog = QFileDialog(self)
+
+        self._line_edit.textChanged.connect(self.pathChanged.emit)
 
         self._button.clicked.connect(self.browse)
 
