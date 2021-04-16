@@ -45,8 +45,8 @@ class Block(QObject):
         data["bUpdateStatistics"] = self.update_statistics
         data["iDropOutliers"] = 0
         data["bSSDInTheEnd"] = self.start_data_driven_filter_designer
-        data["fDuration"] = self.duration
-        data["fRandomOverTime"] = self.duration_deviation
+        data["fDuration"] = self.duration - self.duration_deviation
+        data["fRandomOverTime"] = self.duration_deviation * 2
         data["fbSource"] = self.feedback_source
         data["sFb_type"] = self.feedback_type
         data["cString"] = self.message
@@ -133,8 +133,8 @@ class Block(QObject):
 
         b.update_statistics = bool(float(data["bUpdateStatistics"]))
         b.start_data_driven_filter_designer = bool(float(data["bSSDInTheEnd"]))
-        b.duration = float(data["fDuration"])
-        b.duration_deviation = float(data["fRandomOverTime"])
+        b.duration = float(data["fDuration"]) + float(data["fRandomOverTime"]) / 2
+        b.duration_deviation = float(data["fRandomOverTime"]) / 2
         b.feedback_source = data["fbSource"]
         b.feedback_type = data["sFb_type"]
         b.mock_signal_path = data["sMockSignalFilePath"]
