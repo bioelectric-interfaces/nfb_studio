@@ -117,7 +117,7 @@ class GeneralView(QWidget):
         # Adding properties to the widget ------------------------------------------------------------------------------
         layout.addRow("Name", self.name)
         layout.addRow("Inlet", self.inlet_config)
-        layout.addRow("dc", self.dc)
+        layout.addRow("Enable DC blocker", self.dc)
         layout.addRow("Prefilter band (lower bound)", prefilter_lower_bound_widget)
         layout.addRow("Prefilter band (upper bound)", prefilter_upper_bound_widget)
         layout.addRow("Plot raw", self.plot_raw)
