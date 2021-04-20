@@ -218,7 +218,7 @@ class ExperimentView(QMainWindow):
         general.show_subject_window.setChecked(ex.show_subject_window)
         general.discard_channels.setText(ex.discard_channels)
         general.reference_sub.setText(ex.reference_sub)
-        general.show_proto_rectangle.setChecked(ex.show_proto_rectangle)
+        general.show_photo_rectangle.setChecked(ex.show_photo_rectangle)
         general.show_notch_filters.setChecked(ex.show_notch_filters)
 
         # Blocks and groups --------------------------------------------------------------------------------------------

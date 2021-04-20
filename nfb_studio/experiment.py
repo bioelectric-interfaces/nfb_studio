@@ -34,7 +34,7 @@ class Experiment:
         self.show_subject_window = True
         self.discard_channels = ""
         self.reference_sub = ""
-        self.show_proto_rectangle = False
+        self.show_photo_rectangle = False
         self.show_notch_filters = False
 
         self.signal_scheme = Scheme()
@@ -149,7 +149,7 @@ class Experiment:
         ex.show_subject_window = bool(float(data.get("bShowSubjectWindow", ex.show_subject_window)))
         ex.discard_channels = data["sReference"]
         ex.reference_sub = data["sReferenceSub"]
-        ex.show_proto_rectangle = bool(float(data.get("bShowPhotoRectangle", ex.show_proto_rectangle)))
+        ex.show_photo_rectangle = bool(float(data.get("bShowPhotoRectangle", ex.show_photo_rectangle)))
         ex.show_notch_filters = bool(float(data.get("sVizNotchFilters", ex.show_notch_filters)))
 
         # Decode signals -----------------------------------------------------------------------------------------------
@@ -316,7 +316,7 @@ class Experiment:
             "show_subject_window": self.show_subject_window,
             "discard_channels": self.discard_channels,
             "reference_sub": self.reference_sub,
-            "show_proto_rectangle": self.show_proto_rectangle,
+            "show_photo_rectangle": self.show_photo_rectangle,
             "show_notch_filters": self.show_notch_filters,
             "signal_scheme": self.signal_scheme,
             "sequence_scheme": self.sequence_scheme,
@@ -341,7 +341,7 @@ class Experiment:
         obj.show_subject_window = data["show_subject_window"]
         obj.discard_channels = data["discard_channels"]
         obj.reference_sub = data["reference_sub"]
-        obj.show_proto_rectangle = data["show_proto_rectangle"]
+        obj.show_photo_rectangle = data["show_photo_rectangle"]
         obj.show_notch_filters = data["show_notch_filters"]
         obj.signal_scheme = data["signal_scheme"]
         obj.sequence_scheme = data["sequence_scheme"]
@@ -374,7 +374,7 @@ class Experiment:
         data["sReference"] = self.discard_channels
         data["sReferenceSub"] = self.reference_sub
         data["bUseExpyriment"] = 0
-        data["bShowPhotoRectangle"] = self.show_proto_rectangle
+        data["bShowPhotoRectangle"] = self.show_photo_rectangle
         data["sVizNotchFilters"] = self.show_notch_filters
 
         # Blocks -------------------------------------------------------------------------------------------------------

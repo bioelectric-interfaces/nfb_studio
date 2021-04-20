@@ -111,7 +111,7 @@ class GeneralView(QWidget):
 
         self.discard_channels = QLineEdit()
         self.reference_sub = QLineEdit()
-        self.show_proto_rectangle = QCheckBox()
+        self.show_photo_rectangle = QCheckBox()
         self.show_notch_filters = QCheckBox()
 
         # Adding properties to the widget ------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ class GeneralView(QWidget):
         layout.addRow("Show subject window", self.show_subject_window)
         layout.addRow("Discard channels", self.discard_channels)
         layout.addRow("Reference sub", self.reference_sub)
-        layout.addRow("Show proto rectangle", self.show_proto_rectangle)
+        layout.addRow("Show photo-sensor rectangle", self.show_photo_rectangle)
         layout.addRow("Show notch filters", self.show_notch_filters)
     
     def updateModel(self, ex, /):
@@ -152,7 +152,7 @@ class GeneralView(QWidget):
         ex.show_subject_window = self.show_subject_window.isChecked()
         ex.discard_channels = self.discard_channels.text()
         ex.reference_sub = self.reference_sub.text()
-        ex.show_proto_rectangle = self.show_proto_rectangle.isChecked()
+        ex.show_photo_rectangle = self.show_photo_rectangle.isChecked()
         ex.show_notch_filters = self.show_notch_filters.isChecked()
 
     def _adjust(self):
