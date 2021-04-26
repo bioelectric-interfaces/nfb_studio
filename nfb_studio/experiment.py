@@ -220,7 +220,9 @@ class Experiment:
                 last = n
                 n = SpatialFilter()
 
-                if "=" in signal_data["SpatialFilterMatrix"]:
+                if signal_data["SpatialFilterMatrix"] is None:
+                    pass
+                elif "=" in signal_data["SpatialFilterMatrix"]:
                     n.setVector(signal_data["SpatialFilterMatrix"])
                 else:
                     n.setVectorPath(signal_data["SpatialFilterMatrix"])
