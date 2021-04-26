@@ -157,6 +157,8 @@ class Experiment:
         node_xdiff = -250  # TODO: Change to a size dependent on node default width
         node_ydiff = 250
 
+        derived_signals = {}  # For connecting with composite signals
+
         for signal_data in data["vSignals"]["DerivedSignal"]:
             # Assemble the signal front to back, starting with the signal name.
             # Some nodes may not be present, this loop accounts for it.
@@ -164,6 +166,7 @@ class Experiment:
                 # Create the node and set variables from data
                 n = DerivedSignalExport()
                 n.setSignalName(signal_data["sSignalName"])
+                derived_signals[signal_data["sSignalName"]] = n
 
                 # Set position and add to scheme
                 n.setPos(*node_pos)
@@ -261,6 +264,10 @@ class Experiment:
             node_pos[1] += node_ydiff
 
             ex.signal_scheme.addItem(n)
+            
+            for name, derived_n in derived_signals.items():
+                if name in comp_data["sExpression"]:
+                    ex.signal_scheme.connect_nodes(derived_n.outputs[0], n.inputs[0])
 
         # Decode blocks ------------------------------------------------------------------------------------------------
         for block_data in data["vProtocols"]["FeedbackProtocol"]:
