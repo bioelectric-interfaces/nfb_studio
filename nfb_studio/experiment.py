@@ -35,6 +35,7 @@ class Experiment:
         self.reference_sub = ""
         self.show_photo_rectangle = False
         self.show_notch_filters = False
+        self.reward_refractory_period = 0.25
 
         self.signal_scheme = Scheme()
         self.sequence_scheme = Scheme()
@@ -149,6 +150,7 @@ class Experiment:
         ex.reference_sub = data["sReferenceSub"]
         ex.show_photo_rectangle = bool(float(data.get("bShowPhotoRectangle", ex.show_photo_rectangle)))
         ex.show_notch_filters = bool(float(data.get("sVizNotchFilters", ex.show_notch_filters)))
+        ex.reward_refractory_period = float(data.get("fRewardPeriodS", ex.reward_refractory_period))
 
         # Decode signals -----------------------------------------------------------------------------------------------
         node_pos = [0, 0]
@@ -324,6 +326,7 @@ class Experiment:
             "reference_sub": self.reference_sub,
             "show_photo_rectangle": self.show_photo_rectangle,
             "show_notch_filters": self.show_notch_filters,
+            "reward_refractory_period": self.reward_refractory_period,
             "signal_scheme": self.signal_scheme,
             "sequence_scheme": self.sequence_scheme,
             "blocks": self.blocks,
@@ -348,6 +351,7 @@ class Experiment:
         obj.reference_sub = data["reference_sub"]
         obj.show_photo_rectangle = data["show_photo_rectangle"]
         obj.show_notch_filters = data["show_notch_filters"]
+        obj.reward_refractory_period = data["reward_refractory_period"]
         obj.signal_scheme = data["signal_scheme"]
         obj.sequence_scheme = data["sequence_scheme"]
         obj.blocks = data["blocks"]
@@ -374,7 +378,7 @@ class Experiment:
         data["bPlotRaw"] = self.plot_raw
         data["bPlotSignals"] = self.plot_signals
         data["bPlotSourceSpace"] = 0
-        data["fRewardPeriodS"] = 0.25
+        data["fRewardPeriodS"] = self.reward_refractory_period
         data["sReference"] = self.discard_channels
         data["sReferenceSub"] = self.reference_sub
         data["bUseExpyriment"] = 0

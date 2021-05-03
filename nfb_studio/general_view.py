@@ -112,6 +112,11 @@ class GeneralView(QWidget):
         self.show_photo_rectangle = QCheckBox()
         self.show_notch_filters = QCheckBox()
 
+        self.reward_refractory_period = QDoubleSpinBox()
+        self.reward_refractory_period.setRange(0.1, 10)
+        self.reward_refractory_period.setValue(0.25)
+        self.reward_refractory_period.setSuffix(" s")
+
         # Adding properties to the widget ------------------------------------------------------------------------------
         layout.addRow("Name", self.name)
         layout.addRow("Inlet", self.inlet_config)
@@ -124,6 +129,7 @@ class GeneralView(QWidget):
         layout.addRow("Reference sub", self.reference_sub)
         layout.addRow("Show photo-sensor rectangle", self.show_photo_rectangle)
         layout.addRow("Show notch filters", self.show_notch_filters)
+        layout.addRow("Reward refractory period", self.reward_refractory_period)
     
     def updateModel(self, ex, /):
         ex.name = self.name.text()
@@ -150,6 +156,7 @@ class GeneralView(QWidget):
         ex.reference_sub = self.reference_sub.text()
         ex.show_photo_rectangle = self.show_photo_rectangle.isChecked()
         ex.show_notch_filters = self.show_notch_filters.isChecked()
+        ex.reward_refractory_period = self.reward_refractory_period.value()
 
     def _adjust(self):
         if self.prefilter_lower_bound_enable.isChecked():
