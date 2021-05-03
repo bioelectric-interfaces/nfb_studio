@@ -215,7 +215,6 @@ class ExperimentView(QMainWindow):
         
         general.plot_raw.setChecked(ex.plot_raw)
         general.plot_signals.setChecked(ex.plot_signals)
-        general.show_subject_window.setChecked(ex.show_subject_window)
         general.discard_channels.setText(ex.discard_channels)
         general.reference_sub.setText(ex.reference_sub)
         general.show_photo_rectangle.setChecked(ex.show_photo_rectangle)

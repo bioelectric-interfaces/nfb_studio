@@ -31,7 +31,6 @@ class Experiment:
         self.prefilter_band = [None, None]
         self.plot_raw = True
         self.plot_signals = True
-        self.show_subject_window = True
         self.discard_channels = ""
         self.reference_sub = ""
         self.show_photo_rectangle = False
@@ -146,7 +145,6 @@ class Experiment:
         ex.hostname_port = data["sFTHostnamePort"]
         ex.plot_raw = bool(float(data["bPlotRaw"]))
         ex.plot_signals = bool(float(data["bPlotSignals"]))
-        ex.show_subject_window = bool(float(data.get("bShowSubjectWindow", ex.show_subject_window)))
         ex.discard_channels = data["sReference"]
         ex.reference_sub = data["sReferenceSub"]
         ex.show_photo_rectangle = bool(float(data.get("bShowPhotoRectangle", ex.show_photo_rectangle)))
@@ -322,7 +320,6 @@ class Experiment:
             "prefilter_band_upper_bound": self.prefilter_band[1],
             "plot_raw": self.plot_raw,
             "plot_signals": self.plot_signals,
-            "show_subject_window": self.show_subject_window,
             "discard_channels": self.discard_channels,
             "reference_sub": self.reference_sub,
             "show_photo_rectangle": self.show_photo_rectangle,
@@ -347,7 +344,6 @@ class Experiment:
         obj.prefilter_band = (data["prefilter_band_lower_bound"], data["prefilter_band_upper_bound"])
         obj.plot_raw = data["plot_raw"]
         obj.plot_signals = data["plot_signals"]
-        obj.show_subject_window = data["show_subject_window"]
         obj.discard_channels = data["discard_channels"]
         obj.reference_sub = data["reference_sub"]
         obj.show_photo_rectangle = data["show_photo_rectangle"]
@@ -378,7 +374,6 @@ class Experiment:
         data["bPlotRaw"] = self.plot_raw
         data["bPlotSignals"] = self.plot_signals
         data["bPlotSourceSpace"] = 0
-        data["bShowSubjectWindow"] = self.show_subject_window
         data["fRewardPeriodS"] = 0.25
         data["sReference"] = self.discard_channels
         data["sReferenceSub"] = self.reference_sub
