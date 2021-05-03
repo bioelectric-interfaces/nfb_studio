@@ -71,7 +71,10 @@ class BlockView(QWidget):
         self.random_bound.addItem("Bar")
 
         self.video_path = QLineEdit()
+        
         self.message = QLineEdit()
+        self.feedback_type.currentTextChanged.connect(lambda ftype: self.message.setEnabled(ftype == "Baseline"))
+
         self.voiceover = QCheckBox()
 
         # Grouped properties -------------------------------------------------------------------------------------------
