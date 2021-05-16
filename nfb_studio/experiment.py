@@ -1,5 +1,6 @@
 """NFB Experiment."""
 import re
+from sympy.parsing.sympy_parser import parse_expr
 
 from .block import Block, BlockDict
 from .group import Group, GroupDict
@@ -265,8 +266,11 @@ class Experiment:
 
             ex.signal_scheme.addItem(n)
             
+            # Find which derived signals are connected to this composite signal
+            variables = {str(x) for x in parse_expr(comp_data["sExpression"]).free_symbols}
+
             for name, derived_n in derived_signals.items():
-                if name in comp_data["sExpression"]:
+                if name in variables:
                     ex.signal_scheme.connect_nodes(derived_n.outputs[0], n.inputs[0])
 
         # Decode blocks ------------------------------------------------------------------------------------------------
