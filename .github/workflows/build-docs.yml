@@ -28,5 +28,7 @@ jobs:
           touch .nojekyll  # Let Github know we have our own style
           # Add, commit and force push
           git add .
+          git config user.name "GitHub Actions"
+          git config user.email "<>"
           git commit --allow-empty-message -m ''
           git push --force --set-upstream origin docs
