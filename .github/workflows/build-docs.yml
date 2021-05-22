@@ -21,7 +21,8 @@ jobs:
           git checkout --orphan docs
           # Build docs and remove everything else
           sphinx-build docs/source build
-          ls -A -I "build" -I ".git" | xargs -d '\n' git rm -rf  # remove everyting except the build folder
+          rm -rf *.egg-info
+          git rm -rf .  # remove everyting except the build and .git folder
           mv build/* .
           rm -rf build
           touch .nojekyll  # Let Github know we have our own style
