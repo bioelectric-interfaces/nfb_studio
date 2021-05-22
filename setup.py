@@ -6,7 +6,7 @@ install_requires = [
     "sortedcontainers",
     "xmltodict",
     "sympy",
-    "pynfb @ https://github.com/bioelectric-interfaces/nfb/archive/0.1.0.zip",
+    "pynfb @ https://github.com/bioelectric-interfaces/nfb/archive/0.1.1.zip",
 ]
 
 extras_require = {
