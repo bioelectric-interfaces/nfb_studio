@@ -8,7 +8,7 @@ In the "General" property we give a name to the experiment and choose the "Mitsa
    :width: 600
    
    
-
+=======================
 Since the signal is parietal alpha rhythm, we choose Pz for a spatial filter and 7-13 Hz for a Butterworth filter with the second order and length of 1000 samples.
 
 The resulted envelope should be fast-processed and smooth enough, so we choose a cFIR envelope detector and exponential smoothing with 0.95 factor.
