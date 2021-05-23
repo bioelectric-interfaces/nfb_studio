@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Blocks &mdash; NFB Studio  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Block Groups" href="block_groups.html" />
+    <link rel="prev" title="Signals" href="signals.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> NFB Studio
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Creating a new experiment</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="general.html">General</a></li>
+<li class="toctree-l2"><a class="reference internal" href="signals.html">Signals</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="block_groups.html">Block Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sequence.html">Sequence</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../save_and_import.html">Saving and importing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pipeline_example.html">Example of the pipeline</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NFB Studio</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Creating a new experiment</a> &raquo;</li>
+        
+      <li>Blocks</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/experiment/blocks.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="blocks">
+<h1>Blocks<a class="headerlink" href="#blocks" title="Permalink to this headline">¶</a></h1>
+<p>When a signal is built, it is time to make experimental blocks, that is, what will be shown to the subject. To make one, click on the “Blocks” by the right button of the mouse and the “New Block” button.</p>
+<a class="reference internal image-reference" href="../_images/blockCreation.png"><img alt="../_images/blockCreation.png" src="../_images/blockCreation.png" style="width: 600px;" /></a>
+<p>With another click of the right button of the mouse on the created block, it is possible to rename or delete this block.</p>
+<a class="reference internal image-reference" href="../_images/blockSet.png"><img alt="../_images/blockSet.png" src="../_images/blockSet.png" style="width: 600px;" /></a>
+<p>Let’s look at the settings inside a block.</p>
+<dl>
+<dt>General settings:</dt><dd><p><strong>Duration</strong>: The duration of the block consists of the basic duration (left field) plus random fluctuation between time (right). For example, to make every block with a different duration, we will type 30 +- 10, meaning every block will consist of 30 seconds plus or minus random value between 0 and 10.</p>
+<p><strong>Source</strong>: could be set to “All” in the case when no specified signal is applied, for instance, during baseline. Otherwise, this field must contain the name of the derived signal, which has been given to the signal in the “Derived signal export” node.</p>
+<p><strong>FB type</strong>: has two options – baseline (empty block or with a static message) or feedback, which type could be chosen in the “Random bound” field.</p>
+<p><strong>Video path</strong>: (function is in testing) add a path to a video file to use it as a feedback.</p>
+<p><strong>Message for test subject</strong>: here you can write a message which will be displayed to the subject during this block. For example, “Relax” or “Pause”.</p>
+<p><strong>Voiceover for message</strong>: if your experiment includes a closed-eyes state, it could be useful to make an audio message for the subject. Just check it.</p>
+</dd>
+</dl>
+<p><strong>Mock signal</strong>:</p>
+<p>For a mock condition, you have to give the subject some feedback unrelated to him or her, and these settings allow you to do this.</p>
+<blockquote>
+<div><p><strong>Mock signal file path</strong>: choose a file with an EEG data from which a mock (fake) visualization will be generated. It will not be related to the actual data from EEG, and a subject will take the simulation.</p>
+<p><strong>Mock signal file dataset</strong>: it is a number of the block. By default, it is “protocol1”, because after an experiment NFB Lab generates data, where blocks are organized as protocols with their numbers in sequence. If you use your data and do not want to use NFB Lab generated data, find out how blocks are organized in your recording.</p>
+<p><strong>Mock previous</strong>: – if checked, it will take the previous block’s data and use it for the next feedback block.</p>
+<p><strong>Reverse and Random mock previous</strong>: – if checked data from the previous block will be reversed and randomized, respectively.</p>
+</div></blockquote>
+<p><strong>After block actions</strong>:</p>
+<blockquote>
+<div><p><strong>Start data-driven filter designer</strong>: after the block, if checked, there will be a filter designer where you can choose temporal and spatial filters including ICA, CSP, and SSD methods for the following processing and feedback generation.</p>
+<p><strong>Pause</strong>: if checked, after a block’s finish, the pipeline will be stopped, and the next block could be started only after pressing the “play” button.</p>
+<p><strong>Beep</strong>: after a block, there will be a short monotonous sound indicating the end of the block.</p>
+<p><strong>Update Statistics</strong>: during a block, statistical approximations are collected, and this checkbox allows you to translate the signal in the next block from Volts to standardized values. The type of these values depends on the following option.</p>
+<p><strong>Statistics Type</strong>: with mean/std the signal will have a mean value of 0 and standard deviation of 1. Min/max generates values above zero (minimum) and usually below one (maximum). Notice that these characteristics will be active only after a block where “Update Statistics” was checked.</p>
+</div></blockquote>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="block_groups.html" class="btn btn-neutral float-right" title="Block Groups" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="signals.html" class="btn btn-neutral float-left" title="Signals" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Centre for Bioelectric Interfaces.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

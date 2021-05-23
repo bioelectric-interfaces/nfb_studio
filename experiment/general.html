@@ -1,0 +1,237 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>General &mdash; NFB Studio  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Signals" href="signals.html" />
+    <link rel="prev" title="Creating a new experiment" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> NFB Studio
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Creating a new experiment</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">General</a></li>
+<li class="toctree-l2"><a class="reference internal" href="signals.html">Signals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blocks.html">Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="block_groups.html">Block Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sequence.html">Sequence</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../save_and_import.html">Saving and importing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pipeline_example.html">Example of the pipeline</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NFB Studio</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Creating a new experiment</a> &raquo;</li>
+        
+      <li>General</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/experiment/general.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="general">
+<h1>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h1>
+<p>In the “General” property (from the left column of the interface) after the opening of NFB Studio, you will see the following fields with default values.</p>
+<a class="reference internal image-reference" href="../_images/general.png"><img alt="../_images/general.png" src="../_images/general.png" style="width: 600px;" /></a>
+<p><strong>Name</strong>: the name of the experiment.</p>
+<p><strong>Inlet</strong>: The most important field here is “Inlet”. This field relates to the source of the data being processed. It could be data either from an LSL stream (Mitsar, basically, is for LSL streams) and generator in case of online experiments or from a h5 file for offline processing. In the latter case, you should type a full path to the file.</p>
+<p>It is a brief description of the rest options:</p>
+<p><strong>dc</strong>: enabling DC-blocker. Notice, that DC-blocker applies to all raw data including EEG channels, photosensors, etc.</p>
+<p><strong>Prefilter band</strong>: allow you to filter data before it will be filtered in the primary signal creation block. Notice: if you use both (lower and upper) bands, firstly you should type upper band to increase values in the lower one. Applies to all raw data.</p>
+<p><strong>Plot raw</strong>: whether there will be a window with the raw signals after starting the experiment.</p>
+<p><strong>Plot signals</strong>: creates the window displaying derived signals after processing.</p>
+<p><strong>Show subject window</strong>: enables the window with messages or feedback presentation for a subject.</p>
+<p><strong>Discard channels</strong>: here you could type channels that would be discarded from the overall processing and in the construction of spatial filters (for example: Cz P3).</p>
+<p><strong>Reference sub</strong>: allow you to type channels which will be subtracted from others.</p>
+<p><strong>Show photo rectangle</strong>: during the experiment there will be the rectangle whose brightness depends on the derived signal amplitude and imitate the feedback stimulus. It is used for computation of the latency between obtaining the real electrical signal and time of feedback presentation, but a photosensor attached to the monitor is needed.</p>
+<p><strong>Show notch filter</strong>: additionally to raw data in the window after starting the experiment, it enables to see raw data with or without notch filter that cuts high-frequencies such as 50 and 60 Hz.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="signals.html" class="btn btn-neutral float-right" title="Signals" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Creating a new experiment" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Centre for Bioelectric Interfaces.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

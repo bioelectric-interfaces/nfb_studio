@@ -1,0 +1,247 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Signals &mdash; NFB Studio  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Blocks" href="blocks.html" />
+    <link rel="prev" title="General" href="general.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> NFB Studio
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Creating a new experiment</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="general.html">General</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Signals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blocks.html">Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="block_groups.html">Block Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sequence.html">Sequence</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../save_and_import.html">Saving and importing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pipeline_example.html">Example of the pipeline</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NFB Studio</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Creating a new experiment</a> &raquo;</li>
+        
+      <li>Signals</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/experiment/signals.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="signals">
+<h1>Signals<a class="headerlink" href="#signals" title="Permalink to this headline">¶</a></h1>
+<p>The next step is making the signal. After clicking on the “Signals” property, choose a node from the “Node Toolbox” and drag it to space to the right.</p>
+<a class="reference internal image-reference" href="../_images/nodeMove.png"><img alt="../_images/nodeMove.png" src="../_images/nodeMove.png" style="width: 600px;" /></a>
+<p>The node will appear – it is a basic building block of the signal.</p>
+<a class="reference internal image-reference" href="../_images/node.png"><img alt="../_images/node.png" src="../_images/node.png" style="width: 600px;" /></a>
+<p>To connect two nodes, click on the small line at the first node and drag it to the same line at the second.</p>
+<a class="reference internal image-reference" href="../_images/nodeConnect.png"><img alt="../_images/nodeConnect.png" src="../_images/nodeConnect.png" style="width: 600px;" /></a>
+<p>Below is the basic pipeline with output as an envelope and default settings.</p>
+<a class="reference internal image-reference" href="../_images/pipelineDefault.png"><img alt="../_images/pipelineDefault.png" src="../_images/pipelineDefault.png" style="width: 600px;" /></a>
+<p>It is also possible to build a signal without an envelope detector to make the filtered signal or even without a bandpass filter to get the raw signal.</p>
+<p>Optionally, there are blocks of artificial delay and standardization (normalization) of the signal, which are placed after the Envelope detector.</p>
+<p>Besides simple signals, composite ones are available. Create a “composite signal export” node, type the expression with simple signals’ names and connect these signals to composite one.</p>
+<a class="reference internal image-reference" href="../_images/compositeExample.png"><img alt="../_images/compositeExample.png" src="../_images/compositeExample.png" style="width: 600px;" /></a>
+<p>To open the settings (configuration) of the node, double click on it.</p>
+<dl>
+<dt><strong>Settings of nodes</strong>:</dt><dd><p><strong>LSL input</strong>: there are immutable characteristics of the input like channel count (32) and sampling frequency (500 Hz), but you can name a data source (for example, NVX).</p>
+<p><strong>Spatial Filter</strong>: here you should type a vector with channels that will be filtered and used in the signal. For example, P4=1, Cz=1. Also, it is possible to put a path to the txt file, where such a vector is presented.</p>
+<p><strong>Bandpass filter</strong>: independent from the previous filtering inside the “General” property, here you can choose the range in which the signal will be filtered. For example, 8-12 Hz range corresponds to alpha rhythm, while 13-25 Hz – to beta rhythm. In the case of the Butterworth filter, you can type its order, which is usually chosen between 1-3. cFIR filter does not need order, but in both types of filter its length is needed, that is, how much of the data will be used to calculate the output.</p>
+<p><strong>Envelope detector</strong>: in case you need to have a smooth envelope describing the filtered signal, you have to add an envelope detector. Several methods are available, including Rectification, Fourier and Hilbert Transform, and cFIR. The last method can be especially useful when fast online processing is required. The smoothing factor helps to make a more stable envelope without sharp bursts (usually, these factor equals 0.95 to smooth envelope). Exponential and Savitzky-Golay types of smoother are available.</p>
+<p><strong>Derived signal export</strong>: one of the crucial parts of the signal, because all of the following processing will be dependent on the name of the signal created in this block.</p>
+<p><strong>Standardise</strong>: with this block, the signal’s physical values will be standardized around arbitrary average and standard deviation, that is, average and std assigned in this block will be used to represent signal’s values after starting the experiment.</p>
+<p><strong>Artificial Delay</strong>: in case you need to investigate the effects of feedback presentation’s latency or use it in other ways, type required delay in ms and put this block before signal export.</p>
+<p><strong>Composite Signal Export</strong>: allows you to combine many simple signals to create a composite one. Signal name will be used to attach this signal to feedback, while the “expression” field requires writing simple signals’ names and mathematical signs. For example, if I have two simple signals with names as P4 and Cz, I can write an expression like P4 + Cz or Cz/P4.</p>
+</dd>
+</dl>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="blocks.html" class="btn btn-neutral float-right" title="Blocks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="general.html" class="btn btn-neutral float-left" title="General" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Centre for Bioelectric Interfaces.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
