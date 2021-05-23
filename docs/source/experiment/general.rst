@@ -7,7 +7,7 @@ In the “General” property (from the left column of the interface) after the 
    
 **Name**: the name of the experiment.
 
-**Inlet**: The most important field here is “Inlet”. This field relates to the source of the data being processed. It could be data either from an LSL stream and generator in case of online experiments or from a h5 file for offline processing. In the latter case, you should type a full path to the file.
+**Inlet**: The most important field here is “Inlet”. This field relates to the source of the data being processed. It could be data either from an LSL stream (Mitsar, basically, is for LSL streams) and generator in case of online experiments or from a h5 file for offline processing. In the latter case, you should type a full path to the file.
 
 It is a brief description of the rest options:
 
